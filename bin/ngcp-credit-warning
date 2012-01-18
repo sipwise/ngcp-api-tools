@@ -36,7 +36,9 @@ sub main {
                ", $$domcfg{domain}, $$domcfg{threshold});
 
     if(@$contracts) {
-      my $mailtxt = "To: $$domcfg{recipients}\nSubject: Sipwise NGCP credit threshold notification\n\n";
+      $$domcfg{recipients} = [ $$domcfg{recipients} ]
+          unless defined eval { @{$$domcfg{recipients}} };
+      my $mailtxt = "To: ". join(', ', @{$$domcfg{recipients}}) ."\nSubject: Sipwise NGCP credit threshold notification\n\n";
       $mailtxt .= "Credit threshold warning for: $$domcfg{domain}\nThe following contracts are below the configured threshold of $$domcfg{threshold} cent:\n\n";
       $mailtxt .= "account_id\tcash_balance\tcash_balance_interval\tsubscribers\n";
       for(@$contracts) {
