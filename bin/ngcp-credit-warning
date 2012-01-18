@@ -1,0 +1,50 @@
+#!/usr/bin/perl -w
+use strict;
+
+use XML::Simple;
+use Sipwise::DB;
+
+my $CONF = '/etc/ngcp-ossbss/provisioning.conf';
+my $MAIL = '/usr/bin/mail -t';
+
+sub main;
+
+main;
+
+sub main {
+  my $xs = new XML::Simple;
+  my $conf = $xs->XMLin( $CONF, ForceArray => 0 );
+  my $db = new Sipwise::DB ( $$conf{billingdb} );
+
+  $$conf{credit_warnings} = [ $$conf{credit_warnings} ]
+      if defined eval { %{$$conf{credit_warnings}} };
+
+  foreach my $domcfg (@{$$conf{credit_warnings}}) {
+
+    my $contracts = $db->sql_get_all_arrayref("
+                 SELECT a.contract_id,a.cash_balance,a.cash_balance_interval,GROUP_CONCAT(c.username,'\@',d.domain) AS subscribers
+                   FROM contract_balances a, contracts b,voip_subscribers c, domains d
+                  WHERE a.start = DATE_FORMAT(now(), '%Y-%m-01 00:00:00')
+                        AND a.contract_id = b.id
+                        AND b.status != 'terminated'
+                        AND a.contract_id = c.contract_id
+                        AND c.domain_id = d.id
+                        AND d.domain = ?
+                        AND c.status != 'terminated'
+                        AND a.cash_balance < ?
+                  GROUP BY contract_id
+               ", $$domcfg{domain}, $$domcfg{threshold});
+
+    if(@$contracts) {
+      my $mailtxt = "To: $$domcfg{recipients}\nSubject: Sipwise NGCP credit threshold notification\n\n";
+      $mailtxt .= "Credit threshold warning for: $$domcfg{domain}\nThe following contracts are below the configured threshold of $$domcfg{threshold} cent:\n\n";
+      $mailtxt .= "account_id\tcash_balance\tcash_balance_interval\tsubscribers\n";
+      for(@$contracts) {
+        $mailtxt .= "$$_{contract_id}\t$$_{cash_balance}\t$$_{cash_balance_interval}\t$$_{subscribers}\n";
+      }
+      open MAIL, "|$MAIL" or die $!;
+      print MAIL $mailtxt;
+      close MAIL;
+    }
+  }
+}
