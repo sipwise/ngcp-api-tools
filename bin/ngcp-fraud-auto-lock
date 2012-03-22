@@ -1,0 +1,62 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Sipwise::Provisioning::Billing;
+
+my $o = Sipwise::Provisioning::Billing->new();
+my $db = $o->{database};
+
+my $a = $db->sql_get_all_arrayref(<<"!");
+	select c.id, p.fraud_interval_lock, p.fraud_interval_notify,
+	b.cash_balance_interval, p.fraud_interval_limit from contracts c,
+	billing_profiles p, contract_balances b where p.id = 
+	(select m.billing_profile_id from billing_mappings m where (m.start_date is null or
+	m.start_date <= now()) and (m.end_date is null or m.end_date >= now()) and
+	m.contract_id = c.id order by
+	m.start_date desc limit 1) and b.contract_id = c.id and
+	b.start <= now() and b.end >= now()
+	and c.status = 'active' and
+	b.cash_balance_interval >= p.fraud_interval_limit
+!
+
+for my $e (@$a) {
+	$o->lock_voip_account({id => $e->{id}, lock => $e->{fraud_interval_lock}});
+
+	$e->{fraud_interval_notify} or next;
+
+	my $subs = $db->sql_get_all_arrayref(<<"!", $e->{id});
+		select s.username, d.domain, s.external_id
+		from voip_subscribers s left join domains d
+		on d.id = s.domain_id where s.contract_id = ?
+!
+
+	my $cur = sprintf('%.2f', $e->{cash_balance_interval} / 100);
+	my $max = sprintf('%.2f', $e->{fraud_interval_limit} / 100);
+
+	open(SM, '| sendmail -oi -t');
+	print SM <<"!";
+To: $e->{fraud_interval_notify}
+Subject: Account ID $e->{id} locked by fraud detection
+
+Account ID $e->{id} has been locked due to exceeding the configured
+credit balance threshold ($cur >= $max).
+
+!
+
+	if (!$subs || !@$subs) {
+		print SM "There are no affected subscribers.\n";
+	}
+	else {
+		print SM "Affected subscribers:\n";
+		for my $s (@$subs) {
+			print SM "\t$s->{username}\@$s->{domain}".
+				($s->{external_id} ? " (external ID '$s->{external_id}')"
+				: '') . "\n";
+		}
+	}
+
+	close(SM);
+}
+
+1;
