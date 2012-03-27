@@ -5,7 +5,7 @@ use XML::Simple;
 use Sipwise::DB;
 
 my $CONF = '/etc/ngcp-ossbss/provisioning.conf';
-my $MAIL = '/usr/bin/mail -t';
+my $MAIL = '/usr/sbin/sendmail -oi -t';
 
 sub main;
 
