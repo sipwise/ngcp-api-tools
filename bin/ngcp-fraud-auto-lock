@@ -4,6 +4,19 @@ use strict;
 use warnings;
 use Sipwise::Provisioning::Billing;
 
+my %LOCK = (
+	none => undef,
+	foreign => 1,
+	outgoing => 2,
+	incoming => 3,
+	global => 4,
+	0 => 'none',
+	1 => 'foreign',
+	2 => 'outgoing',
+	3 => 'incoming',
+	4 => 'global',
+); 
+
 my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
 
@@ -21,7 +34,8 @@ my $a = $db->sql_get_all_arrayref(<<"!");
 !
 
 for my $e (@$a) {
-	$o->lock_voip_account({id => $e->{id}, lock => $e->{fraud_interval_lock}});
+	$e->{fraud_interval_lock} and
+		$o->lock_voip_account({id => $e->{id}, lock => $LOCK{$e->{fraud_interval_lock}}});
 
 	$e->{fraud_interval_notify} or next;
 
@@ -35,7 +49,7 @@ for my $e (@$a) {
 	my $max = sprintf('%.2f', $e->{fraud_interval_limit} / 100);
 
 	open(SM, '| sendmail -oi -t');
-	print SM <<"!";
+	my $text = $e->{fraud_interval_lock} ? << "!"
 To: $e->{fraud_interval_notify}
 Subject: Account ID $e->{id} locked by fraud detection
 
@@ -43,6 +57,15 @@ Account ID $e->{id} has been locked due to exceeding the configured
 credit balance threshold ($cur >= $max).
 
 !
+		: <<"!";
+To: $e->{fraud_interval_notify}
+Subject: Account ID $e->{id} exceeding fraud detection limit
+
+Account ID $e->{id} is currently exceeding the configured credit balance
+threshold ($cur >= $max), but has not been locked due to configuration.
+
+!
+	print SM $text;
 
 	if (!$subs || !@$subs) {
 		print SM "There are no affected subscribers.\n";
