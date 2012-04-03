@@ -21,16 +21,22 @@ my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
 
 my $a = $db->sql_get_all_arrayref(<<"!");
-	select c.id, p.fraud_interval_lock, p.fraud_interval_notify,
-	b.cash_balance_interval, p.fraud_interval_limit from contracts c,
-	billing_profiles p, contract_balances b where p.id = 
-	(select m.billing_profile_id from billing_mappings m where (m.start_date is null or
-	m.start_date <= now()) and (m.end_date is null or m.end_date >= now()) and
-	m.contract_id = c.id order by
-	m.start_date desc limit 1) and b.contract_id = c.id and
-	b.start <= now() and b.end >= now()
-	and c.status = 'active' and
-	b.cash_balance_interval >= p.fraud_interval_limit
+	SELECT c.id, p.fraud_interval_lock, p.fraud_interval_notify,
+               b.cash_balance_interval, p.fraud_interval_limit
+          FROM contracts c, billing_profiles p, contract_balances b
+         WHERE p.id = (SELECT m.billing_profile_id
+                         FROM billing_mappings m
+                        WHERE (   m.start_date IS NULL
+                               OR m.start_date <= now())
+                          AND (   m.end_date IS NULL
+                               OR m.end_date >= now())
+                          AND m.contract_id = c.id
+                     ORDER BY m.start_date desc limit 1)
+           AND b.contract_id = c.id
+           AND b.start <= now()
+           AND b.end >= now()
+           AND c.status = 'active'
+           AND b.cash_balance_interval >= p.fraud_interval_limit
 !
 
 for my $e (@$a) {
@@ -40,9 +46,10 @@ for my $e (@$a) {
 	$e->{fraud_interval_notify} or next;
 
 	my $subs = $db->sql_get_all_arrayref(<<"!", $e->{id});
-		select s.username, d.domain, s.external_id
-		from voip_subscribers s left join domains d
-		on d.id = s.domain_id where s.contract_id = ?
+		SELECT s.username, d.domain, s.external_id
+                  FROM voip_subscribers s
+             LEFT JOIN domains d ON d.id = s.domain_id
+                 WHERE s.contract_id = ?
 !
 
 	my $cur = sprintf('%.2f', $e->{cash_balance_interval} / 100);
