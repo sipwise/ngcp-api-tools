@@ -2,6 +2,8 @@
 
 use strict;
 use warnings;
+
+use Email::Sender::Simple qw(sendmail);
 use Sipwise::Provisioning::Billing;
 
 my %LOCK = (
@@ -16,6 +18,8 @@ my %LOCK = (
 	3 => 'incoming',
 	4 => 'global',
 ); 
+
+my $conf = Sipwise::Provisioning::Config->new()->get_config();
 
 my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
@@ -58,38 +62,36 @@ for my $e (@$a) {
 	my $cur = sprintf('%.2f', $e->{cash_balance_interval} / 100);
 	my $max = sprintf('%.2f', $e->{fraud_interval_limit} / 100);
 
-	open(SM, '| sendmail -oi -t');
-	my $text = $e->{fraud_interval_lock} ? << "!"
-To: $e->{fraud_interval_notify}
-Subject: Account ID $e->{id} locked by fraud detection
-
-Account ID $e->{id} has been locked due to exceeding the configured
-credit balance threshold ($cur >= $max).
-
-!
-		: <<"!";
-To: $e->{fraud_interval_notify}
-Subject: Account ID $e->{id} exceeding fraud detection limit
-
-Account ID $e->{id} is currently exceeding the configured credit balance
-threshold ($cur >= $max), but has not been locked due to configuration.
-
-!
-	print SM $text;
+    my $body;
+    if ($e->{fraud_interval_lock}) {
+        $body = "Account ID " . $e->{id} . " has been locked due to exceeding the configured" . "\n"
+              . "credit balance threshold ($cur >= $max ).\n\n";
+    }
+    else {
+        $body = "Account ID " . $e->{id} . " is currently exceeding the configured credit balance" . "\n"
+              . "threshold ($cur >= $max), but has not been locked due to configuration.\n\n";
+    }
 
 	if (!$subs || !@$subs) {
-		print SM "There are no affected subscribers.\n";
+		$body .= "There are no affected subscribers.\n";
 	}
 	else {
-		print SM "Affected subscribers:\n";
+		$body .= "Affected subscribers:\n";
 		for my $s (@$subs) {
-			print SM "\t$s->{username}\@$s->{domain}".
+			$body .= "\t$s->{username}\@$s->{domain}".
 				($s->{external_id} ? " (external ID '$s->{external_id}')"
 				: '') . "\n";
 		}
 	}
 
-	close(SM);
+    sendmail ( Email::Simple->create(
+        header => [
+            To      => $e->{fraud_interval_notify},
+            From    => $$conf{adminmail},
+            Subject => 'Account ID ' . $e->{id} . 'locked by fraud detection', 
+        ],
+        body => $body,
+    ));
 }
 
 1;

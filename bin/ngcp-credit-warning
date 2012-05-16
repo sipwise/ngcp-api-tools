@@ -1,11 +1,14 @@
 #!/usr/bin/perl -w
-use strict;
 
+use strict;
+use warnings;
+
+use Email::Sender::Simple qw(sendmail);
 use XML::Simple;
 use Sipwise::DB;
+use Sipwise::Provisioning::Config;
 
-my $CONF = '/etc/ngcp-ossbss/provisioning.conf';
-my $MAIL = '/usr/sbin/sendmail -oi -t';
+my $MTA = '/usr/sbin/sendmail -oi -t';
 
 sub main;
 
@@ -13,9 +16,9 @@ main;
 
 sub main {
   my $xs = new XML::Simple;
-  my $conf = $xs->XMLin( $CONF, ForceArray => 0 );
+  my $conf = Sipwise::Provisioning::Config->new()->get_config();
   my $db = new Sipwise::DB ( $$conf{billingdb} );
-
+  
   $$conf{credit_warnings} = [ $$conf{credit_warnings} ]
       if defined eval { %{$$conf{credit_warnings}} };
 
@@ -34,19 +37,25 @@ sub main {
                         AND a.cash_balance < ?
                   GROUP BY contract_id
                ", $$domcfg{domain}, $$domcfg{threshold});
-
     if(@$contracts) {
       $$domcfg{recipients} = [ $$domcfg{recipients} ]
           unless defined eval { @{$$domcfg{recipients}} };
-      my $mailtxt = "To: ". join(', ', @{$$domcfg{recipients}}) ."\nSubject: Sipwise NGCP credit threshold notification\n\n";
+      
+      my $mailtxt;
       $mailtxt .= "Credit threshold warning for: $$domcfg{domain}\nThe following contracts are below the configured threshold of $$domcfg{threshold} cent:\n\n";
       $mailtxt .= "account_id\tcash_balance\tcash_balance_interval\tsubscribers\n";
       for(@$contracts) {
         $mailtxt .= "$$_{contract_id}\t$$_{cash_balance}\t$$_{cash_balance_interval}\t$$_{subscribers}\n";
       }
-      open MAIL, "|$MAIL" or die $!;
-      print MAIL $mailtxt;
-      close MAIL;
+      
+      sendmail ( Email::Simple->create(
+          header => [
+              To      => join(', ', @{$$domcfg{recipients}}),
+              From    => $$conf{adminmail},
+              Subject => 'Sipwise NGCP credit threshold notification',
+          ],
+          body => $mailtxt,
+      ));
     }
   }
 }
