@@ -62,14 +62,16 @@ for my $e (@$a) {
 	my $cur = sprintf('%.2f', $e->{cash_balance_interval} / 100);
 	my $max = sprintf('%.2f', $e->{fraud_interval_limit} / 100);
 
-    my $body;
+    my ($subject, $body);
     if ($e->{fraud_interval_lock}) {
         $body = "Account ID " . $e->{id} . " has been locked due to exceeding the configured" . "\n"
               . "credit balance threshold ($cur >= $max ).\n\n";
+	$subject = 'Account ID ' . $e->{id} . ' locked by fraud detection';
     }
     else {
         $body = "Account ID " . $e->{id} . " is currently exceeding the configured credit balance" . "\n"
               . "threshold ($cur >= $max), but has not been locked due to configuration.\n\n";
+	$subject = 'Account ID ' . $e->{id} . ' exceeding fraud detection limit';
     }
 
 	if (!$subs || !@$subs) {
@@ -88,7 +90,7 @@ for my $e (@$a) {
         header => [
             To      => $e->{fraud_interval_notify},
             From    => $$conf{adminmail},
-            Subject => 'Account ID ' . $e->{id} . 'locked by fraud detection', 
+            Subject => $subject,
         ],
         body => $body,
     ));
