@@ -41,8 +41,8 @@ my $a = $db->sql_get_all_arrayref(<<"!");
            AND b.end >= now()
            AND c.status = 'active'
            AND p.fraud_interval_limit > 0
-           AND (   p.fraud_interval_lock
-                OR p.fraud_interval_notify)
+           AND (p.fraud_interval_lock
+                OR p.fraud_interval_notify <> '')
            AND b.cash_balance_interval >= p.fraud_interval_limit
 !
 
