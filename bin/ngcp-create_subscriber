@@ -1,0 +1,109 @@
+#!/usr/bin/perl
+use strict;
+
+use Getopt::Std;
+use Sipwise::Provisioning::Billing;
+
+my %CONFIG = (
+               admin    => 'administrator',
+               password => 'administrator',
+             );
+my %BILLING = (
+                billing_profile => 'default',
+# not needed, but may be set if desired
+#                product         => 'handle',
+              );
+
+sub main;
+sub usage;
+sub call_prov;
+
+my %opts;
+getopts('v:u:d:p:c:a:n:s:', \%opts);
+
+die usage() unless defined $opts{u} and defined $opts{d} and defined $opts{p}
+                   and defined $opts{c} and defined $opts{a} and defined $opts{n};
+
+my $bprov = Sipwise::Provisioning::Billing->new();
+
+main;
+
+sub main {
+    my $subscriber = { username => $opts{u},
+                       domain   => $opts{d},
+                       password => $opts{p},
+                       cc       => $opts{c},
+                       ac       => $opts{a},
+                       sn       => $opts{n},
+                       admin    => $opts{s} ? 1 : 0,
+                     };
+
+    if(defined $opts{v}) {
+        my $account = call_prov( 'get_voip_account_by_id', { id => $opts{v} });
+        call_prov( 'add_voip_account_subscriber',
+                   {
+                     id         => $$account{id},
+                     subscriber => $subscriber,
+                   }
+                 );
+        print "Added subscriber to VoIP account $$account{id}.\n";
+    } else {
+        my $id = call_prov( 'create_voip_account',
+                            {
+                              data => {
+                                        %BILLING,
+                                        subscribers => [ $subscriber ],
+                                      },
+                            }
+                          );
+        print "Created VoIP account $id with one subscriber.\n";
+    }
+
+    exit;
+}
+
+
+sub call_prov {
+    #   scalar,    hash-ref
+    my ($function, $parameter) = @_;
+    my $result;
+
+    eval {
+        $result = $bprov->handle_request( $function,
+                                          {
+                                            authentication => {
+                                                                type     => 'admin',
+                                                                username => $CONFIG{admin},
+                                                                password => $CONFIG{password},
+                                                              },
+                                            parameters => $parameter,
+                                        });
+    };
+
+    if($@) {
+        if(ref $@ eq 'SOAP::Fault') {
+            die "Billing\::$function failed: ". $@->faultstring ."\n";
+        } else {
+            die "Billing\::$function failed: $@\n";
+        }
+    }
+
+    return $result;
+}
+
+sub usage {
+    die "Usage:\n$0 [-v account_id] -u <username> -d <domain> -p <password> -c <cc> -a <ac> -n <number> -s {1|0}\n\n".
+        "e.g.: $0 -u test -d sip.sipwise.com -p secret -c 43 -a 720 -n 555000\n\n".
+        "Options:\n".
+        "  -v <account_id>  the unique ID of an existing account, the\n".
+        "                   script will create a new one if unspecified\n".
+        "  -u <username>    new SIP username\n".
+        "  -d <domain>      existing domain for subscriber\n".
+        "  -p <password>    unencrypted password for subscriber\n".
+        "  -c <cc>          country code of subscriber number\n".
+        "  -a <ac>          area code of subscriber number\n".
+        "  -n <number>      local part of subscriber number\n".
+        "  -s {1|0}         whether or not to set the administrative flag\n".
+        "                   for the subscriber; defaults to 0 (no)\n".
+        "";
+}

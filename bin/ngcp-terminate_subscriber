@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+use strict;
+
+use Getopt::Std;
+use Sipwise::Provisioning::Billing;
+
+my %CONFIG = (
+               admin    => 'administrator',
+               password => 'administrator',
+             );
+
+sub main;
+sub usage;
+sub call_prov;
+
+my %opts;
+getopts('i:u:d:', \%opts);
+
+die usage() unless (defined $opts{i} and !defined $opts{u} and !defined $opts{d})
+                or (defined $opts{u} and defined $opts{d} and !defined $opts{i});
+
+my $bprov = Sipwise::Provisioning::Billing->new();
+
+main;
+
+sub main {
+    my $subscriber = defined $opts{i}
+                     ? call_prov('get_subscriber_by_id', { subscriber_id => $opts{i} })
+                     : call_prov('get_subscriber', {
+                                                     username => $opts{u},
+                                                     domain   => $opts{d}
+                                                   });
+
+    call_prov( 'terminate_voip_account_subscriber',
+               {
+                 id       => $$subscriber{account_id},
+                 username => $$subscriber{username},
+                 domain   => $$subscriber{domain},
+               }
+             );
+
+    print "Terminated Voip account subscriber.\n";
+
+    exit;
+}
+
+
+sub call_prov {
+    #   scalar,    hash-ref
+    my ($function, $parameter) = @_;
+    my $result;
+
+    eval {
+        $result = $bprov->handle_request( $function,
+                                          {
+                                            authentication => {
+                                                                type     => 'admin',
+                                                                username => $CONFIG{admin},
+                                                                password => $CONFIG{password},
+                                                              },
+                                            parameters => $parameter,
+                                        });
+    };
+
+    if($@) {
+        if(ref $@ eq 'SOAP::Fault') {
+            die "Billing\::$function failed: ". $@->faultstring ."\n";
+        } else {
+            die "Billing\::$function failed: $@\n";
+        }
+    }
+
+    return $result;
+}
+
+sub usage {
+    die "Usage:\n  $0 -i <subscriber_id>\nor:\n  $0 -u <username> -d <domain>\n\n".
+        "e.g.: $0 -u test -d sip.sipwise.com\n\n".
+        "Options:\n".
+        "  -i <subscriber_id> the numeric ID of the subscriber\n".
+        "  -u <username>      the local-part of the subscriber's SIP URI\n".
+        "  -d <domain>        the domain-part of the subscriber's SIP URI\n".
+        "";
+}
