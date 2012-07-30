@@ -3,11 +3,26 @@ use strict;
 
 use Getopt::Std;
 use Sipwise::Provisioning::Billing;
+use YAML::Tiny;
+
+my $yaml = YAML::Tiny->new;
+my $inputfile  = '/etc/ngcp-config/constants.yml';
+my $password;
+my $user = 'cmd';
+
+$yaml = YAML::Tiny->read($inputfile) or die "File $inputfile could not be read";
+
+unless (my ($user) = grep { $_->{user} eq $user && defined $_->{pass} } @{$yaml->[0]->{ossbss}->{provisioning}->{acl}}) {
+  die "Error: No password set for user cmd in $inputfile\n";
+} else {
+  $password = $user->{pass};
+}
 
 my %CONFIG = (
-               admin    => 'administrator',
-               password => 'administrator',
+               admin    => 'cmd',
+               password => $password,
              );
+
 my %BILLING = (
                 billing_profile => 'default',
 # not needed, but may be set if desired
@@ -72,7 +87,7 @@ sub call_prov {
         $result = $bprov->handle_request( $function,
                                           {
                                             authentication => {
-                                                                type     => 'admin',
+                                                                type     => 'system',
                                                                 username => $CONFIG{admin},
                                                                 password => $CONFIG{password},
                                                               },
