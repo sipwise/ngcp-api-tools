@@ -26,8 +26,9 @@ sub call_prov;
 my %opts;
 getopts('v:u:d:p:c:a:n:s:', \%opts);
 
-die usage() unless defined $opts{u} and defined $opts{d} and defined $opts{p}
-                   and defined $opts{c} and defined $opts{a} and defined $opts{n};
+die usage() unless defined $opts{u} and defined $opts{d} and defined $opts{p};
+die usage() unless (defined $opts{c} and defined $opts{a} and defined $opts{n})
+                or (!defined $opts{c} and !defined $opts{a} and !defined $opts{n});
 
 my $bprov = Sipwise::Provisioning::Billing->new();
 
@@ -37,11 +38,11 @@ sub main {
     my $subscriber = { username => $opts{u},
                        domain   => $opts{d},
                        password => $opts{p},
-                       cc       => $opts{c},
-                       ac       => $opts{a},
-                       sn       => $opts{n},
                        admin    => $opts{s} ? 1 : 0,
                      };
+    $$subscriber{cc} = $opts{c} if defined $opts{c};
+    $$subscriber{ac} = $opts{a} if defined $opts{a};
+    $$subscriber{sn} = $opts{n} if defined $opts{n};
 
     if(defined $opts{v}) {
         my $account = call_prov( 'get_voip_account_by_id', { id => $opts{v} });
@@ -97,7 +98,7 @@ sub call_prov {
 }
 
 sub usage {
-    die "Usage:\n$0 [-v account_id] -u <username> -d <domain> -p <password> -c <cc> -a <ac> -n <number> -s {1|0}\n\n".
+    die "Usage:\n$0 [-v account_id] -u <username> -d <domain> -p <password> [-c <cc> -a <ac> -n <number>] [-s {1|0}]\n\n".
         "e.g.: $0 -u test -d sip.sipwise.com -p secret -c 43 -a 720 -n 555000\n\n".
         "Options:\n".
         "  -v <account_id>  the unique ID of an existing account, the\n".
