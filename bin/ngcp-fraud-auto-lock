@@ -5,6 +5,7 @@ use warnings;
 
 use Email::Sender::Simple qw(sendmail);
 use Sipwise::Provisioning::Billing;
+use Data::Dumper;
 
 my %LOCK = (
 	none => undef,
@@ -24,8 +25,12 @@ my $conf = Sipwise::Provisioning::Config->new()->get_config();
 my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
 
+# We select only those billing profile hits which exceed the fraud limit and
+# have an action attached to keep the number of result rows small.
+# However, we select all account hits and manually check them later, as they
+# can potentially override billing profile hits.
 my $a = $db->sql_get_all_arrayref(<<"!");
-	SELECT c.id, p.fraud_interval_lock, p.fraud_interval_notify,
+	SELECT 'profile_limit' as type, c.id, p.fraud_interval_lock, p.fraud_interval_notify,
                b.cash_balance_interval, p.fraud_interval_limit
           FROM contracts c, billing_profiles p, contract_balances b
          WHERE p.id = (SELECT m.billing_profile_id
@@ -44,9 +49,49 @@ my $a = $db->sql_get_all_arrayref(<<"!");
            AND (p.fraud_interval_lock
                 OR p.fraud_interval_notify <> '')
            AND b.cash_balance_interval >= p.fraud_interval_limit
+        UNION ALL
+        SELECT 'account_limit' as type, c.id, afp.fraud_interval_lock, afp.fraud_interval_notify,
+               b.cash_balance_interval, afp.fraud_interval_limit
+         FROM contracts c, contract_fraud_preferences afp, contract_balances b
+        WHERE b.contract_id = c.id
+        AND afp.contract_id = c.id
+        AND b.start <= now()
+        AND b.end >= now()
+        AND c.status = 'active'
 !
 
-for my $e (@$a) {
+my $x = {};
+for my $e (@{ $a }) {
+  if(exists $x->{$e->{id}}) {
+    if($x->{$e->{id}}->{type} eq 'profile_limit' && $e->{type} eq 'account_limit') {
+
+      # if account limit hits and it has lock and/or notify, mark for action
+      if(defined $e->{fraud_interval_limit} and 
+         int($e->{cash_balance_interval}) >= int($e->{fraud_interval_limit}) and
+         ($e->{fraud_interval_lock} || $e->{fraud_interval_notify})) {
+
+        $x->{$e->{id}} = $e;
+      } else {
+        # we have account fraud prefs set, but either the limit is not reached
+        # or no actions are necessary, let it slip through, overriding
+        # billing profile fraud settings
+        delete $x->{$e->{id}};
+      }
+    }
+  } else {
+    # if account or billing profile limit hits and it has lock and/or notify,
+    # mark for action
+    if(defined $e->{fraud_interval_limit} and
+       int($e->{cash_balance_interval}) >= int($e->{fraud_interval_limit}) and
+       ($e->{fraud_interval_lock} || $e->{fraud_interval_notify})) {
+
+      $x->{$e->{id}} = $e;
+    }
+  }
+}
+
+for my $e (values %{ $x }) {
+
 	$e->{fraud_interval_lock} and
 		$o->lock_voip_account({id => $e->{id}, lock => $LOCK{$e->{fraud_interval_lock}}});
 
@@ -65,12 +110,15 @@ for my $e (@$a) {
     my ($subject, $body);
     if ($e->{fraud_interval_lock}) {
         $body = "Account ID " . $e->{id} . " has been locked due to exceeding the configured" . "\n"
-              . "credit balance threshold ($cur >= $max ).\n\n";
+              . "credit balance threshold ($cur >= $max ) in the "
+              . ($e->{type} eq 'profile_limit' ? 'billing profile' : 'account settings') . "\n\n";
 	$subject = 'Account ID ' . $e->{id} . ' locked by fraud detection';
     }
     else {
         $body = "Account ID " . $e->{id} . " is currently exceeding the configured credit balance" . "\n"
-              . "threshold ($cur >= $max), but has not been locked due to configuration.\n\n";
+              . "threshold ($cur >= $max) in the "
+              . ($e->{type} eq 'profile_limit' ? 'billing profile' : 'account settings') . ",\n"
+              . "but has not been locked due to configuration.\n\n";
 	$subject = 'Account ID ' . $e->{id} . ' exceeding fraud detection limit';
     }
 
