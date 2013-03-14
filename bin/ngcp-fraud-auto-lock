@@ -5,7 +5,6 @@ use warnings;
 
 use Email::Sender::Simple qw(sendmail);
 use Sipwise::Provisioning::Billing;
-use Data::Dumper;
 
 my %LOCK = (
 	none => undef,

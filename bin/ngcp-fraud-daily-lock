@@ -25,9 +25,8 @@ my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
 
 my $a = $db->sql_get_all_arrayref(<<"!");
-SELECT cdr.source_account_id, SUM(cdr.customer_cost) AS daily_cost,
+SELECT 'profile_limit' as type, cdr.source_account_id, SUM(cdr.customer_cost) AS daily_cost,
        contracts.id,
-       billing_mappings.billing_profile_id, billing_mappings.start_date, billing_mappings.end_date,
        billing_profiles.fraud_daily_limit, billing_profiles.fraud_daily_lock, billing_profiles.fraud_daily_notify
 FROM accounting.cdr
 JOIN billing.contracts ON cdr.source_account_id = contracts.id
@@ -45,11 +44,55 @@ JOIN billing.billing_profiles
 WHERE (contracts.status = 'active')
   AND (DATEDIFF(FROM_UNIXTIME(cdr.start_time), CURDATE()) = 0)
   AND (billing_profiles.fraud_daily_limit IS NOT NULL)
+  AND (billing_profiles.fraud_daily_limit > 0)
 GROUP BY cdr.source_account_id
 HAVING (daily_cost > billing_profiles.fraud_daily_limit)
+
+UNION ALL
+
+SELECT 'account_limit' as type, cdr.source_account_id, SUM(cdr.customer_cost) AS daily_cost,
+       contracts.id,
+       contract_fraud_preferences.fraud_daily_limit, contract_fraud_preferences.fraud_daily_lock, 
+       contract_fraud_preferences.fraud_daily_notify
+FROM accounting.cdr
+JOIN billing.contracts ON cdr.source_account_id = contracts.id
+JOIN billing.contract_fraud_preferences ON contracts.id = contract_fraud_preferences.contract_id
+WHERE (contracts.status = 'active')
+  AND (DATEDIFF(FROM_UNIXTIME(cdr.start_time), CURDATE()) = 0)
+GROUP BY cdr.source_account_id
 !
 
-for my $e (@$a) {
+my $x = {};
+for my $e (@{ $a }) {
+  if(exists $x->{$e->{id}}) {
+    if($x->{$e->{id}}->{type} eq 'profile_limit' && $e->{type} eq 'account_limit') {
+
+      # if account limit hits and it has lock and/or notify, mark for action
+      if(defined $e->{fraud_daily_limit} and
+         int($e->{daily_cost}) >= int($e->{fraud_daily_limit}) and
+         ($e->{fraud_daily_lock} || $e->{fraud_daily_notify})) {
+
+        $x->{$e->{id}} = $e;
+      } else {
+        # we have account fraud prefs set, but either the limit is not reached
+        # or no actions are necessary, let it slip through, overriding
+        # billing profile fraud settings
+        delete $x->{$e->{id}};
+      }
+    }
+  } else {
+    # if account or billing profile limit hits and it has lock and/or notify,
+    # mark for action
+    if(defined $e->{fraud_daily_limit} and
+       int($e->{daily_cost}) >= int($e->{fraud_daily_limit}) and
+       ($e->{fraud_daily_lock} || $e->{fraud_daily_notify})) {
+
+      $x->{$e->{id}} = $e;
+    }
+  }
+}
+
+for my $e (values %{ $x }) {
 	$e->{fraud_daily_lock} and
 		$o->lock_voip_account({id => $e->{id}, lock => $LOCK{$e->{fraud_daily_lock}}});
 
@@ -68,13 +111,16 @@ for my $e (@$a) {
     my ($subject, $body);
     if ($e->{fraud_daily_lock}) {
         $body = "Account ID " . $e->{id} . " has been locked due to exceeding the configured" . "\n"
-              . "credit daily balance threshold ($cur >= $max ).\n\n";
-	$subject = 'Account ID ' . $e->{id} . ' locked by fraud detection';
+              . "daily credit balance threshold ($cur >= $max ) in the "
+              . ($e->{type} eq 'profile_limit' ? 'billing profile' : 'account settings') . "\n\n";
+	$subject = 'Account ID ' . $e->{id} . ' locked by daily fraud detection';
     }
     else {
-        $body = "Account ID " . $e->{id} . " is currently exceeding the configured credit daily balance" . "\n"
-              . "threshold ($cur >= $max), but has not been locked due to configuration.\n\n";
-	$subject = 'Account ID ' . $e->{id} . ' exceeding fraud detection limit';
+        $body = "Account ID " . $e->{id} . " is currently exceeding the configured daily credit balance" . "\n"
+              . "threshold ($cur >= $max) in the "
+              . ($e->{type} eq 'profile_limit' ? 'billing profile' : 'account settings') . ",\n"
+              . "but has not been locked due to configuration.\n\n";
+	$subject = 'Account ID ' . $e->{id} . ' exceeding daily fraud detection limit';
     }
 
 	if (!$subs || !@$subs) {
