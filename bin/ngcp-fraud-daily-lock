@@ -25,7 +25,7 @@ my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
 
 my $a = $db->sql_get_all_arrayref(<<"!");
-SELECT 'profile_limit' as type, cdr.source_account_id, SUM(cdr.customer_cost) AS daily_cost,
+SELECT 'profile_limit' as type, cdr.source_account_id, SUM(cdr.source_customer_cost) AS daily_cost,
        contracts.id,
        billing_profiles.fraud_daily_limit, billing_profiles.fraud_daily_lock, billing_profiles.fraud_daily_notify
 FROM accounting.cdr
@@ -50,7 +50,7 @@ HAVING (daily_cost > billing_profiles.fraud_daily_limit)
 
 UNION ALL
 
-SELECT 'account_limit' as type, cdr.source_account_id, SUM(cdr.customer_cost) AS daily_cost,
+SELECT 'account_limit' as type, cdr.source_account_id, SUM(cdr.source_customer_cost) AS daily_cost,
        contracts.id,
        contract_fraud_preferences.fraud_daily_limit, contract_fraud_preferences.fraud_daily_lock, 
        contract_fraud_preferences.fraud_daily_notify
