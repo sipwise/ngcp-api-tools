@@ -1,0 +1,99 @@
+#!/usr/bin/perl
+use strict;
+
+use Data::Dumper;
+use Sipwise::Provisioning::Voip;
+use Sipwise::Provisioning::Config;
+
+my %CONFIG = (admin => 'cmd');
+
+my $config = Sipwise::Provisioning::Config->new()->get_config();
+
+unless ($CONFIG{password} = $config->{acl}->{$CONFIG{admin}}->{password}) {
+  die "Error: No provisioning password found for user $CONFIG{admin}\n";
+}
+
+sub main;
+sub usage;
+sub call_prov;
+
+my $prov = Sipwise::Provisioning::Voip->new();
+
+main;
+
+sub main {
+    # use no indentation/linebreaks, for syslog logging
+    $Data::Dumper::Indent = 1;
+    # don't print useless variable names
+    $Data::Dumper::Terse = 1;
+    # sort hash keys, so parameters always have the same order
+    $Data::Dumper::Sortkeys = 1;
+
+    my $return;
+
+    print "Fetching all sound sets\n";
+    $return = call_prov('get_sound_sets');
+    print "Sound Sets:\n", Dumper $return;
+
+    print "Creating global sound set\n";
+    $return = call_prov('create_sound_set', {
+        reseller_id => 1,
+        name => 'api sound set',
+        description => 'sound set created via api',
+    });
+    print "Created Sound Set:\n", Dumper $return;
+    my $set_id = $return;
+    
+    print "Fetching new sound set\n";
+    $return = call_prov('get_sound_set', { id => $set_id });
+    print "Sound Set:\n", Dumper $return;
+
+    print "Updating global sound set\n";
+    $return = call_prov('update_sound_set', {
+        id => $set_id,
+        name => 'updated sound set',
+        description => 'updated sound set created via api',
+        account_id => 23,
+    });
+    print "Updated Sound Set:\n", Dumper $return;
+
+    print "Fetching new sound set\n";
+    $return = call_prov('get_sound_set', { id => $set_id });
+    print "Sound Set:\n", Dumper $return;
+
+    print "Delete new sound set\n";
+    $return = call_prov('delete_sound_set', { id => $set_id });
+    print "Sound Set Deleted:\n", Dumper $return;
+
+    exit;
+}
+
+
+sub call_prov {
+    #   scalar,    scalar,    hash-ref
+    my ($function, $parameter) = @_;
+    my $result;
+
+    eval {
+        $result = $prov->handle_request( $function,
+                                          {
+                                            authentication => {
+                                                                type     => 'system',
+                                                                username => $CONFIG{admin},
+                                                                password => $CONFIG{password},
+                                                              },
+                                            parameters => $parameter,
+                                        });
+    };
+
+    if($@) {
+        if(ref $@ eq 'SOAP::Fault') {
+            die "Voip\::$function failed: ". $@->faultstring;
+        } else {
+            die "Voip\::$function failed: $@";
+        }
+    }
+
+    return $result;
+}
+
