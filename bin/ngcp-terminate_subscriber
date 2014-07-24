@@ -24,23 +24,25 @@ die usage() unless (defined $opts{i} and !defined $opts{u} and !defined $opts{d}
                 or (defined $opts{u} and defined $opts{d} and !defined $opts{i});
 
 my $bprov = Sipwise::Provisioning::Billing->new();
+my $vprov = Sipwise::Provisioning::Voip->new();
 
 main;
 
 sub main {
     my $subscriber = defined $opts{i}
-                     ? call_prov('get_subscriber_by_id', { subscriber_id => $opts{i} })
+                     ? call_prov('get_subscriber_by_id', { subscriber_id => $opts{i} }, $vprov)
                      : call_prov('get_subscriber', {
                                                      username => $opts{u},
                                                      domain   => $opts{d}
-                                                   });
+                                                   }, $vprov);
 
     call_prov( 'terminate_voip_account_subscriber',
                {
                  id       => $$subscriber{account_id},
                  username => $$subscriber{username},
                  domain   => $$subscriber{domain},
-               }
+               },
+               $bprov,
              );
 
     print "Terminated Voip account subscriber.\n";
@@ -51,11 +53,11 @@ sub main {
 
 sub call_prov {
     #   scalar,    hash-ref
-    my ($function, $parameter) = @_;
+    my ($function, $parameter, $backend) = @_;
     my $result;
 
     eval {
-        $result = $bprov->handle_request( $function,
+        $result = $backend->handle_request( $function,
                                           {
                                             authentication => {
                                                                 type     => 'system',
