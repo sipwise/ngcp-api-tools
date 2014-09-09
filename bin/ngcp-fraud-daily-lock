@@ -103,6 +103,7 @@ for my $e (values %{ $x }) {
                   FROM voip_subscribers s
              LEFT JOIN domains d ON d.id = s.domain_id
                  WHERE s.contract_id = ?
+                 AND s.status != 'terminated'
 !
 
  my $cur = sprintf('%.2f', $e->{daily_cost} / 100);
