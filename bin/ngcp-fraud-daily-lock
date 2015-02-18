@@ -25,28 +25,31 @@ my $o = Sipwise::Provisioning::Billing->new();
 my $db = $o->{database};
 
 my $a = $db->sql_get_all_arrayref(<<"!");
-SELECT 'profile_limit' as type, cdr.source_account_id, SUM(cdr.source_customer_cost) AS daily_cost,
-       contracts.id,
-       billing_profiles.fraud_daily_limit, billing_profiles.fraud_daily_lock, billing_profiles.fraud_daily_notify
-FROM accounting.cdr
-JOIN billing.contracts ON cdr.source_account_id = contracts.id
-JOIN billing.billing_mappings ON contracts.id = billing_mappings.contract_id
-JOIN billing.billing_profiles 
-   ON (billing_profiles.id = 
-        (SELECT m.billing_profile_id
-         FROM billing.billing_mappings m
-         WHERE ((m.start_date IS NULL) OR (m.start_date <= NOW()))
-           AND ((m.end_date IS NULL) OR (m.end_date >= NOW()))
-           AND (m.contract_id = contracts.id)
-         ORDER BY m.start_date DESC LIMIT 1
-        )
+SELECT 'profile_limit' as type, cdr.source_account_id, SUM(cdr.source_customer_cost) AS daily_cost, bpinfo.contract_id,
+  bpinfo.fraud_daily_limit, bpinfo.fraud_daily_lock, bpinfo.fraud_daily_notify
+FROM ( 
+  SELECT contracts.id as contract_id,
+    billing_profiles.fraud_daily_limit, billing_profiles.fraud_daily_lock, billing_profiles.fraud_daily_notify
+  FROM billing.contracts 
+  JOIN billing.billing_mappings ON contracts.id = billing_mappings.contract_id
+  JOIN billing.billing_profiles 
+    ON (billing_profiles.id = 
+      (SELECT m.billing_profile_id
+        FROM billing.billing_mappings m
+        WHERE ((m.start_date IS NULL) OR (m.start_date <= NOW()))
+          AND ((m.end_date IS NULL) OR (m.end_date >= NOW()))
+          AND (m.contract_id = contracts.id)
+        ORDER BY m.start_date DESC LIMIT 1
       )
-WHERE (contracts.status = 'active')
-  AND (DATEDIFF(FROM_UNIXTIME(cdr.start_time), CURDATE()) = 0)
-  AND (billing_profiles.fraud_daily_limit IS NOT NULL)
-  AND (billing_profiles.fraud_daily_limit > 0)
+    )
+  WHERE (contracts.status = 'active')
+    AND (billing_profiles.fraud_daily_limit IS NOT NULL)
+    AND (billing_profiles.fraud_daily_limit > 0)
+) as bpinfo 
+JOIN accounting.cdr ON cdr.source_account_id = bpinfo.contract_id
+WHERE (DATEDIFF(FROM_UNIXTIME(cdr.start_time), CURDATE()) = 0)
 GROUP BY cdr.source_account_id
-HAVING (daily_cost > billing_profiles.fraud_daily_limit)
+HAVING (daily_cost > bpinfo.fraud_daily_limit)
 
 UNION ALL
 
