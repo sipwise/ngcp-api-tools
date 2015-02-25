@@ -31,8 +31,9 @@ my $db = $o->{database};
 my $a = $db->sql_get_all_arrayref(<<"!");
 	SELECT 'profile_limit' as type, c.id, p.fraud_interval_lock, p.fraud_interval_notify,
                b.cash_balance_interval, p.fraud_interval_limit
-          FROM contracts c, billing_profiles p, contract_balances b
-         WHERE p.id = (SELECT m.billing_profile_id
+          FROM contracts c, billing_profiles p, contract_balances b, billing_mappings bm,
+               products pr
+         WHERE bm.id = (SELECT m.id
                          FROM billing_mappings m
                         WHERE (   m.start_date IS NULL
                                OR m.start_date <= now())
@@ -40,6 +41,9 @@ my $a = $db->sql_get_all_arrayref(<<"!");
                                OR m.end_date >= now())
                           AND m.contract_id = c.id
                      ORDER BY m.start_date desc limit 1)
+           AND p.id = bm.billing_profile_id
+           AND pr.id = bm.product_id
+           AND (pr.class IN ('sipaccount', 'pbxaccount') OR pr.class IS NULL)
            AND b.contract_id = c.id
            AND b.start <= now()
            AND b.end >= now()
