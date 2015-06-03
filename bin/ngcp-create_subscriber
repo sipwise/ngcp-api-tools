@@ -1,115 +1,265 @@
 #!/usr/bin/perl
 use strict;
+use warnings;
+use Config::Tiny;
+use English;
+use Getopt::Long;
+use JSON qw();
+use LWP::UserAgent;
+use Pod::Usage;
 
-use Getopt::Std;
-use Sipwise::Provisioning::Billing;
-use Sipwise::Provisioning::Config;
+my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+my $opts = {
+    host => '127.0.0.1',
+    port => 1443,
+    auth_user => 'administrator',
+    auth_pwd => 'administrator',
+    verbose => 0,
+    admin => 0
+};
 
-my %CONFIG = (admin => 'cmd');
-
-my $config = Sipwise::Provisioning::Config->new()->get_config();
-
-unless ($CONFIG{password} = $config->{acl}->{$CONFIG{admin}}->{password}) {
-  die "Error: No provisioning password found for user $CONFIG{admin}\n";
+if ($config) {
+    $opts->{host} = $config->{_}->{NGCP_API_IP};
+    $opts->{port} = $config->{_}->{NGCP_API_PORT};
 }
 
-my %BILLING = (
-                billing_profile => 'default',
-# not needed, but may be set if desired
-#                product         => 'handle',
-              );
+GetOptions( $opts,
+    "help|h" => sub { pod2usage(-exitval =>0); },
+    "customer_id=i",
+    "host=s",
+    "port=i",
+    "auth_user=s",
+    "auth_pwd=s",
+    "verbose",
+    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
+    "username|u=s",
+    "domain|d=s",
+    "password|p=s",
+    "admin|s=i",
+    "cc|c=i",
+    "ac|a=i",
+    "sn|n=i",
+    "account_id|v=i"
+) or pod2usage(2);
 
-sub main;
-sub usage;
-sub call_prov;
-
-my %opts;
-getopts('v:u:d:p:c:a:n:s:', \%opts);
-
-die usage() unless defined $opts{u} and defined $opts{d} and defined $opts{p};
-die usage() unless (defined $opts{c} and defined $opts{a} and defined $opts{n})
-                or (!defined $opts{c} and !defined $opts{a} and !defined $opts{n});
-
-my $bprov = Sipwise::Provisioning::Billing->new();
-
-main;
+die pod2usage(-exitval => 1, -message => "Missing parameters: customer_id")
+  unless defined $opts->{customer_id};
+die pod2usage(-exitval => 1, -message => "Missing parameters") unless
+  defined $opts->{username} and defined $opts->{domain}
+  and defined $opts->{password};
+die pod2usage(-exitval => 1, -message => "Missing parameters") unless
+  (defined $opts->{cc} and defined $opts->{ac} and defined $opts->{sn})
+  or ( not defined $opts->{cc} and not defined $opts->{ac}
+    and not defined $opts->{sn});
 
 sub main {
-    my $subscriber = { username => $opts{u},
-                       domain   => $opts{d},
-                       password => $opts{p},
-                       admin    => $opts{s} ? 1 : 0,
-                     };
-    $$subscriber{cc} = $opts{c} if defined $opts{c};
-    $$subscriber{ac} = $opts{a} if defined $opts{a};
-    $$subscriber{sn} = $opts{n} if defined $opts{n};
+    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
 
-    if(defined $opts{v}) {
-        my $account = call_prov( 'get_voip_account_by_id', { id => $opts{v} });
-        call_prov( 'add_voip_account_subscriber',
-                   {
-                     id         => $$account{id},
-                     subscriber => $subscriber,
-                   }
-                 );
-        print "Added subscriber to VoIP account $$account{id}.\n";
-    } else {
-        my $id = call_prov( 'create_voip_account',
-                            {
-                              data => {
-                                        %BILLING,
-                                        subscribers => [ $subscriber ],
-                                      },
-                            }
-                          );
-        print "Created VoIP account $id with one subscriber.\n";
+    my $ua = LWP::UserAgent->new();
+    # set to 0 if using a self-signed certificate
+    $ua->ssl_opts(verify_hostname => 0);
+    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
+        $opts->{auth_user}, $opts->{auth_pwd});
+    # debug!!
+    if($opts->{verbose}) {
+        $ua->show_progress(1);
+        $ua->add_handler("request_send",  sub { shift->dump; return });
+        $ua->add_handler("response_done", sub { shift->dump; return });
     }
-
-    exit;
+    my $domain_id = get_domain_id($ua, $urlbase, $opts->{domain});
+    my $res = do_request($ua, $urlbase, get_data($domain_id));
+    if($res->is_success) {
+        print $res->status_line . ' ' . $res->header('Location') . "\n";
+    } else {
+        die $res->as_string;
+    }
+    return;
 }
 
+sub get_data {
+  my $domain_id = shift;
+  my $data = {
+    administrative => $opts->{admin} || 0,
+    domain_id => $domain_id,
+    customer_id => $opts->{customer_id},
+    username => $opts->{username},
+    password => $opts->{password},
+    primary_number => {
+      cc => $opts->{cc},
+      ac => $opts->{ac},
+      sn => $opts->{sn}
+    },
+  };
+  return $data;
+}
 
-sub call_prov {
-    #   scalar,    hash-ref
-    my ($function, $parameter) = @_;
-    my $result;
+sub get_domain_id {
+    my $ua = shift;
+    my $urlbase = shift;
+    my $domain = shift;
+    my $url = $urlbase."/api/domains/?domain=".$domain;
+    my $req = HTTP::Request->new('GET', $url);
+    my $domain_id;
 
-    eval {
-        $result = $bprov->handle_request( $function,
-                                          {
-                                            authentication => {
-                                                                type     => 'system',
-                                                                username => $CONFIG{admin},
-                                                                password => $CONFIG{password},
-                                                              },
-                                            parameters => $parameter,
-                                        });
-    };
-
-    if($@) {
-        if(ref $@ eq 'SOAP::Fault') {
-            die "Billing\::$function failed: ". $@->faultstring ."\n";
-        } else {
-            die "Billing\::$function failed: $@\n";
+    my $res = $ua->request($req);
+    if($res->is_success) {
+        my $collection = JSON::from_json($res->decoded_content);
+        if ($collection->{total_count} == 1) {
+            $domain_id = $collection->{_embedded}->{'ngcp:domains'}->{id};
+        }
+        else {
+            pod2usage(-exitval => 3, -message => "Domain not found");
         }
     }
-
-    return $result;
+    else {
+        die $res->status_line, "\n";
+    }
+    return $domain_id;
 }
 
-sub usage {
-    die "Usage:\n$0 [-v account_id] -u <username> -d <domain> -p <password> [-c <cc> -a <ac> -n <number>] [-s {1|0}]\n\n".
-        "e.g.: $0 -u test -d sip.sipwise.com -p secret -c 43 -a 720 -n 555000\n\n".
-        "Options:\n".
-        "  -v <account_id>  the unique ID of an existing account, the\n".
-        "                   script will create a new one if unspecified\n".
-        "  -u <username>    new SIP username\n".
-        "  -d <domain>      existing domain for subscriber\n".
-        "  -p <password>    unencrypted password for subscriber\n".
-        "  -c <cc>          country code of subscriber number\n".
-        "  -a <ac>          area code of subscriber number\n".
-        "  -n <number>      local part of subscriber number\n".
-        "  -s {1|0}         whether or not to set the administrative flag\n".
-        "                   for the subscriber; defaults to 0 (no)\n".
-        "";
+sub do_request {
+    my $ua = shift;
+    my $urlbase = shift;
+    my $data = shift;
+
+    my $req = HTTP::Request->new('POST', $urlbase.'/api/subscribers/');
+    $req->header('Content-Type' => 'application/json');
+    $req->header('Prefer' => 'return=representation');
+    $req->content(JSON::to_json($data));
+    return $ua->request($req);
 }
+
+main();
+
+__END__
+=head1 NAME
+
+ngcp-create_subscriber - create a subscriber on NGCP
+
+=head1 SYNOPSIS
+
+ngcp-create_subscriber [options]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-help>
+
+Print a brief help message and exits.
+
+=item B<-customer_id>
+
+The customer id to assign this subscriber to.
+
+=item B<-auth_user>
+
+Authentication username . Defaults to 'administrator'.
+
+=item B<-auth_pwd>
+
+Authentication password . Defaults to 'administrator'.
+
+=item B<-host>
+
+Host where the send queries. Defaults to '127.0.0.1'.
+
+=item B<-port>
+
+Port where the send queries. Defaults to 1443.
+
+=item B<-account_id|v>
+
+the unique ID of an existing account, the script will create a new one
+if unspecified.
+
+=item B<-username|u>
+
+new SIP username.
+
+=item B<-domain|d>
+
+existing domain for subscriber.
+
+=item B<-password|p>
+
+unencrypted password for subscriber.
+
+=item B<-cc|c>
+
+country code of subscriber number.
+
+=item B<-ac|a>
+
+area code of subscriber number.
+
+=item B<-number|n>
+
+local part of subscriber number.
+
+=item B<-admin|s>
+
+whether or not to set the administrative flag for the subscriber.
+defaults to 0 (no).
+
+=item B<-verbose>
+
+See debug information. Default false.
+
+=back
+
+=head1 DESCRIPTION
+
+B<This program> will create a subscriber at NGCP.
+
+=head1 USAGE
+
+ngcp-create_subscriber -host 1.2.3.4 -customer_id 4 -d test.example.org -u test
+ -p passw12_ -c 34 -a 11 -n 12345 -s 0
+
+=head1 REQUIRED ARGUMENTS
+
+TODO
+
+=head1 EXIT STATUS
+
+Exit code 0 means that everything should have went fine otherwise error.
+
+=head1 DIAGNOSTICS
+
+=head1 CONFIGURATION
+
+/etc/default/ngcp-api for default values
+
+=head1 DEPENDENCIES
+
+ngcp-create_subscriber relies on a bunch of Perl modules, all of them specified as
+dependencies through the ngcp-ossbss-clients-perl Debian package.
+
+=head1 INCOMPATIBILITIES
+
+No known at this time.
+
+=head1 BUGS AND LIMITATIONS
+
+Please report problems you notice to the Sipwise
+Development Team <support@sipwise.com>.
+
+=head1 AUTHOR
+
+Victor Seva <vseva@sipwise.com>
+
+=head1 LICENSE
+
+Copyright (c) 2015 Sipwise GmbH, Austria.
+All rights reserved. You may not copy, distribute
+or modify without prior written permission from
+Sipwise GmbH, Austria.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2015 Sipwise GmbH, Austria.
+You should have received a copy of the licence terms together with the
+software.
+
+=cut

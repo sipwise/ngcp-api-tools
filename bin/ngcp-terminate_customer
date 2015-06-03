@@ -10,12 +10,12 @@ use Pod::Usage;
 
 my $config =  Config::Tiny->read('/etc/default/ngcp-api');
 my $opts = {
-    reseller_id => 1,
     host => '127.0.0.1',
     port => 1443,
     auth_user => 'administrator',
     auth_pwd => 'administrator',
-    verbose => 0
+    verbose => 0,
+    admin => 0
 };
 
 if ($config) {
@@ -24,22 +24,26 @@ if ($config) {
 }
 
 GetOptions( $opts,
-    "help|h",
-    "reseller_id=i",
+    "help|h" => sub { pod2usage(-exitval =>0); },
     "host=s",
     "port=i",
     "auth_user=s",
     "auth_pwd=s",
     "verbose",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); }
+    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
+    "username|u=s",
+    "domain|d=s",
+    "account_id|i=i"
 ) or pod2usage(2);
 
-die pod2usage(-exitval => 1, -message => "No domain") unless ($#ARGV == 0);
+die pod2usage(-exitval => 1, -message => "Missing parameters") unless
+    (defined $opts->{account_id} and not defined $opts->{username} and
+        not defined $opts->{domain}) or
+    (defined $opts->{username} and defined $opts->{domain} and
+        not defined $opts->{account_id});
 
 sub main {
-    my $domain = shift;
     my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
-
     my $ua = LWP::UserAgent->new();
     # set to 0 if using a self-signed certificate
     $ua->ssl_opts(verify_hostname => 0);
@@ -51,8 +55,14 @@ sub main {
         $ua->add_handler("request_send",  sub { shift->dump; return });
         $ua->add_handler("response_done", sub { shift->dump; return });
     }
-    my $domain_url = get_domain_url($ua, $urlbase, $domain);
-    my $res = do_request($ua, $domain_url);
+    my $customer_url;
+    if ($opts->{account_id}) {
+        $customer_url = $urlbase . '/api/customers/'.$opts->{account_id};
+    }
+    else {
+        $customer_url= get_customer_url($ua, $urlbase);
+    }
+    my $res = do_request($ua, $customer_url);
     if($res->is_success) {
         print $res->status_line . "\n";
     } else {
@@ -61,49 +71,67 @@ sub main {
     return;
 }
 
-sub get_domain_url {
+sub get_customer_url {
     my $ua = shift;
     my $urlbase = shift;
-    my $domain = shift;
-    my $url = $urlbase."/api/domains/?domain=".$domain;
+    my $url = $urlbase."/api/subscribers/?domain=".$opts->{domain}.
+        '&username='.$opts->{username};
     my $req = HTTP::Request->new('GET', $url);
-    my $domain_url;
+    my $customer_url;
 
     my $res = $ua->request($req);
     if($res->is_success) {
         my $collection = JSON::from_json($res->decoded_content);
         if ($collection->{total_count} == 1) {
-            $domain_url = $urlbase .
-                $collection->{_links}->{'ngcp:domains'}->{href};
+            $customer_url = $urlbase .
+                $collection->{_links}->{'ngcp:customers'}->{href};
         }
         else {
-            pod2usage(-exitval => 3, -message => "Domain not found");
+            pod2usage(-exitval => 3, -message => "customer not found");
         }
     }
     else {
         die $res->as_string;
     }
-    return $domain_url;
+    return $customer_url;
 }
 
 sub do_request {
     my $ua = shift;
     my $url = shift;
+    my $data = {
+      status => 'terminated',
+      contact_id => 0,
+      billing_profile_id => 0
+    };
+    my $req = HTTP::Request->new('GET', $url);
+    my $res = $ua->request($req);
+    if($res->is_success) {
+        my $collection = JSON::from_json($res->decoded_content);
+        $data->{contact_id} = $collection->{contact_id};
+        $data->{billing_profile_id} = $collection->{billing_profile_id};
+    }
+    else {
+        die $res->as_string;
+    }
+    $req = HTTP::Request->new('PUT', $url);
+    $req->header('Content-Type' => 'application/json');
+    $req->header('Prefer' => 'return=minimal');
+    $req->content(JSON::to_json($data));
 
-    my $req = HTTP::Request->new('DELETE', $url);
     return $ua->request($req);
 }
 
-main($ARGV[0]);
+main();
 
 __END__
 =head1 NAME
 
-ngcp-delete_domain - delete a domain on NGCP
+ngcp-terminate_customer - terminates a customer on NGCP
 
 =head1 SYNOPSIS
 
-ngcp-delete_domain [options] domain
+ngcp-terminate_customer [options]
 
 =head1 OPTIONS
 
@@ -112,10 +140,6 @@ ngcp-delete_domain [options] domain
 =item B<-help>
 
 Print a brief help message and exits.
-
-=item B<-reseller_id>
-
-The reseller id to assign this domain to. Defaults to 1.
 
 =item B<-auth_user>
 
@@ -133,6 +157,18 @@ Host where the send queries. Defaults to '127.0.0.1'.
 
 Port where the send queries. Defaults to 1443.
 
+=item B<-account_id|i>
+
+the unique ID of an existing account.
+
+=item B<-username|u>
+
+SIP username.
+
+=item B<-domain|d>
+
+existing domain for subscriber.
+
 =item B<-verbose>
 
 See debug information. Default false.
@@ -141,15 +177,17 @@ See debug information. Default false.
 
 =head1 DESCRIPTION
 
-B<This program> will delete a domain at NGCP.
+B<This program> will terminate a customer at NGCP.
 
 =head1 USAGE
 
-ngcp-delete_domain -host 1.2.3.4 -reseller_id 4 test.example.org
+ngcp-terminate_customer -host 1.2.3.4 -d test.example.org -u test
+
+ngcp-terminate_customer -host 1.2.3.4 -i 45
 
 =head1 REQUIRED ARGUMENTS
 
-B<domain> to be deleted
+B<domain> and B<username> or B<account_id>
 
 =head1 EXIT STATUS
 
@@ -163,7 +201,7 @@ Exit code 0 means that everything should have went fine otherwise error.
 
 =head1 DEPENDENCIES
 
-ngcp-delete_domain relies on a bunch of Perl modules, all of them specified as
+ngcp-terminate_customer relies on a bunch of Perl modules, all of them specified as
 dependencies through the ngcp-ossbss-clients-perl Debian package.
 
 =head1 INCOMPATIBILITIES

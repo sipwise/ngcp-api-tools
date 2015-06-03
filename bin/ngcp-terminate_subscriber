@@ -1,90 +1,237 @@
 #!/usr/bin/perl
 use strict;
+use warnings;
+use Config::Tiny;
+use English;
+use Getopt::Long;
+use JSON qw();
+use LWP::UserAgent;
+use Pod::Usage;
 
-use Getopt::Std;
-use Sipwise::Provisioning::Billing;
-use Sipwise::Provisioning::Config;
+my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+my $opts = {
+    host => '127.0.0.1',
+    port => 1443,
+    auth_user => 'administrator',
+    auth_pwd => 'administrator',
+    verbose => 0,
+    admin => 0
+};
 
-my %CONFIG = (admin => 'cmd');
-
-my $config = Sipwise::Provisioning::Config->new()->get_config();
-
-unless ($CONFIG{password} = $config->{acl}->{$CONFIG{admin}}->{password}) {
-  die "Error: No provisioning password found for user $CONFIG{admin}\n";
+if ($config) {
+    $opts->{host} = $config->{_}->{NGCP_API_IP};
+    $opts->{port} = $config->{_}->{NGCP_API_PORT};
 }
 
-sub main;
-sub usage;
-sub call_prov;
+GetOptions( $opts,
+    "help|h",
+    "host=s",
+    "port=i",
+    "auth_user=s",
+    "auth_pwd=s",
+    "verbose",
+    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
+    "username|u=s",
+    "domain|d=s",
+    "account_id|i=i"
+) or pod2usage(2);
 
-my %opts;
-getopts('i:u:d:', \%opts);
-
-die usage() unless (defined $opts{i} and !defined $opts{u} and !defined $opts{d})
-                or (defined $opts{u} and defined $opts{d} and !defined $opts{i});
-
-my $bprov = Sipwise::Provisioning::Billing->new();
-my $vprov = Sipwise::Provisioning::Voip->new();
-
-main;
+die pod2usage(-exitval => 1, -message => "Missing parameters") unless
+    (defined $opts->{account_id} and not defined $opts->{username} and
+        not defined $opts->{domain}) or
+    (defined $opts->{username} and defined $opts->{domain} and
+        not defined $opts->{account_id});
 
 sub main {
-    my $subscriber = defined $opts{i}
-                     ? call_prov('get_subscriber_by_id', { subscriber_id => $opts{i} }, $vprov)
-                     : call_prov('get_subscriber', {
-                                                     username => $opts{u},
-                                                     domain   => $opts{d}
-                                                   }, $vprov);
-
-    call_prov( 'terminate_voip_account_subscriber',
-               {
-                 id       => $$subscriber{account_id},
-                 username => $$subscriber{username},
-                 domain   => $$subscriber{domain},
-               },
-               $bprov,
-             );
-
-    print "Terminated Voip account subscriber.\n";
-
-    exit;
+    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
+    my $ua = LWP::UserAgent->new();
+    # set to 0 if using a self-signed certificate
+    $ua->ssl_opts(verify_hostname => 0);
+    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
+        $opts->{auth_user}, $opts->{auth_pwd});
+    # debug!!
+    if($opts->{verbose}) {
+        $ua->show_progress(1);
+        $ua->add_handler("request_send",  sub { shift->dump; return });
+        $ua->add_handler("response_done", sub { shift->dump; return });
+    }
+    my $subscriber_url;
+    if ($opts->{account_id}) {
+        $subscriber_url = $urlbase . '/api/customers/'.$opts->{account_id};
+    }
+    else {
+        $subscriber_url= get_subscriber_url($ua, $urlbase);
+    }
+    my $res = do_request($ua, $subscriber_url);
+    if($res->is_success) {
+        print $res->status_line . "\n";
+    } else {
+        die $res->as_string;
+    }
+    return;
 }
 
+sub get_subscriber_url {
+    my $ua = shift;
+    my $urlbase = shift;
+    my $url = $urlbase."/api/subscribers/?domain=".$opts->{domain}.
+        '&username='.$opts->{username};
+    my $req = HTTP::Request->new('GET', $url);
+    my $subscriber_url;
 
-sub call_prov {
-    #   scalar,    hash-ref
-    my ($function, $parameter, $backend) = @_;
-    my $result;
-
-    eval {
-        $result = $backend->handle_request( $function,
-                                          {
-                                            authentication => {
-                                                                type     => 'system',
-                                                                username => $CONFIG{admin},
-                                                                password => $CONFIG{password},
-                                                              },
-                                            parameters => $parameter,
-                                        });
-    };
-
-    if($@) {
-        if(ref $@ eq 'SOAP::Fault') {
-            die "Billing\::$function failed: ". $@->faultstring ."\n";
-        } else {
-            die "Billing\::$function failed: $@\n";
+    my $res = $ua->request($req);
+    if($res->is_success) {
+        my $collection = JSON::from_json($res->decoded_content);
+        if ($collection->{total_count} == 1) {
+            $subscriber_url = $urlbase .
+                $collection->{_links}->{'ngcp:subscribers'}->{href};
+        }
+        else {
+            pod2usage(-exitval => 3, -message => "subscriber not found");
         }
     }
-
-    return $result;
+    else {
+        die $res->as_string;
+    }
+    return $subscriber_url;
 }
 
-sub usage {
-    die "Usage:\n  $0 -i <subscriber_id>\nor:\n  $0 -u <username> -d <domain>\n\n".
-        "e.g.: $0 -u test -d sip.sipwise.com\n\n".
-        "Options:\n".
-        "  -i <subscriber_id> the numeric ID of the subscriber\n".
-        "  -u <username>      the local-part of the subscriber's SIP URI\n".
-        "  -d <domain>        the domain-part of the subscriber's SIP URI\n".
-        "";
+sub do_request {
+    my $ua = shift;
+    my $url = shift;
+    my $data = {
+      status => 'terminated',
+      domain_id => 0,
+      customer_id => 0,
+      username => '',
+      password => ''
+    };
+    my $req = HTTP::Request->new('GET', $url);
+    my $res = $ua->request($req);
+    if($res->is_success) {
+        my $collection = JSON::from_json($res->decoded_content);
+        $data->{domain_id} = $collection->{domain_id};
+        $data->{customer_id} = $collection->{customer_id};
+        $data->{username} = $collection->{username};
+        $data->{password} = $collection->{password};
+    }
+    else {
+        die $res->as_string;
+    }
+    $req = HTTP::Request->new('PUT', $url);
+    $req->header('Content-Type' => 'application/json');
+    $req->header('Prefer' => 'return=minimal');
+    $req->content(JSON::to_json($data));
+
+    return $ua->request($req);
 }
+
+main();
+
+__END__
+=head1 NAME
+
+ngcp-terminate_subscriber - terminates a subscriber on NGCP
+
+=head1 SYNOPSIS
+
+ngcp-terminate_subscriber [options]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-help>
+
+Print a brief help message and exits.
+
+=item B<-auth_user>
+
+Authentication username . Defaults to 'administrator'.
+
+=item B<-auth_pwd>
+
+Authentication password . Defaults to 'administrator'.
+
+=item B<-host>
+
+Host where the send queries. Defaults to '127.0.0.1'.
+
+=item B<-port>
+
+Port where the send queries. Defaults to 1443.
+
+=item B<-account_id|i>
+
+the unique ID of an existing account.
+
+=item B<-username|u>
+
+SIP username.
+
+=item B<-domain|d>
+
+existing domain for subscriber.
+
+=item B<-verbose>
+
+See debug information. Default false.
+
+=back
+
+=head1 DESCRIPTION
+
+B<This program> will terminate a subscriber at NGCP.
+
+=head1 USAGE
+
+ngcp-terminate_subscriber -host 1.2.3.4 -d test.example.org -u test
+
+ngcp-terminate_subscriber -host 1.2.3.4 -i 45
+
+=head1 REQUIRED ARGUMENTS
+
+B<domain> and B<username> or B<account_id>
+
+=head1 EXIT STATUS
+
+Exit code 0 means that everything should have went fine otherwise error.
+
+=head1 DIAGNOSTICS
+
+=head1 CONFIGURATION
+
+/etc/default/ngcp-api for default values
+
+=head1 DEPENDENCIES
+
+ngcp-terminate_subscriber relies on a bunch of Perl modules, all of them specified as
+dependencies through the ngcp-ossbss-clients-perl Debian package.
+
+=head1 INCOMPATIBILITIES
+
+No known at this time.
+
+=head1 BUGS AND LIMITATIONS
+
+Please report problems you notice to the Sipwise
+Development Team <support@sipwise.com>.
+
+=head1 AUTHOR
+
+Victor Seva <vseva@sipwise.com>
+
+=head1 LICENSE
+
+Copyright (c) 2015 Sipwise GmbH, Austria.
+All rights reserved. You may not copy, distribute
+or modify without prior written permission from
+Sipwise GmbH, Austria.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2015 Sipwise GmbH, Austria.
+You should have received a copy of the licence terms together with the
+software.
+
+=cut
