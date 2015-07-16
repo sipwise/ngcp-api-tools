@@ -41,6 +41,7 @@ FROM (
     ON (bp.id =
       (SELECT m.billing_profile_id
         FROM billing.billing_mappings m
+         USE INDEX (contractid_idx)
         WHERE ((m.start_date IS NULL) OR (m.start_date <= NOW()))
           AND ((m.end_date IS NULL) OR (m.end_date >= NOW()))
           AND (m.contract_id = contracts.id)
