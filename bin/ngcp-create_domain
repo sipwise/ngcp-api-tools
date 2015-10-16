@@ -15,7 +15,9 @@ my $opts = {
     port => 1443,
     auth_user => 'administrator',
     auth_pwd => 'administrator',
-    verbose => 0
+    verbose => 0,
+    skip_xmpp => 0,
+    skip_sip => 0,
 };
 
 if ($config) {
@@ -30,8 +32,10 @@ GetOptions( $opts,
     "port=i",
     "auth_user=s",
     "auth_pwd=s",
+    "skip_xmpp",
+    "skip_sip",
     "verbose",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); }
+    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
 ) or pod2usage(2);
 
 die pod2usage(-exitval => 1, -message => "No domain") unless ($#ARGV == 0);
@@ -41,7 +45,9 @@ sub main {
     my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
     my $data = {
         domain => $domain,
-        reseller_id => $opts->{reseller_id}
+        reseller_id => $opts->{reseller_id},
+        ($opts->{skip_xmpp} ? (_skip_xmpp_reload => 1) : ()),
+        ($opts->{skip_sip} ? (_skip_sip_reload => 1) : ()),
     };
     my $ua = LWP::UserAgent->new();
     # set to 0 if using a self-signed certificate
@@ -119,6 +125,16 @@ Port where the send queries. Defaults to 1443.
 =item B<-verbose>
 
 See debug information. Default false.
+
+=item B<-skip_sip>
+
+Skip reloading SIP services. If true, changes will not be effective immedeately
+until the respective service is restarted or properly notified. Default false.
+
+=item B<-skip_xmpp>
+
+Skip reloading XMPP services. If true, changes will not be effective immedeately
+until the respective service is restarted or properly notified. Default false.
 
 =back
 
