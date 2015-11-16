@@ -7,6 +7,7 @@ use Getopt::Long;
 use JSON qw();
 use LWP::UserAgent;
 use Pod::Usage;
+use IO::Socket::SSL;
 
 my $config =  Config::Tiny->read('/etc/default/ngcp-api');
 my $opts = {
@@ -23,6 +24,7 @@ my $opts = {
 if ($config) {
     $opts->{host} = $config->{_}->{NGCP_API_IP};
     $opts->{port} = $config->{_}->{NGCP_API_PORT};
+    $opts->{sslverify} = $config->{_}->{NGCP_API_SSLVERIFY} || 'yes';
 }
 
 GetOptions( $opts,
@@ -47,8 +49,12 @@ sub main {
         status => 'active',
       };
     my $ua = LWP::UserAgent->new();
-    # set to 0 if using a self-signed certificate
-    $ua->ssl_opts(verify_hostname => 0);
+    if($opts->{sslverify} eq 'no') {
+        $ua->ssl_opts(
+            verify_hostname => 0,
+            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
+        );
+    }
     $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
         $opts->{auth_user}, $opts->{auth_pwd});
     # debug!!

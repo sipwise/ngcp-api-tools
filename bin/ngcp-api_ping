@@ -26,23 +26,14 @@ if ($config) {
 }
 
 GetOptions( $opts,
-    "help|h",
+    "help|h" => sub { pod2usage(-exitval =>0); },
     "host=s",
     "port=i",
     "auth_user=s",
     "auth_pwd=s",
     "verbose",
     "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
-    "username|u=s",
-    "domain|d=s",
-    "account_id|i=i"
 ) or pod2usage(2);
-
-die pod2usage(-exitval => 1, -message => "Missing parameters") unless
-    (defined $opts->{account_id} and not defined $opts->{username} and
-        not defined $opts->{domain}) or
-    (defined $opts->{username} and defined $opts->{domain} and
-        not defined $opts->{account_id});
 
 sub main {
     my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
@@ -61,73 +52,22 @@ sub main {
         $ua->add_handler("request_send",  sub { shift->dump; return });
         $ua->add_handler("response_done", sub { shift->dump; return });
     }
-    my $subscriber_url;
-    if ($opts->{account_id}) {
-        $subscriber_url = $urlbase . '/api/customers/'.$opts->{account_id};
-    }
-    else {
-        $subscriber_url= get_subscriber_url($ua, $urlbase);
-    }
-    my $res = do_request($ua, $subscriber_url);
+    my $url = $urlbase . '/api/domains/';
+    my $res = do_request($ua, $url);
     if($res->is_success) {
-        print $res->status_line . "\n";
+        print "API up\n";
     } else {
         die $res->as_string;
     }
     return;
 }
 
-sub get_subscriber_url {
-    my $ua = shift;
-    my $urlbase = shift;
-    my $url = $urlbase."/api/subscribers/?domain=".$opts->{domain}.
-        '&username='.$opts->{username};
-    my $req = HTTP::Request->new('GET', $url);
-    my $subscriber_url;
-
-    my $res = $ua->request($req);
-    if($res->is_success) {
-        my $collection = JSON::from_json($res->decoded_content);
-        if ($collection->{total_count} == 1) {
-            $subscriber_url = $urlbase .
-                $collection->{_links}->{'ngcp:subscribers'}->{href};
-        }
-        else {
-            pod2usage(-exitval => 3, -message => "subscriber not found");
-        }
-    }
-    else {
-        die $res->as_string;
-    }
-    return $subscriber_url;
-}
-
 sub do_request {
     my $ua = shift;
     my $url = shift;
-    my $data = {
-      status => 'terminated',
-      domain_id => 0,
-      customer_id => 0,
-      username => '',
-      password => ''
-    };
     my $req = HTTP::Request->new('GET', $url);
-    my $res = $ua->request($req);
-    if($res->is_success) {
-        my $collection = JSON::from_json($res->decoded_content);
-        $data->{domain_id} = $collection->{domain_id};
-        $data->{customer_id} = $collection->{customer_id};
-        $data->{username} = $collection->{username};
-        $data->{password} = $collection->{password};
-    }
-    else {
-        die $res->as_string;
-    }
-    $req = HTTP::Request->new('PUT', $url);
     $req->header('Content-Type' => 'application/json');
-    $req->header('Prefer' => 'return=minimal');
-    $req->content(JSON::to_json($data));
+    $req->header('Prefer' => 'return=representation');
 
     return $ua->request($req);
 }
@@ -137,11 +77,11 @@ main();
 __END__
 =head1 NAME
 
-ngcp-terminate_subscriber - terminates a subscriber on NGCP
+ngcp-api_ping - check NGCP API status
 
 =head1 SYNOPSIS
 
-ngcp-terminate_subscriber [options]
+ngcp-api_ping [options]
 
 =head1 OPTIONS
 
@@ -167,18 +107,6 @@ Host where the send queries. Defaults to '127.0.0.1'.
 
 Port where the send queries. Defaults to 1443.
 
-=item B<-account_id|i>
-
-the unique ID of an existing account.
-
-=item B<-username|u>
-
-SIP username.
-
-=item B<-domain|d>
-
-existing domain for subscriber.
-
 =item B<-verbose>
 
 See debug information. Default false.
@@ -187,17 +115,15 @@ See debug information. Default false.
 
 =head1 DESCRIPTION
 
-B<This program> will terminate a subscriber at NGCP.
+B<This program> will check NGCP API.
 
 =head1 USAGE
 
-ngcp-terminate_subscriber -host 1.2.3.4 -d test.example.org -u test
-
-ngcp-terminate_subscriber -host 1.2.3.4 -i 45
+ngcp-api-check -host 1.2.3.4
 
 =head1 REQUIRED ARGUMENTS
 
-B<domain> and B<username> or B<account_id>
+None
 
 =head1 EXIT STATUS
 
@@ -211,7 +137,7 @@ Exit code 0 means that everything should have went fine otherwise error.
 
 =head1 DEPENDENCIES
 
-ngcp-terminate_subscriber relies on a bunch of Perl modules, all of them specified as
+ngcp-api_ping relies on a bunch of Perl modules, all of them specified as
 dependencies through the ngcp-ossbss-clients-perl Debian package.
 
 =head1 INCOMPATIBILITIES
