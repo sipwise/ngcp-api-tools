@@ -1,0 +1,53 @@
+Source: ngcp-api-tools
+Section: admin
+Priority: extra
+Maintainer: Sipwise Development Team <support@sipwise.com>
+Build-Depends: debhelper (>= 5),
+Standards-Version: 3.9.6
+Homepage: http://sipwise.com/
+
+Package: ngcp-api-tools
+Architecture: all
+Depends: ngcp-panel,
+         perl,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Provides: ngcp-api-tools
+Conflicts: ngcp-ossbss
+           ngcp-www-admin (<= 2)
+Replaces: ngcp-ossbss
+Description: A set of NGCP REST API related tools
+ .
+ This package contains files needed by all interface modules on
+ NGCP management hosts.
+
+Package: ngcp-billing-tools
+Architecture: all
+Depends: ngcp-panel,
+         perl,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Provides: ngcp-api-tools
+Conflicts: ngcp-ossbss
+           ngcp-www-admin (<= 2)
+Replaces: ngcp-ossbss
+Description: A set of NGCP Billing related tools
+ .
+ This package contains files needed by all interface modules on
+ NGCP management hosts.
+
+Package: ngcp-provisioning-tools
+Architecture: all
+Depends: ngcp-panel,
+         perl,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Provides: ngcp-api-tools
+Conflicts: ngcp-ossbss
+           ngcp-www-admin (<= 2)
+Replaces: ngcp-ossbss
+Description: A set of NGCP Provisioning related tools
+ .
+ This package contains files needed by all interface modules on
+ NGCP management hosts.
+

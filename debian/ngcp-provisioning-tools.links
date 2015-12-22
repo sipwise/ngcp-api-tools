@@ -1,0 +1,3 @@
+/usr/bin/ngcp-terminate_customer    /usr/bin/ngcp-delete_voip_account
+/usr/bin/ngcp-get_customer          /usr/bin/ngcp-get_voip_account
+/usr/bin/ngcp-terminate_subscriber  /usr/bin/ngcp-delete_subscriber

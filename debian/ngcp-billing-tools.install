@@ -1,0 +1,3 @@
+bin/ngcp-credit-warning  usr/sbin/
+bin/ngcp-fraud-auto-lock usr/sbin/
+bin/ngcp-fraud-daily-lock usr/sbin/

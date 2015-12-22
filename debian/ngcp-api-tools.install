@@ -1,0 +1,4 @@
+lib/Sipwise/DB.pm                   usr/share/perl5/Sipwise/
+lib/Sipwise/Provisioning.pm         usr/share/perl5/Sipwise/
+lib/Sipwise/Provisioning/Config.pm  usr/share/perl5/Sipwise/Provisioning
+pro/usr/share/perl5/Sipwise/Provisioning/backends/SOAP/Provisioning.wsdl usr/share/perl5/Sipwise/Provisioning/backends/SOAP/
