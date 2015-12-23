@@ -2,6 +2,57 @@
   "comments": [
     {
       "key": {
+        "uuid": "da7095c5_392b2f32",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2015-12-23T15:24:10Z",
+      "side": 1,
+      "message": "I\u0027d use https://www.sipwise.com/",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_d91f9308",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2015-12-23T15:24:10Z",
+      "side": 1,
+      "message": "No shared libraries , so no need for shlibs:Depends here. Same for all other architecture independent packages (Arch: all).",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_99191b25",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2015-12-23T15:24:10Z",
+      "side": 1,
+      "message": "Missing comma after the first dependency. Is the Conflicts correct here or a Breaks would be fine? What\u0027s the intended purpose? Depending on the previous it might need a Replaces for ngcp-www-admin too.\n\nSame for the other binary packages.",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da7095c5_39148ff4",
         "filename": "debian/control",
         "patchSetId": 2
@@ -81,6 +132,24 @@
       "writtenOn": "2015-12-23T15:04:11Z",
       "side": 1,
       "message": "Please consider running the update-copyright script from our dev-tools.git repos to use the proper copyright format",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_b9165ff0",
+        "filename": "debian/ngcp-api-tools.copyright",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2015-12-23T15:24:10Z",
+      "side": 1,
+      "message": "And given that the license is the same let\u0027s just write this once in debian/copyright instead of per package.",
+      "parentUuid": "da7095c5_d9f8f3c6",
       "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
