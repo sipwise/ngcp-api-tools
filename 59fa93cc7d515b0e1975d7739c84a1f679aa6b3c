@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da7095c5_5905c3c0",
+        "filename": "debian/ngcp-api-tools.install",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2015-12-23T14:58:57Z",
+      "side": 1,
+      "message": "Please remove all of that, the file should be just empty for now (empty ngcp-api-tools package for now :)).",
+      "range": {
+        "startLine": 1,
+        "startChar": 0,
+        "endLine": 4,
+        "endChar": 124
+      },
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
