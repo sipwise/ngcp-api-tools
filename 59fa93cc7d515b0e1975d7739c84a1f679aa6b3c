@@ -2,6 +2,57 @@
   "comments": [
     {
       "key": {
+        "uuid": "da7095c5_39148ff4",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-23T15:04:11Z",
+      "side": 1,
+      "message": "I\u0027d drop the \"A \" here (and descriptions below too)",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_190f4be3",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-23T15:04:11Z",
+      "side": 1,
+      "message": "This \" .\" is not necessary at this place (same in lines 35 + 50)",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_d9f8f3c6",
+        "filename": "debian/ngcp-api-tools.copyright",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-23T15:04:11Z",
+      "side": 1,
+      "message": "Please consider running the update-copyright script from our dev-tools.git repos to use the proper copyright format",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da7095c5_5905c3c0",
         "filename": "debian/ngcp-api-tools.install",
         "patchSetId": 2
@@ -19,6 +70,23 @@
         "endLine": 4,
         "endChar": 124
       },
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_f9f5b7cb",
+        "filename": "debian/ngcp-provisioning-tools.copyright",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2015-12-23T15:04:11Z",
+      "side": 1,
+      "message": "Same here too WRT update-copyright",
       "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
