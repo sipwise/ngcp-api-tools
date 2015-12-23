@@ -36,6 +36,40 @@
     },
     {
       "key": {
+        "uuid": "da7095c5_7931a7a1",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2015-12-23T15:07:57Z",
+      "side": 1,
+      "message": "Also another dependency should be here:\nngcp-templates-ce-ngcp-billing-tools | ngcp-templates-pro-ngcp-billing-tools",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_592ce34a",
+        "filename": "debian/control",
+        "patchSetId": 2
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2015-12-23T15:07:57Z",
+      "side": 1,
+      "message": "Also another dependency should be here:\nngcp-templates-ce-ngcp-provisioning-tools | ngcp-templates-pro-ngcp-provisioning-tools",
+      "revId": "59fa93cc7d515b0e1975d7739c84a1f679aa6b3c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da7095c5_d9f8f3c6",
         "filename": "debian/ngcp-api-tools.copyright",
         "patchSetId": 2
