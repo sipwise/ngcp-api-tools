@@ -41,7 +41,8 @@ GetOptions( $opts,
     "cc|c=i",
     "ac|a=i",
     "sn|n=i",
-    "account_id|v=i"
+    "account_id|v=i",
+    "webpassword|w=s"
 ) or pod2usage(2);
 
 die pod2usage(-exitval => 1, -message => "Missing parameters: customer_id")
@@ -90,6 +91,7 @@ sub get_data {
     customer_id => $opts->{customer_id},
     username => $opts->{username},
     password => $opts->{password},
+    webpassword => $opts->{webpassword},
     primary_number => {
       cc => $opts->{cc},
       ac => $opts->{ac},
@@ -189,7 +191,11 @@ existing domain for subscriber.
 
 =item B<-password|p>
 
-unencrypted password for subscriber.
+unencrypted SIP password for subscriber.
+
+=item B<-webpassword|w>
+
+unencrypted web password for subscriber.
 
 =item B<-cc|c>
 
