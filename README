@@ -1,0 +1,27 @@
+=head1 NAME
+
+NGCP::API::Client - Client interface for the REST API
+
+=head1 VERSION
+
+Check debian/changelog
+
+=head1 COMPATIBILITY
+
+The version is compatible with NGCP platforms version >= mr4.3.x
+
+=head1 INSTALLATION
+
+The module is a part of the debian package.
+
+=head1 DEPENDENCIES
+
+See distribution meta file.
+
+=head1 LICENCE
+
+This software is Copyright 2016 by Sipwise GmbH, Austria.
+
+All rights reserved. You may not copy, distribute
+or modify without prior written permission from
+Sipwise GmbH, Austria.
