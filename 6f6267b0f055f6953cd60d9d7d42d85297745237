@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_18266d69",
+        "filename": "Build.PL",
+        "patchSetId": 6
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2016-03-07T08:30:38Z",
+      "side": 1,
+      "message": "restrictive?? This is GPL-3+",
+      "revId": "6f6267b0f055f6953cd60d9d7d42d85297745237",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_382b3132",
+        "filename": "README",
+        "patchSetId": 6
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000002
+      },
+      "writtenOn": "2016-03-07T08:30:38Z",
+      "side": 1,
+      "message": "see debian/copyright!!",
+      "revId": "6f6267b0f055f6953cd60d9d7d42d85297745237",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
