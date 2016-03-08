@@ -1,61 +1,230 @@
-#!/usr/bin/perl -w
-
+#!/usr/bin/perl
 use strict;
 use warnings;
-
-use Email::Sender::Simple qw(sendmail);
+use English;
+use Getopt::Long;
+use Pod::Usage;
+use NGCP::API::Client;
+use Readonly;
 use XML::Simple;
-use Sipwise::DB;
-use Sipwise::Provisioning::Config;
+use Template;
+use Email::Sender::Simple qw();
+use Email::Simple;
+use Email::Simple::Creator;
+use Email::Sender::Transport::Sendmail qw();
 
-my $MTA = '/usr/sbin/sendmail -oi -t';
+Readonly my @required => qw();
+Readonly my $config_file => '/etc/ngcp-panel/provisioning.conf';
 
-sub main;
+my $opts = {
+    verbose => 0,
+};
 
-main;
+my $config;
+
+GetOptions( $opts,
+    "help|h" => \&usage,
+    "verbose",
+) or usage();
+
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
+    }
+    usage(join(' ', @missing)) if scalar @missing;
+    return;
+}
+
+sub usage {
+    my $msg = shift;
+    pod2usage(-exitval => $msg ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $msg
+                            ? $msg =~ /not found/i
+                                ? $msg
+                                : "Missing parameters: $msg"
+                            : '',
+             );
+    return;
+}
+
+sub load_config {
+    $config = XML::Simple->new()->XMLin($config_file, ForceArray => 0)
+        or die "Cannot load config: $config_file: $!";
+    return;
+}
+
+sub send_email {
+    my ($cwarning, $contracts) = @_;
+
+    my $template = get_email_template() || return;
+
+    my $vars = { domain    => $cwarning->{domain},
+                 threshold => $cwarning->{threshold},
+                 adminmail => $config->{adminmail} };
+
+    foreach my $data (@$contracts) {
+        $vars->{contracts} .= sprintf <<EOF, @{$data}{qw(id cash_balance)};
+contract_id: %s cash_balance: %s
+EOF
+    }
+
+    my $tt = Template->new();
+    map { my $out;
+          $tt->process(\$template->{$_}, $vars, \$out);
+          $out and $template->{$_} = $out;
+        } keys %$template;
+
+    my $transport = Email::Sender::Transport::Sendmail->new;
+    my $email = Email::Simple->create(
+        header => [
+            To      => ref $cwarning->{recipients} eq 'ARRAY'
+                        ? join(', ', @{$cwarning->{recipients}})
+                        : $cwarning->{recipients},
+            From    => $template->{from_email},
+            Subject => $template->{subject},
+        ],
+        body => $template->{body},
+    );
+
+    Email::Sender::Simple->send($email, { transport => $transport })
+        or die sprintf "Cannot send credit warning notification to %s: $!",
+                       $email->header('To');
+    return;
+}
+
+sub get_data {
+    my ($uri, $link) = @_;
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $res = $client->request("GET", $uri)->as_hash;
+    return [] unless $res->{total_count} && $res->{total_count} > 0;
+    my $data = $res->{_embedded}{'ngcp:'.$link};
+    return ref $data eq 'ARRAY' ? $data : [ $data ];
+}
+
+sub get_email_template {
+    my $templates_data = get_data('/api/emailtemplates/', 'emailtemplates');
+    foreach my $template (@$templates_data) {
+        next unless $template->{name} eq 'credit_warning_default_email';
+        return $template;
+    }
+    return;
+}
 
 sub main {
-  my $xs = new XML::Simple;
-  my $conf = Sipwise::Provisioning::Config->new()->get_config();
-  my $db = new Sipwise::DB ( $$conf{billingdb} );
-  
-  $$conf{credit_warnings} = [ $$conf{credit_warnings} ]
-      if defined eval { %{$$conf{credit_warnings}} };
-
-  foreach my $domcfg (@{$$conf{credit_warnings}}) {
-
-    my $contracts = $db->sql_get_all_arrayref("
-                 SELECT a.contract_id,a.cash_balance,a.cash_balance_interval,GROUP_CONCAT(c.username,'\@',d.domain) AS subscribers
-                   FROM contract_balances a, contracts b,voip_subscribers c, domains d
-                  WHERE a.start = DATE_FORMAT(now(), '%Y-%m-01 00:00:00')
-                        AND a.contract_id = b.id
-                        AND b.status != 'terminated'
-                        AND a.contract_id = c.contract_id
-                        AND c.domain_id = d.id
-                        AND d.domain = ?
-                        AND c.status != 'terminated'
-                        AND a.cash_balance < ?
-                  GROUP BY contract_id
-               ", $$domcfg{domain}, $$domcfg{threshold});
-    if(@$contracts) {
-      $$domcfg{recipients} = [ $$domcfg{recipients} ]
-          unless defined eval { @{$$domcfg{recipients}} };
-      
-      my $mailtxt;
-      $mailtxt .= "Credit threshold warning for: $$domcfg{domain}\nThe following contracts are below the configured threshold of $$domcfg{threshold} cent:\n\n";
-      $mailtxt .= "account_id\tcash_balance\tcash_balance_interval\tsubscribers\n";
-      for(@$contracts) {
-        $mailtxt .= "$$_{contract_id}\t$$_{cash_balance}\t$$_{cash_balance_interval}\t$$_{subscribers}\n";
-      }
-      
-      sendmail ( Email::Simple->create(
-          header => [
-              To      => join(', ', @{$$domcfg{recipients}}),
-              From    => $$conf{adminmail},
-              Subject => 'Sipwise NGCP credit threshold notification',
-          ],
-          body => $mailtxt,
-      ));
+    check_params();
+    load_config();
+    my $cwarnings = ref $config->{credit_warnings} eq 'ARRAY'
+                    ? $config->{credit_warnings}
+                    : [ $config->{credit_warnings} ];
+    foreach my $cwarning (@$cwarnings) {
+        unless ($cwarning->{recipients}) {
+            die "No recipients defined for domain: $cwarning->{domain}";
+        }
+        unless ($cwarning->{domain}) {
+            die "Missing domain in a credit warning check";
+        }
+        my @contracts;
+        my $balances =
+            get_data(sprintf('/api/customerbalances/?domain=%s',
+                             $cwarning->{domain}),
+                             'customerbalances');
+        foreach my $balance (@$balances) {
+            next if $balance->{cash_balance} >= $cwarning->{threshold};
+            push @contracts,
+                { map { $_ => $balance->{$_} } qw(id cash_balance) };
+        }
+        if (@contracts) {
+            send_email($cwarning, \@contracts);
+        }
     }
-  }
+    return;
 }
+
+main();
+
+exit 0;
+
+__END__
+
+=head1 NAME
+
+ngcp-credit-warning - checks for contract balances above credit warning thresholds
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-help>
+
+Print a brief help message.
+
+=item B<-verbose>
+
+Show additional debug information. Default false.
+
+=back
+
+=head1 USAGE
+
+ngcp-credit-warning [options]
+
+=head1 DESCRIPTION
+
+B<This program> checks for contract balances above credit warning thresholds and sends email notifications about the incidents
+
+=head1 REQUIRED ARGUMENTS
+
+None
+
+=head1 EXIT STATUS
+
+Exit code 0 means everything is ok otherwise 1.
+
+=head1 CONFIGURATION
+
+=head1 DIAGNOSTICS
+
+=head1 SEE ALSO
+
+NGCP::API::Client
+
+=head1 DEPENDENCIES
+
+ngcp-credit-warning relies on a bunch of Perl modules, all of them specified as
+dependencies through the Debian package.
+
+=head1 INCOMPATIBILITIES
+
+No known at this time.
+
+=head1 BUGS AND LIMITATIONS
+
+Please report problems you notice to the Sipwise
+Development Team <support@sipwise.com>.
+
+=head1 AUTHOR
+
+Kirill Solomko <ksolomko@sipwise.com>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut

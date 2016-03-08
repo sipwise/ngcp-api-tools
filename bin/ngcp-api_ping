@@ -1,87 +1,70 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Config::Tiny;
 use English;
 use Getopt::Long;
-use JSON qw();
-use LWP::UserAgent;
+use NGCP::API::Client;
 use Pod::Usage;
-use IO::Socket::SSL;
+use Readonly;
 
-my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+Readonly my @required => qw();
+
 my $opts = {
-    host => '127.0.0.1',
-    port => 1443,
-    auth_user => 'administrator',
-    auth_pwd => 'administrator',
     verbose => 0,
-    admin => 0
 };
 
-if ($config) {
-    $opts->{host} = $config->{_}->{NGCP_API_IP};
-    $opts->{port} = $config->{_}->{NGCP_API_PORT};
-    $opts->{sslverify} = $config->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-}
-
 GetOptions( $opts,
-    "help|h" => sub { pod2usage(-exitval =>0); },
-    "host=s",
-    "port=i",
-    "auth_user=s",
-    "auth_pwd=s",
+    "help|h" => \&usage,
     "verbose",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
-) or pod2usage(2);
+) or usage();
 
-sub main {
-    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
-    my $ua = LWP::UserAgent->new();
-    if($opts->{sslverify} eq 'no') {
-        $ua->ssl_opts(
-            verify_hostname => 0,
-            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
-        );
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
     }
-    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
-        $opts->{auth_user}, $opts->{auth_pwd});
-    # debug!!
-    if($opts->{verbose}) {
-        $ua->show_progress(1);
-        $ua->add_handler("request_send",  sub { shift->dump; return });
-        $ua->add_handler("response_done", sub { shift->dump; return });
-    }
-    my $url = $urlbase . '/api/domains/';
-    my $res = do_request($ua, $url);
-    if($res->is_success) {
-        print "API up\n";
-    } else {
-        die $res->as_string;
-    }
+    usage(join(' ', @missing)) if scalar @missing;
     return;
 }
 
-sub do_request {
-    my $ua = shift;
-    my $url = shift;
-    my $req = HTTP::Request->new('GET', $url);
-    $req->header('Content-Type' => 'application/json');
-    $req->header('Prefer' => 'return=representation');
+sub usage {
+    my $missing = shift;
+    pod2usage(-exitval => $missing ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $missing ? "Missing parameters: $missing" : '',
+             );
+    return;
+}
 
-    return $ua->request($req);
+sub main {
+    check_params();
+    my $client = new NGCP::API::Client;
+    my $uri = '/api/domains/';
+    $client->set_verbose($opts->{verbose});
+    my $res = $client->request("GET", $uri);
+    my $rc = 0;
+    if (defined $res->as_hash->{total_count}) {
+        print "API is up\n";
+    } else {
+        print "API is down\n";
+        $rc = 1;
+    }
+
+    exit $rc;
+
+    return;
 }
 
 main();
 
+exit 0;
+
 __END__
+
 =head1 NAME
 
 ngcp-api_ping - check NGCP API status
-
-=head1 SYNOPSIS
-
-ngcp-api_ping [options]
 
 =head1 OPTIONS
 
@@ -89,37 +72,21 @@ ngcp-api_ping [options]
 
 =item B<-help>
 
-Print a brief help message and exits.
-
-=item B<-auth_user>
-
-Authentication username . Defaults to 'administrator'.
-
-=item B<-auth_pwd>
-
-Authentication password . Defaults to 'administrator'.
-
-=item B<-host>
-
-Host where the send queries. Defaults to '127.0.0.1'.
-
-=item B<-port>
-
-Port where the send queries. Defaults to 1443.
+Print a brief help message.
 
 =item B<-verbose>
 
-See debug information. Default false.
+Show additional debug information. Default false.
 
 =back
 
-=head1 DESCRIPTION
-
-B<This program> will check NGCP API.
-
 =head1 USAGE
 
-ngcp-api-check -host 1.2.3.4
+ngcp-api_ping [options]
+
+=head1 DESCRIPTION
+
+B<This program> checks if NGCP API is running.
 
 =head1 REQUIRED ARGUMENTS
 
@@ -127,18 +94,20 @@ None
 
 =head1 EXIT STATUS
 
-Exit code 0 means that everything should have went fine otherwise error.
-
-=head1 DIAGNOSTICS
+Exit code 0 means everything is fine otherwise 1.
 
 =head1 CONFIGURATION
 
-/etc/default/ngcp-api for default values
+=head1 DIAGNOSTICS
+
+=head1 SEE ALSO
+
+NGCP::API::Client
 
 =head1 DEPENDENCIES
 
 ngcp-api_ping relies on a bunch of Perl modules, all of them specified as
-dependencies through the ngcp-ossbss-clients-perl Debian package.
+dependencies through the ngcp-panel Debian package.
 
 =head1 INCOMPATIBILITIES
 
@@ -153,17 +122,21 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE
-
-Copyright (c) 2015 Sipwise GmbH, Austria.
-All rights reserved. You may not copy, distribute
-or modify without prior written permission from
-Sipwise GmbH, Austria.
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 Sipwise GmbH, Austria.
-You should have received a copy of the licence terms together with the
-software.
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
