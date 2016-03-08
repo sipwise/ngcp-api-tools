@@ -1,154 +1,257 @@
 #!/usr/bin/perl
-
 use strict;
 use warnings;
+use English;
+use Getopt::Long;
+use Pod::Usage;
+use NGCP::API::Client;
+use Readonly;
+use XML::Simple;
+use Template;
+use Email::Sender::Simple qw();
+use Email::Simple;
+use Email::Simple::Creator;
+use Email::Sender::Transport::Sendmail qw();
 
-use Email::Sender::Simple qw(sendmail);
-use Sipwise::Provisioning::Billing;
+Readonly my @required => qw();
+Readonly my $config_file => '/etc/ngcp-panel/provisioning.conf';
+Readonly my $interval => 'month';
 
-my %LOCK = (
-	none => undef,
-	foreign => 1,
-	outgoing => 2,
-	incoming => 3,
-	global => 4,
-	0 => 'none',
-	1 => 'foreign',
-	2 => 'outgoing',
-	3 => 'incoming',
-	4 => 'global',
-);
+my $opts = {
+    verbose => 0,
+};
 
-my $conf = Sipwise::Provisioning::Config->new()->get_config();
+my $config;
 
-my $o = Sipwise::Provisioning::Billing->new();
-my $db = $o->{database};
+GetOptions( $opts,
+    "help|h" => \&usage,
+    "verbose",
+) or usage();
 
-# We select only those billing profile hits which exceed the fraud limit and
-# have an action attached to keep the number of result rows small.
-# However, we select all account hits and manually check them later, as they
-# can potentially override billing profile hits.
-my $a = $db->sql_get_all_arrayref(<<"!");
-SELECT bpinfo.type, bpinfo.id,
-       IF (bpinfo.fraud_use_reseller_rates > 0, SUM(cdr.source_reseller_cost),
-                                                SUM(cdr.source_customer_cost)) as interval_cost,
-       bpinfo.fraud_interval_limit, bpinfo.fraud_interval_lock, bpinfo.fraud_interval_notify
-FROM (
-  SELECT contracts.id, bp.fraud_use_reseller_rates,
-    CASE WHEN cfp.fraud_interval_limit > 0 THEN 'account_limit'
-                                           ELSE 'profile_limit' END as type,
-    IF (cfp.fraud_interval_limit > 0, cfp.fraud_interval_limit, bp.fraud_interval_limit) as fraud_interval_limit,
-    IF (cfp.fraud_interval_limit > 0, cfp.fraud_interval_lock, bp.fraud_interval_lock) as fraud_interval_lock,
-    IF (cfp.fraud_interval_limit > 0, cfp.fraud_interval_notify, bp.fraud_interval_notify) as fraud_interval_notify
-  FROM billing.contracts
-  JOIN billing.billing_profiles bp
-    ON (bp.id =
-      (SELECT m.billing_profile_id
-        FROM billing.billing_mappings m
-         USE INDEX (contractid_idx)
-        JOIN products pr ON pr.id = m.product_id
-        WHERE ((m.start_date IS NULL) OR (m.start_date <= NOW()))
-          AND ((m.end_date IS NULL) OR (m.end_date >= NOW()))
-          AND (m.contract_id = contracts.id)
-          AND (pr.class IN ('sipaccount', 'pbxaccount') OR pr.class IS NULL)
-        ORDER BY m.start_date DESC LIMIT 1
-      )
-    )
-  LEFT JOIN billing.contract_fraud_preferences cfp ON cfp.contract_id = contracts.id
-  WHERE (contracts.status = 'active')
-    AND (cfp.fraud_interval_limit > 0 OR bp.fraud_interval_limit > 0)
-) as bpinfo
-JOIN accounting.cdr ON cdr.source_account_id = bpinfo.id
-WHERE cdr.start_time BETWEEN UNIX_TIMESTAMP(DATE_FORMAT(NOW(), '%Y-%m-01 00:00:00'))
-                         AND UNIX_TIMESTAMP(DATE_FORMAT(NOW() + INTERVAL 1 MONTH, '%Y-%m-01 00:00:00'))-1
-GROUP BY bpinfo.id
-HAVING interval_cost >= fraud_interval_limit
-   AND (fraud_interval_lock > 0 OR fraud_interval_notify <> '')
-!
-
-my $x = {};
-for my $e (@{ $a }) {
-  if(exists $x->{$e->{id}}) {
-    if($x->{$e->{id}}->{type} eq 'profile_limit' && $e->{type} eq 'account_limit') {
-
-      # if account limit hits and it has lock and/or notify, mark for action
-      if(defined $e->{fraud_interval_limit} and
-         int($e->{interval_cost}) >= int($e->{fraud_interval_limit}) and
-         ($e->{fraud_interval_lock} || $e->{fraud_interval_notify})) {
-
-        $x->{$e->{id}} = $e;
-      } else {
-        # we have account fraud prefs set, but either the limit is not reached
-        # or no actions are necessary, let it slip through, overriding
-        # billing profile fraud settings
-        delete $x->{$e->{id}};
-      }
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
     }
-  } else {
-    # if account or billing profile limit hits and it has lock and/or notify,
-    # mark for action
-    if(defined $e->{fraud_interval_limit} and
-       int($e->{interval_cost}) >= int($e->{fraud_interval_limit}) and
-       ($e->{fraud_interval_lock} || $e->{fraud_interval_notify})) {
-
-      $x->{$e->{id}} = $e;
-    }
-  }
+    usage(join(' ', @missing)) if scalar @missing;
+    return;
 }
 
-for my $e (values %{ $x }) {
+sub usage {
+    my $msg = shift;
+    pod2usage(-exitval => $msg ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $msg
+                            ? $msg =~ /not found/i
+                                ? $msg
+                                : "Missing parameters: $msg"
+                            : '',
+             );
+    return;
+}
 
-	$e->{fraud_interval_lock} and
-		$o->lock_voip_account({id => $e->{id}, lock => $LOCK{$e->{fraud_interval_lock}}});
+sub load_config {
+    $config = XML::Simple->new()->XMLin($config_file, ForceArray => 0)
+        or die "Cannot load config: $config_file: $ERRNO";
+    return;
+}
 
-	$e->{fraud_interval_notify} or next;
+sub get_data {
+    my ($uri, $link) = @_;
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $res = $client->request("GET", $uri)->as_hash;
+    return [] unless $res->{total_count} && $res->{total_count} > 0;
+    my $data = $res->{_embedded}{'ngcp:'.$link};
+    return ref $data eq 'ARRAY' ? $data : [ $data ];
+}
 
-	my $subs = $db->sql_get_all_arrayref(<<"!", $e->{id});
-		SELECT s.username, d.domain, s.external_id
-                  FROM voip_subscribers s
-             LEFT JOIN domains d ON d.id = s.domain_id
-                 WHERE s.contract_id = ?
-                 AND s.status != 'terminated'
-!
-
-	my $cur = sprintf('%.2f', $e->{interval_cost} / 100);
-	my $max = sprintf('%.2f', $e->{fraud_interval_limit} / 100);
-
-    my ($subject, $body);
-    if ($e->{fraud_interval_lock}) {
-        $body = "Account ID " . $e->{id} . " has been locked due to exceeding the configured" . "\n"
-              . "credit balance threshold ($cur >= $max ) in the "
-              . ($e->{type} eq 'profile_limit' ? 'billing profile' : 'account settings') . "\n\n";
-	$subject = 'Account ID ' . $e->{id} . ' locked by fraud detection';
+sub get_email_template {
+    my $event = shift;
+    my $lock_type = $event->{interval_lock} ? 'lock' : 'warning';
+    my $reseller_id = $event->{reseller_id};
+    my $templates_data = get_data('/api/emailtemplates/', 'emailtemplates');
+    my $selected_template;
+    foreach my $template (@{$templates_data}) {
+        next if $template->{name} ne 'customer_fraud_'.$lock_type.'_default_email'
+             && $template->{name} ne 'customer_fraud_'.$lock_type.'_email';
+        next if $template->{reseller_id} && $template->{reseller_id} != $reseller_id;
+        $selected_template = $template;
+        last if $template->{reseller_id};
     }
-    else {
-        $body = "Account ID " . $e->{id} . " is currently exceeding the configured credit balance" . "\n"
-              . "threshold ($cur >= $max) in the "
-              . ($e->{type} eq 'profile_limit' ? 'billing profile' : 'account settings') . ",\n"
-              . "but has not been locked due to configuration.\n\n";
-	$subject = 'Account ID ' . $e->{id} . ' exceeding fraud detection limit';
+    return $selected_template;
+}
+
+sub send_email {
+    my ($event, $subscribers) = @_;
+
+    my $template = get_email_template($event);
+
+    my $vars = { adminmail => $config->{adminmail},
+                 customer_id => $event->{id},
+                 interval_cost  => sprintf('%.2f', $event->{interval_cost}/100),
+                 interval_limit => sprintf('%.2f', $event->{interval_limit}/100),
+                 type => $event->{type} eq 'profile_limit'
+                            ? 'billing profile' : 'customer',
+               };
+
+    foreach my $subscriber (@{$subscribers}) {
+        $vars->{subscribers} .= sprintf "%s\@%s %s\n",
+                                @{$subscriber}{qw(username domain)},
+                                $subscriber->{external_id}
+                                    ? '('.$subscriber->{external_id}.')' : '';
     }
 
-	if (!$subs || !@$subs) {
-		$body .= "There are no affected subscribers.\n";
-	}
-	else {
-		$body .= "Affected subscribers:\n";
-		for my $s (@$subs) {
-			$body .= "\t$s->{username}\@$s->{domain}".
-				($s->{external_id} ? " (external ID '$s->{external_id}')"
-				: '') . "\n";
-		}
-	}
+    my $tt = Template->new();
+    map { my $out;
+          $tt->process(\$template->{$_}, $vars, \$out);
+          $out and $template->{$_} = $out;
+        } keys %{$template};
 
-    sendmail ( Email::Simple->create(
+    my $transport = Email::Sender::Transport::Sendmail->new;
+    my $email = Email::Simple->create(
         header => [
-            To      => $e->{fraud_interval_notify},
-            From    => $$conf{adminmail},
-            Subject => $subject,
+            To      => $event->{interval_notify},
+            From    => $template->{from_email},
+            Subject => $template->{subject},
         ],
-        body => $body,
-    ));
+        body => $template->{body},
+    );
+
+    Email::Sender::Simple->send($email, { transport => $transport })
+        or die sprintf "Cannot send fraud auto lock notification to %s: $ERRNO",
+                       $email->header('To');
+
+    return;
 }
 
-1;
+
+sub lock_customer {
+    my ($event, $subscribers) = @_;
+
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $uri = '/api/customers/'.$event->{id};
+    my $data = [ { op => 'replace',
+                   path => '/status',
+                   value => 'locked' } ];
+    my $res = $client->request("PATCH", $uri, $data);
+    if ($res->status_line =~ /200 OK/) {
+        foreach my $subscriber (@{$subscribers}) {
+            $uri = '/api/subscribers/'.$subscriber->{id};
+            $data = [ { op => 'replace',
+                        path => '/status',
+                        value => 'locked' },
+                      { op => 'replace',
+                        path => '/lock',
+                        value => $event->{interval_lock} } ];
+            $res = $client->request("PATCH", $uri, $data);
+        }
+    }
+
+    return;
+}
+
+sub main {
+    check_params();
+    load_config();
+    my $events = get_data(sprintf('/api/customerfraudevents/?interval=%s',
+                                  $interval),
+                                  'customerfraudevents');
+    foreach my $event (@{$events}) {
+        my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
+                                   $event->{id}),
+                                   'subscribers');
+        if ($event->{interval_lock} > 0) {
+            lock_customer($event, $subscribers);
+        }
+        send_email($event, $subscribers);
+    }
+    return;
+}
+
+main();
+
+exit 0;
+
+__END__
+
+=head1 NAME
+
+ngcp-fraud-auto-lock - checks for contract balances above fraud limit thresholds
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-help>
+
+Print a brief help message.
+
+=item B<-verbose>
+
+Show additional debug information. Default false.
+
+=back
+
+=head1 USAGE
+
+ngcp-fraud-auto-lock [options]
+
+=head1 DESCRIPTION
+
+B<This program> checks for contract balances above fraud limit warning thresholds and sends email notifications about the incidents as applying actions on such contracts (e.g. lock). Interval: 'month'
+
+=head1 REQUIRED ARGUMENTS
+
+None
+
+=head1 EXIT STATUS
+
+Exit code 0 means everything is ok otherwise 1.
+
+=head1 CONFIGURATION
+
+=head1 DIAGNOSTICS
+
+=head1 SEE ALSO
+
+NGCP::API::Client
+
+=head1 DEPENDENCIES
+
+ngcp-fraud-auto-lock relies on a bunch of Perl modules, all of them specified as
+dependencies through the Debian package.
+
+=head1 INCOMPATIBILITIES
+
+No known at this time.
+
+=head1 BUGS AND LIMITATIONS
+
+Please report problems you notice to the Sipwise
+Development Team <support@sipwise.com>.
+
+=head1 AUTHOR
+
+Kirill Solomko <ksolomko@sipwise.com>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
