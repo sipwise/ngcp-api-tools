@@ -1,135 +1,64 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Config::Tiny;
 use English;
 use Getopt::Long;
-use JSON qw();
-use LWP::UserAgent;
 use Pod::Usage;
-use Data::Dumper;
-use IO::Socket::SSL;
+use NGCP::API::Client;
+use Readonly;
 
-my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+Readonly my @required => qw(customer_id);
+
 my $opts = {
-    host => '127.0.0.1',
-    port => 1443,
-    auth_user => 'administrator',
-    auth_pwd => 'administrator',
     verbose => 0,
-    admin => 0
 };
 
-if ($config) {
-    $opts->{host} = $config->{_}->{NGCP_API_IP};
-    $opts->{port} = $config->{_}->{NGCP_API_PORT};
-    $opts->{sslverify} = $config->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-}
-
 GetOptions( $opts,
-    "help|h" => sub { pod2usage(-exitval =>0); },
-    "host=s",
-    "port=i",
-    "auth_user=s",
-    "auth_pwd=s",
+    "help|h" => \&usage,
+    "customer_id=i",
     "verbose",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
-    "username|u=s",
-    "domain|d=s",
-    "account_id|i=i"
-) or pod2usage(2);
+) or usage();
 
-die pod2usage(-exitval => 1, -message => "Missing parameters") unless
-    (defined $opts->{account_id} and not defined $opts->{username} and
-        not defined $opts->{domain}) or
-    (defined $opts->{username} and defined $opts->{domain} and
-        not defined $opts->{account_id});
-
-sub main {
-    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
-    my $ua = LWP::UserAgent->new();
-    if($opts->{sslverify} eq 'no') {
-        $ua->ssl_opts(
-            verify_hostname => 0,
-            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
-        );
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
     }
-    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
-        $opts->{auth_user}, $opts->{auth_pwd});
-    # debug!!
-    if($opts->{verbose}) {
-        $ua->show_progress(1);
-        $ua->add_handler("request_send",  sub { shift->dump; return });
-        $ua->add_handler("response_done", sub { shift->dump; return });
-    }
-    my $customer_url;
-    if ($opts->{account_id}) {
-        $customer_url = $urlbase . '/api/customers/'.$opts->{account_id};
-    }
-    else {
-        $customer_url= get_customer_url($ua, $urlbase);
-    }
-    my $res = do_request($ua, $customer_url);
-    if($res->is_success) {
-        # use no indentation/linebreaks, for syslog logging
-        $Data::Dumper::Indent = 1;
-        # don't print useless variable names
-        $Data::Dumper::Terse = 1;
-        # sort hash keys, so parameters always have the same order
-        $Data::Dumper::Sortkeys = 1;
-        my $collection = JSON::from_json($res->decoded_content);
-        print "VoIP account information:\n", Dumper $collection;
-    } else {
-        die $res->as_string;
-    }
+    usage(join(' ', @missing)) if scalar @missing;
     return;
 }
 
-sub get_customer_url {
-    my $ua = shift;
-    my $urlbase = shift;
-    my $url = $urlbase."/api/subscribers/?domain=".$opts->{domain}.
-        '&username='.$opts->{username};
-    my $req = HTTP::Request->new('GET', $url);
-    my $customer_url;
-
-    my $res = $ua->request($req);
-    if($res->is_success) {
-        my $collection = JSON::from_json($res->decoded_content);
-        if ($collection->{total_count} == 1) {
-            my $lnks = $collection->{_embedded}->{'ngcp:subscribers'}->{_links};
-            $customer_url = $urlbase . $lnks->{'ngcp:customers'}->{href};
-        }
-        else {
-            pod2usage(-exitval => 3, -message => "customer not found");
-        }
-    }
-    else {
-        die $res->as_string;
-    }
-    return $customer_url;
+sub usage {
+    my $missing = shift;
+    pod2usage(-exitval => $missing ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $missing ? "Missing parameters: $missing" : '',
+             );
+    return;
 }
 
-sub do_request {
-    my $ua = shift;
-    my $url = shift;
-    my $req = HTTP::Request->new('GET', $url);
-    $req->header('Content-Type' => 'application/json');
-    $req->header('Prefer' => 'return=representation');
+sub main {
+    check_params();
+    my $uri = '/api/customers/';
+    $uri .= $opts->{customer_id} ? $opts->{customer_id} : '';
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $res = $client->request("GET", $uri);
+    print $res->content."\n";
 
-    return $ua->request($req);
+    return;
 }
 
 main();
 
+exit 0;
+
 __END__
+
 =head1 NAME
 
-ngcp-get_customer - show info of a customer on NGCP
-
-=head1 SYNOPSIS
-
-ngcp-get_customer [options]
+ngcp-get_customer - retreives an NGCP Customer
 
 =head1 OPTIONS
 
@@ -137,70 +66,52 @@ ngcp-get_customer [options]
 
 =item B<-help>
 
-Print a brief help message and exits.
+Print a brief help message.
 
-=item B<-auth_user>
+=item B<-customer_id>
 
-Authentication username . Defaults to 'administrator'.
-
-=item B<-auth_pwd>
-
-Authentication password . Defaults to 'administrator'.
-
-=item B<-host>
-
-Host where the send queries. Defaults to '127.0.0.1'.
-
-=item B<-port>
-
-Port where the send queries. Defaults to 1443.
-
-=item B<-account_id|i>
-
-the unique ID of an existing account.
-
-=item B<-username|u>
-
-SIP username.
-
-=item B<-domain|d>
-
-existing domain for subscriber.
+Customer id
 
 =item B<-verbose>
 
-See debug information. Default false.
+Show additional debug information. Default false.
 
 =back
 
-=head1 DESCRIPTION
-
-B<This program> will show info of a customer at NGCP.
-
 =head1 USAGE
 
-ngcp-get_customer -host 1.2.3.4 -d test.example.org -u test
+ngcp-get_customer [options]
 
-ngcp-get_customer -host 1.2.3.4 -i 45
+ngcp-get_customer --customer_id 11
+
+=head1 DESCRIPTION
+
+B<This program> retreives a customer from the NGCP platform.
 
 =head1 REQUIRED ARGUMENTS
 
-B<domain> and B<username> or B<account_id>
+=over 8
+
+=item B<-customer_id>
+
+=back
 
 =head1 EXIT STATUS
 
-Exit code 0 means that everything should have went fine otherwise error.
-
-=head1 DIAGNOSTICS
+Exit code 0 means everything is ok otherwise 1.
 
 =head1 CONFIGURATION
 
-/etc/default/ngcp-api for default values
+=head1 DIAGNOSTICS
+
+=head1 SEE ALSO
+
+NGCP::API::Client
 
 =head1 DEPENDENCIES
 
 ngcp-get_customer relies on a bunch of Perl modules, all of them specified as
-dependencies through the ngcp-ossbss-clients-perl Debian package.
+dependencies through the Debian package.
 
 =head1 INCOMPATIBILITIES
 
@@ -215,17 +126,21 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE
-
-Copyright (c) 2015 Sipwise GmbH, Austria.
-All rights reserved. You may not copy, distribute
-or modify without prior written permission from
-Sipwise GmbH, Austria.
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 Sipwise GmbH, Austria.
-You should have received a copy of the licence terms together with the
-software.
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
