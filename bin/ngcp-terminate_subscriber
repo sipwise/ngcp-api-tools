@@ -1,147 +1,80 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Config::Tiny;
 use English;
 use Getopt::Long;
-use JSON qw();
-use LWP::UserAgent;
 use Pod::Usage;
-use IO::Socket::SSL;
+use NGCP::API::Client;
+use Readonly;
 
-my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+Readonly my @required => qw(username domain);
+
 my $opts = {
-    host => '127.0.0.1',
-    port => 1443,
-    auth_user => 'administrator',
-    auth_pwd => 'administrator',
     verbose => 0,
-    admin => 0
 };
 
-if ($config) {
-    $opts->{host} = $config->{_}->{NGCP_API_IP};
-    $opts->{port} = $config->{_}->{NGCP_API_PORT};
-    $opts->{sslverify} = $config->{_}->{NGCP_API_SSLVERIFY} || 'yes';
+GetOptions( $opts,
+    "help|h" => \&usage,
+    "username=s",
+    "domain=s",
+    "verbose",
+) or usage();
+
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
+    }
+    usage(join(' ', @missing)) if scalar @missing;
 }
 
-GetOptions( $opts,
-    "help|h",
-    "host=s",
-    "port=i",
-    "auth_user=s",
-    "auth_pwd=s",
-    "verbose",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
-    "username|u=s",
-    "domain|d=s",
-    "account_id|i=i"
-) or pod2usage(2);
-
-die pod2usage(-exitval => 1, -message => "Missing parameters") unless
-    (defined $opts->{account_id} and not defined $opts->{username} and
-        not defined $opts->{domain}) or
-    (defined $opts->{username} and defined $opts->{domain} and
-        not defined $opts->{account_id});
-
-sub main {
-    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
-    my $ua = LWP::UserAgent->new();
-    if($opts->{sslverify} eq 'no') {
-        $ua->ssl_opts(
-            verify_hostname => 0,
-            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
-        );
-    }
-    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
-        $opts->{auth_user}, $opts->{auth_pwd});
-    # debug!!
-    if($opts->{verbose}) {
-        $ua->show_progress(1);
-        $ua->add_handler("request_send",  sub { shift->dump; return });
-        $ua->add_handler("response_done", sub { shift->dump; return });
-    }
-    my $subscriber_url;
-    if ($opts->{account_id}) {
-        $subscriber_url = $urlbase . '/api/customers/'.$opts->{account_id};
-    }
-    else {
-        $subscriber_url= get_subscriber_url($ua, $urlbase);
-    }
-    my $res = do_request($ua, $subscriber_url);
-    if($res->is_success) {
-        print $res->status_line . "\n";
-    } else {
-        die $res->as_string;
-    }
+sub usage {
+    my $msg = shift;
+    pod2usage(-exitval => $msg ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $msg
+                            ? $msg =~ /not found/i
+                                ? $msg
+                                : "Missing parameters: $msg"
+                            : '',
+             );
     return;
 }
 
-sub get_subscriber_url {
-    my $ua = shift;
-    my $urlbase = shift;
-    my $url = $urlbase."/api/subscribers/?domain=".$opts->{domain}.
-        '&username='.$opts->{username};
-    my $req = HTTP::Request->new('GET', $url);
-    my $subscriber_url;
+sub main {
+    check_params();
+    my $uri = sprintf '/api/subscribers/?username=%s&domain=%s',
+              @{$opts}{qw(username domain)};
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $sub = $client->request("GET", $uri);
+    my $sub_id;
+    if ($sub->as_hash->{total_count} == 1) {
+        $sub_id = $sub->as_hash->{_embedded}->{'ngcp:subscribers'}->{id};
+        usage("Wrong subscriber id found") unless $sub_id =~ /^\d$/;
+    } else {
+        usage("Subscriber not found");
+    }
+    $uri = '/api/subscribers/'.$sub_id;
+    my $data = [ { op => 'replace',
+                   path => '/status',
+                   value => 'terminated' } ];
+    my $res = $client->request("PATCH", $uri, $data);
+    print $res->status_line."\n";
 
-    my $res = $ua->request($req);
-    if($res->is_success) {
-        my $collection = JSON::from_json($res->decoded_content);
-        if ($collection->{total_count} == 1) {
-            $subscriber_url = $urlbase .
-                $collection->{_links}->{'ngcp:subscribers'}->{href};
-        }
-        else {
-            pod2usage(-exitval => 3, -message => "subscriber not found");
-        }
-    }
-    else {
-        die $res->as_string;
-    }
-    return $subscriber_url;
-}
-
-sub do_request {
-    my $ua = shift;
-    my $url = shift;
-    my $data = {
-      status => 'terminated',
-      domain_id => 0,
-      customer_id => 0,
-      username => '',
-      password => ''
-    };
-    my $req = HTTP::Request->new('GET', $url);
-    my $res = $ua->request($req);
-    if($res->is_success) {
-        my $collection = JSON::from_json($res->decoded_content);
-        $data->{domain_id} = $collection->{domain_id};
-        $data->{customer_id} = $collection->{customer_id};
-        $data->{username} = $collection->{username};
-        $data->{password} = $collection->{password};
-    }
-    else {
-        die $res->as_string;
-    }
-    $req = HTTP::Request->new('PUT', $url);
-    $req->header('Content-Type' => 'application/json');
-    $req->header('Prefer' => 'return=minimal');
-    $req->content(JSON::to_json($data));
-
-    return $ua->request($req);
+    return;
 }
 
 main();
 
+exit 0;
+
 __END__
+
 =head1 NAME
 
-ngcp-terminate_subscriber - terminates a subscriber on NGCP
-
-=head1 SYNOPSIS
-
-ngcp-terminate_subscriber [options]
+ngcp-terminate_subscriber - terminate an NGCP Subscriber
 
 =head1 OPTIONS
 
@@ -149,70 +82,46 @@ ngcp-terminate_subscriber [options]
 
 =item B<-help>
 
-Print a brief help message and exits.
+Print a brief help message
 
-=item B<-auth_user>
+=item B<-username>
 
-Authentication username . Defaults to 'administrator'.
+Subscriber username
 
-=item B<-auth_pwd>
+=item B<-domain>
 
-Authentication password . Defaults to 'administrator'.
-
-=item B<-host>
-
-Host where the send queries. Defaults to '127.0.0.1'.
-
-=item B<-port>
-
-Port where the send queries. Defaults to 1443.
-
-=item B<-account_id|i>
-
-the unique ID of an existing account.
-
-=item B<-username|u>
-
-SIP username.
-
-=item B<-domain|d>
-
-existing domain for subscriber.
+Subscriber domain
 
 =item B<-verbose>
 
-See debug information. Default false.
+Show additional debug information. Default false.
 
 =back
 
-=head1 DESCRIPTION
-
-B<This program> will terminate a subscriber at NGCP.
-
 =head1 USAGE
 
-ngcp-terminate_subscriber -host 1.2.3.4 -d test.example.org -u test
+ngcp-terminate_subscriber [options]
 
-ngcp-terminate_subscriber -host 1.2.3.4 -i 45
+ngcp-terminate_subscriber --username 431110001 --domain example.org
 
-=head1 REQUIRED ARGUMENTS
+=head1 DESCRIPTION
 
-B<domain> and B<username> or B<account_id>
+B<This program> terminates a subscriber on the NGCP platform.
 
 =head1 EXIT STATUS
 
-Exit code 0 means that everything should have went fine otherwise error.
+Exit code 0 means everything is ok otherwise 1.
 
 =head1 DIAGNOSTICS
 
-=head1 CONFIGURATION
+=head1 SEE ALSO
 
-/etc/default/ngcp-api for default values
+NGCP::API::Client
 
 =head1 DEPENDENCIES
 
 ngcp-terminate_subscriber relies on a bunch of Perl modules, all of them specified as
-dependencies through the ngcp-ossbss-clients-perl Debian package.
+dependencies through the Debian package.
 
 =head1 INCOMPATIBILITIES
 
@@ -227,17 +136,21 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE
-
-Copyright (c) 2015 Sipwise GmbH, Austria.
-All rights reserved. You may not copy, distribute
-or modify without prior written permission from
-Sipwise GmbH, Austria.
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 Sipwise GmbH, Austria.
-You should have received a copy of the licence terms together with the
-software.
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut

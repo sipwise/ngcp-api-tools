@@ -1,152 +1,88 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Config::Tiny;
 use English;
 use Getopt::Long;
-use JSON qw();
-use LWP::UserAgent;
 use Pod::Usage;
-use IO::Socket::SSL;
+use NGCP::API::Client;
+use Readonly;
 
-my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+Readonly my @required => qw(customer_id username domain password cc ac sn);
+
 my $opts = {
-    host => '127.0.0.1',
-    port => 1443,
-    auth_user => 'administrator',
-    auth_pwd => 'administrator',
+    admin   => 0,
     verbose => 0,
-    admin => 0
 };
 
-if ($config) {
-    $opts->{host} = $config->{_}->{NGCP_API_IP};
-    $opts->{port} = $config->{_}->{NGCP_API_PORT};
-    $opts->{sslverify} = $config->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-}
-
 GetOptions( $opts,
-    "help|h" => sub { pod2usage(-exitval =>0); },
+    "help|h" => \&usage,
     "customer_id=i",
-    "host=s",
-    "port=i",
-    "auth_user=s",
-    "auth_pwd=s",
-    "verbose",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); },
     "username|u=s",
-    "domain|d=s",
     "password|p=s",
+    "domain|d=s",
     "admin|s=i",
     "cc|c=i",
     "ac|a=i",
     "sn|n=i",
-    "account_id|v=i",
-    "webpassword|w=s"
-) or pod2usage(2);
+    "type=s",
+    "webpassword|w=s",
+    "verbose",
+) or usage();
 
-die pod2usage(-exitval => 1, -message => "Missing parameters: customer_id")
-  unless defined $opts->{customer_id};
-die pod2usage(-exitval => 1, -message => "Missing parameters") unless
-  defined $opts->{username} and defined $opts->{domain}
-  and defined $opts->{password};
-die pod2usage(-exitval => 1, -message => "Missing parameters") unless
-  (defined $opts->{cc} and defined $opts->{ac} and defined $opts->{sn})
-  or ( not defined $opts->{cc} and not defined $opts->{ac}
-    and not defined $opts->{sn});
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
+    }
+    usage(join(' ', @missing)) if scalar @missing;
+}
 
-sub main {
-    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
-
-    my $ua = LWP::UserAgent->new();
-    if($opts->{sslverify} eq 'no') {
-        $ua->ssl_opts(
-            verify_hostname => 0,
-            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
-        );
-    }
-    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
-        $opts->{auth_user}, $opts->{auth_pwd});
-    # debug!!
-    if($opts->{verbose}) {
-        $ua->show_progress(1);
-        $ua->add_handler("request_send",  sub { shift->dump; return });
-        $ua->add_handler("response_done", sub { shift->dump; return });
-    }
-    my $domain_id = get_domain_id($ua, $urlbase, $opts->{domain});
-    my $res = do_request($ua, $urlbase, get_data($domain_id));
-    if($res->is_success) {
-        print $res->status_line . ' ' . $res->header('Location') . "\n";
-    } else {
-        die $res->as_string;
-    }
+sub usage {
+    my $msg = shift;
+    pod2usage(-exitval => $msg ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $msg
+                            ? $msg =~ /not found/i
+                                ? $msg
+                                : "Missing parameters: $msg"
+                            : '',
+             );
     return;
 }
 
-sub get_data {
-  my $domain_id = shift;
-  my $data = {
-    administrative => $opts->{admin} || 0,
-    domain_id => $domain_id,
-    customer_id => $opts->{customer_id},
-    username => $opts->{username},
-    password => $opts->{password},
-    webpassword => $opts->{webpassword},
-    primary_number => {
-      cc => $opts->{cc},
-      ac => $opts->{ac},
-      sn => $opts->{sn}
-    },
-  };
-  return $data;
-}
-
-sub get_domain_id {
-    my $ua = shift;
-    my $urlbase = shift;
-    my $domain = shift;
-    my $url = $urlbase."/api/domains/?domain=".$domain;
-    my $req = HTTP::Request->new('GET', $url);
-    my $domain_id;
-
-    my $res = $ua->request($req);
-    if($res->is_success) {
-        my $collection = JSON::from_json($res->decoded_content);
-        if ($collection->{total_count} == 1) {
-            $domain_id = $collection->{_embedded}->{'ngcp:domains'}->{id};
-        }
-        else {
-            pod2usage(-exitval => 3, -message => "Domain not found");
-        }
+sub main {
+    check_params();
+    my $uri = '/api/subscribers/';
+    my %data = map { $_ => $opts->{$_} }
+                    qw(customer_id username password
+                       type webpassword);
+    $data{primary_number} = join '', @{$opts}{qw(cc ac sn)};
+    $data{administrative} = $opts->{admin};
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    # domain_id
+    my $dom = $client->request("GET", "/api/domains/?domain=".$opts->{domain});
+    if ($dom->as_hash->{total_count} == 1) {
+        $data{domain_id} = $dom->as_hash->{_embedded}->{'ngcp:domains'}->{id};
+    } else {
+        usage("Domain not found");
     }
-    else {
-        die $res->status_line, "\n";
-    }
-    return $domain_id;
-}
+    my $res = $client->request("POST", $uri, \%data);
+    print $res->status_line . ' ' . $res->headers->header('Location'). "\n";
 
-sub do_request {
-    my $ua = shift;
-    my $urlbase = shift;
-    my $data = shift;
-
-    my $req = HTTP::Request->new('POST', $urlbase.'/api/subscribers/');
-    $req->header('Content-Type' => 'application/json');
-    $req->header('Prefer' => 'return=representation');
-    $req->content(JSON::to_json($data));
-    return $ua->request($req);
+    return;
 }
 
 main();
 
+exit 0;
+
 __END__
+
 =head1 NAME
 
-ngcp-create_subscriber - create a subscriber on NGCP
-
-=head1 SYNOPSIS
-
-ngcp-create_subscriber [options]
+ngcp-create_subscriber - create a subscriber
 
 =head1 OPTIONS
 
@@ -154,99 +90,75 @@ ngcp-create_subscriber [options]
 
 =item B<-help>
 
-Print a brief help message and exits.
+Print a brief help message.
 
 =item B<-customer_id>
 
-The customer id to assign this subscriber to.
-
-=item B<-auth_user>
-
-Authentication username . Defaults to 'administrator'.
-
-=item B<-auth_pwd>
-
-Authentication password . Defaults to 'administrator'.
-
-=item B<-host>
-
-Host where the send queries. Defaults to '127.0.0.1'.
-
-=item B<-port>
-
-Port where the send queries. Defaults to 1443.
-
-=item B<-account_id|v>
-
-the unique ID of an existing account, the script will create a new one
-if unspecified.
+An existing customer id to assign this subscriber to.
 
 =item B<-username|u>
 
-new SIP username.
+A SIP username.
 
 =item B<-domain|d>
 
-existing domain for subscriber.
+An existing domain for the new subscriber.
 
 =item B<-password|p>
 
-unencrypted SIP password for subscriber.
+An unencrypted SIP password for the new subscriber.
 
 =item B<-webpassword|w>
 
-unencrypted web password for subscriber.
+An unencrypted web password for the new subscriber.
 
 =item B<-cc|c>
 
-country code of subscriber number.
+A country code part of the subscriber's number.
 
 =item B<-ac|a>
 
-area code of subscriber number.
+An area code part of the subscriber's number.
 
 =item B<-number|n>
 
-local part of subscriber number.
+A local number part of the subscriber's number.
 
 =item B<-admin|s>
 
-whether or not to set the administrative flag for the subscriber.
-defaults to 0 (no).
+Set the administrative flag for the new subscriber.
+Defaults to 0 (no).
 
 =item B<-verbose>
 
-See debug information. Default false.
+Show additional debug information. Default false.
 
 =back
 
-=head1 DESCRIPTION
-
-B<This program> will create a subscriber at NGCP.
-
 =head1 USAGE
 
-ngcp-create_subscriber -host 1.2.3.4 -customer_id 4 -d test.example.org -u test
- -p passw12_ -c 34 -a 11 -n 12345 -s 0
+ngcp-create_subscriber [options]
 
-=head1 REQUIRED ARGUMENTS
+ngcp-create_subscriber --customer_id 1 --username 4311101 --domain sipwise.com --password SecurePassword1 --cc 43 --ac 111 --sn 01
 
-TODO
+=head1 DESCRIPTION
+
+B<This program> creates a subscriber on the NGCP platform.
 
 =head1 EXIT STATUS
 
-Exit code 0 means that everything should have went fine otherwise error.
+Exit code 0 means everything is ok otherwise 1.
 
 =head1 DIAGNOSTICS
 
-=head1 CONFIGURATION
+=head1 SEE ALSO
 
-/etc/default/ngcp-api for default values
+NGCP::API::Client
 
 =head1 DEPENDENCIES
 
-ngcp-create_subscriber relies on a bunch of Perl modules, all of them specified as
-dependencies through the ngcp-ossbss-clients-perl Debian package.
+ngcp-create_customer relies on a bunch of Perl modules, all of them specified as
+dependencies through the Debian package.
 
 =head1 INCOMPATIBILITIES
 
@@ -261,17 +173,21 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE
-
-Copyright (c) 2015 Sipwise GmbH, Austria.
-All rights reserved. You may not copy, distribute
-or modify without prior written permission from
-Sipwise GmbH, Austria.
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 Sipwise GmbH, Austria.
-You should have received a copy of the licence terms together with the
-software.
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
