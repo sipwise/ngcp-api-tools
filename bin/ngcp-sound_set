@@ -1,99 +1,135 @@
 #!/usr/bin/perl
 use strict;
+use warnings;
+use English;
+use Getopt::Long;
+use Pod::Usage;
+use NGCP::API::Client;
+use Readonly;
 
-use Data::Dumper;
-use Sipwise::Provisioning::Voip;
-use Sipwise::Provisioning::Config;
+Readonly my @required => qw(id);
 
-my %CONFIG = (admin => 'cmd');
+my $opts = {
+    verbose => 0,
+};
 
-my $config = Sipwise::Provisioning::Config->new()->get_config();
+GetOptions( $opts,
+    "help|h" => \&usage,
+    "id=i",
+    "verbose",
+) or usage();
 
-unless ($CONFIG{password} = $config->{acl}->{$CONFIG{admin}}->{password}) {
-  die "Error: No provisioning password found for user $CONFIG{admin}\n";
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
+    }
+    usage(join(' ', @missing)) if scalar @missing;
 }
 
-sub main;
-sub usage;
-sub call_prov;
-
-my $prov = Sipwise::Provisioning::Voip->new();
-
-main;
+sub usage {
+    my $missing = shift;
+    pod2usage(-exitval => $missing ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $missing ? "Missing parameters: $missing" : '',
+             );
+    return;
+}
 
 sub main {
-    # use no indentation/linebreaks, for syslog logging
-    $Data::Dumper::Indent = 1;
-    # don't print useless variable names
-    $Data::Dumper::Terse = 1;
-    # sort hash keys, so parameters always have the same order
-    $Data::Dumper::Sortkeys = 1;
+    check_params();
+    my $uri = '/api/soundsets/';
+    $uri .= $opts->{id} ? $opts->{id} : '';
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $res = $client->request("GET", $uri);
+    print $res->content."\n";
 
-    my $return;
-
-    print "Fetching all sound sets\n";
-    $return = call_prov('get_sound_sets');
-    print "Sound Sets:\n", Dumper $return;
-
-    print "Creating global sound set\n";
-    $return = call_prov('create_sound_set', {
-        reseller_id => 1,
-        name => 'api sound set',
-        description => 'sound set created via api',
-    });
-    print "Created Sound Set:\n", Dumper $return;
-    my $set_id = $return;
-    
-    print "Fetching new sound set\n";
-    $return = call_prov('get_sound_set', { id => $set_id });
-    print "Sound Set:\n", Dumper $return;
-
-    print "Updating global sound set\n";
-    $return = call_prov('update_sound_set', {
-        id => $set_id,
-        name => 'updated sound set',
-        description => 'updated sound set created via api',
-        account_id => 23,
-    });
-    print "Updated Sound Set:\n", Dumper $return;
-
-    print "Fetching new sound set\n";
-    $return = call_prov('get_sound_set', { id => $set_id });
-    print "Sound Set:\n", Dumper $return;
-
-    print "Delete new sound set\n";
-    $return = call_prov('delete_sound_set', { id => $set_id });
-    print "Sound Set Deleted:\n", Dumper $return;
-
-    exit;
+    return;
 }
 
+main();
 
-sub call_prov {
-    #   scalar,    scalar,    hash-ref
-    my ($function, $parameter) = @_;
-    my $result;
+exit 0;
 
-    eval {
-        $result = $prov->handle_request( $function,
-                                          {
-                                            authentication => {
-                                                                type     => 'system',
-                                                                username => $CONFIG{admin},
-                                                                password => $CONFIG{password},
-                                                              },
-                                            parameters => $parameter,
-                                        });
-    };
+__END__
 
-    if($@) {
-        if(ref $@ eq 'SOAP::Fault') {
-            die "Voip\::$function failed: ". $@->faultstring;
-        } else {
-            die "Voip\::$function failed: $@";
-        }
-    }
+=head1 NAME
 
-    return $result;
-}
+ngcp-sound_set - retreives an NGCP Sound Set 
 
+=head1 OPTIONS
+
+=over 8
+
+=item B<-help>
+
+Print a brief help message.
+
+=item B<-id>
+
+Sound set id
+
+=item B<-verbose>
+
+Show additional debug information. Default false.
+
+=back
+
+=head1 USAGE
+
+ngcp-sound_set [options]
+
+ngcp-sound_set --id 11
+
+=head1 DESCRIPTION
+
+B<This program> retreives a sound set from the NGCP platform.
+
+=head1 EXIT STATUS
+
+Exit code 0 means everything is ok otherwise 1.
+
+=head1 DIAGNOSTICS
+
+=head1 SEE ALSO
+
+NGCP::API::Client
+
+=head1 DEPENDENCIES
+
+ngcp-sound_set relies on a bunch of Perl modules, all of them specified as
+dependencies through the Debian package.
+
+=head1 INCOMPATIBILITIES
+
+No known at this time.
+
+=head1 BUGS AND LIMITATIONS
+
+Please report problems you notice to the Sipwise
+Development Team <support@sipwise.com>.
+
+=head1 AUTHOR
+
+Victor Seva <vseva@sipwise.com>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
