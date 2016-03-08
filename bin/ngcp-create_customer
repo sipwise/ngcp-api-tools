@@ -1,99 +1,70 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Config::Tiny;
 use English;
 use Getopt::Long;
-use JSON qw();
-use LWP::UserAgent;
 use Pod::Usage;
-use IO::Socket::SSL;
+use NGCP::API::Client;
+use Readonly;
 
-my $config =  Config::Tiny->read('/etc/default/ngcp-api');
+Readonly my @required => qw(billing_profile_id contact_id);
+
 my $opts = {
-    billing_id => 1,
-    contact_id => 1,
-    type => 'sipaccount',
-    host => '127.0.0.1',
-    port => 1443,
-    auth_user => 'administrator',
-    auth_pwd => 'administrator',
-    verbose => 0
+    type    => 'sipaccount',
+    status  => 'active',
+    verbose => 0,
 };
 
-if ($config) {
-    $opts->{host} = $config->{_}->{NGCP_API_IP};
-    $opts->{port} = $config->{_}->{NGCP_API_PORT};
-    $opts->{sslverify} = $config->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-}
-
 GetOptions( $opts,
-    "help|h" => sub { pod2usage(-exitval =>0); },
-    "billing_id=i",
+    "help|h" => \&usage,
+    "billing_profile_id=i",
     "contact_id=i",
-    "host=s",
-    "port=i",
-    "auth_user=s",
-    "auth_pwd=s",
-    "verbose",
     "type=s",
-    "man" => sub { pod2usage(-exitval => 0, -verbose => 2); }
-) or pod2usage(2);
+    "verbose",
+) or usage();
 
-sub main {
-    my $urlbase = 'https://'.$opts->{host}.':'.$opts->{port};
-    my $data = {
-        billing_profile_id => $opts->{billing_id},
-        contact_id => $opts->{contact_id},
-        type => $opts->{type},
-        status => 'active',
-      };
-    my $ua = LWP::UserAgent->new();
-    if($opts->{sslverify} eq 'no') {
-        $ua->ssl_opts(
-            verify_hostname => 0,
-            SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
-        );
+sub check_params {
+    my @missing;
+    foreach my $param (@required) {
+        push @missing, $param unless $opts->{$param};
     }
-    $ua->credentials($opts->{host}.':'.$opts->{port}, 'api_admin_http',
-        $opts->{auth_user}, $opts->{auth_pwd});
-    # debug!!
-    if($opts->{verbose}) {
-        $ua->show_progress(1);
-        $ua->add_handler("request_send",  sub { shift->dump; return });
-        $ua->add_handler("response_done", sub { shift->dump; return });
-    }
-    my $res = do_request($ua, $urlbase, $data);
-    if($res->is_success) {
-        print $res->status_line . ' ' . $res->header('Location'). "\n";
-    } else {
-        die $res->as_string;
-    }
+    usage(join(' ', @missing)) if scalar @missing;
     return;
 }
 
-sub do_request {
-    my $ua = shift;
-    my $urlbase = shift;
-    my $data = shift;
+sub usage {
+    my $missing = shift;
+    pod2usage(-exitval => $missing ? 1 : 0,
+              -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
+              -message => $missing ? "Missing parameters: $missing" : '',
+             );
+    return;
+}
 
-    my $req = HTTP::Request->new('POST', $urlbase.'/api/customers/');
-    $req->header('Content-Type' => 'application/json');
-    $req->header('Prefer' => 'return=representation');
-    $req->content(JSON::to_json($data));
-    return $ua->request($req);
+sub main {
+    check_params();
+
+    my $uri = '/api/customers/';
+    my %data = map { $_ => $opts->{$_} }
+                    qw(billing_profile_id contact_id type status);
+    my $client = new NGCP::API::Client;
+    $client->set_verbose($opts->{verbose});
+    my $res = $client->request("POST", $uri, \%data);
+    print $res->status_line . ' ' . $res->headers->header('Location'). "\n";
+
+    return;
 }
 
 main();
 
+exit 0;
+
 __END__
+
 =head1 NAME
 
-ngcp-create_customer - create a customer on NGCP
-
-=head1 SYNOPSIS
-
-ngcp-create_customer [options]
+ngcp-create_customer - create a customer
 
 =head1 OPTIONS
 
@@ -101,31 +72,15 @@ ngcp-create_customer [options]
 
 =item B<-help>
 
-Print a brief help message and exits.
+Print a brief help message.
 
-=item B<-auth_user>
+=item B<-billing_profile_id>
 
-Authentication username . Defaults to 'administrator'.
-
-=item B<-auth_pwd>
-
-Authentication password . Defaults to 'administrator'.
-
-=item B<-host>
-
-Host where the send queries. Defaults to '127.0.0.1'.
-
-=item B<-port>
-
-Port where the send queries. Defaults to 1443.
-
-=item B<-billing_id>
-
-The billing profile id. Defaults to 1.
+Billing profile id.
 
 =item B<-contact_id>
 
-The contact id. Defaults to 1.
+Contact id.
 
 =item B<-type>
 
@@ -134,36 +89,46 @@ Customer can be one of the "sipaccount" or "pbxaccount" type. Defaults to
 
 =item B<-verbose>
 
-See debug information. Default false.
+Show additional debug information. Default false.
 
 =back
 
-=head1 DESCRIPTION
-
-B<This program> will create a subscriber at NGCP.
-
 =head1 USAGE
 
-ngcp-create_customer -host 1.2.3.4 -billing_id 1 -profile_id 4 -type sipaccount
+ngcp-create_customer [options]
+
+ngcp-create_customer --billing_profile_id 1 --contact_id 4 --type sipaccount
+
+=head1 DESCRIPTION
+
+B<This program> creates a customer on the NGCP platform.
 
 =head1 REQUIRED ARGUMENTS
 
-TODO
+=over 8
+
+=item B<-billing_profile_id>
+
+=item B<-contact_id>
+
+=back
 
 =head1 EXIT STATUS
 
-Exit code 0 means that everything should have went fine otherwise error.
-
-=head1 DIAGNOSTICS
+Exit code 0 means everything is ok otherwise 1.
 
 =head1 CONFIGURATION
 
-/etc/default/ngcp-api for default values
+=head1 DIAGNOSTICS
+
+=head1 SEE ALSO
+
+NGCP::API::Client
 
 =head1 DEPENDENCIES
 
 ngcp-create_customer relies on a bunch of Perl modules, all of them specified as
-dependencies through the ngcp-ossbss-clients-perl Debian package.
+dependencies through the Debian package.
 
 =head1 INCOMPATIBILITIES
 
@@ -178,17 +143,21 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE
-
-Copyright (c) 2015 Sipwise GmbH, Austria.
-All rights reserved. You may not copy, distribute
-or modify without prior written permission from
-Sipwise GmbH, Austria.
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 Sipwise GmbH, Austria.
-You should have received a copy of the licence terms together with the
-software.
+Copyright (C) 2016 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 =cut
