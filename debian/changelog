@@ -1,3 +1,21 @@
+ngcp-api-tools (1.0.1.0+0~mr4.3.1.0) unstable; urgency=medium
+
+  [ Dominik Kukacka ]
+  * [46e737d] MT#17195 added webpassword (-w) cli option to create_subscriber
+
+  [ Victor Seva ]
+  * [a16994c] MT#17965 fix upgrade from previous mr4.2 versions
+
+  [ Michael Prokop ]
+  * [7a099b6] MT#17699 Bump Standards-Version to 3.9.7
+
+  [ Kirill Solomko ]
+  * [1f480bc] MT#17801 added NGCP::API::Client
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 21 Mar 2016 22:22:02 +0100
+
 ngcp-api-tools (1.0.0.0+0~mr4.3.0.0) unstable; urgency=medium
 
   * Initial revision
