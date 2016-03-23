@@ -64,12 +64,7 @@ sub request {
 
     my $res = $ua->request($req);
 
-    if($res->is_success) {
-        return NGCP::API::Client::Result->new($res);
-    } else {
-        die $res->as_string;
-    }
-    return;
+    return NGCP::API::Client::Result->new($res);
 }
 
 sub set_verbose {
@@ -83,38 +78,22 @@ sub set_verbose {
 package NGCP::API::Client::Result;
 use warnings;
 use strict;
+use base qw(HTTP::Response);
 use JSON qw(from_json);
-
-my $result;
 
 sub new {
     my ($class, $res_obj) = @_;
-    $result = $res_obj;
-    return bless {}, $class;
-}
-
-sub headers {
-    my $self = shift;
-
-    return $result->headers;
-}
-
-sub content {
-    my $self = shift;
-
-    return $result->content;
-}
-
-sub status_line {
-    my $self = shift;
-
-    return $result->status_line;
+    my $self = $class->SUPER::new($res_obj->code,
+                                  $res_obj->message,
+                                  $res_obj->headers,
+                                  $res_obj->content);
+    return $self;
 }
 
 sub as_hash {
     my $self = shift;
 
-    return from_json($result->content, { utf8 => 1 });
+    return from_json($self->content, { utf8 => 1 });
 }
 
 1;
@@ -179,7 +158,7 @@ The version is compatible with NGCP platforms version >= mr4.3.x
     my $uri = '/api/customers/2';
     my $res = $client->request("DELETE", $uri);
 
-    # $res - response is a json content
+    # $res - response is an NGCP::API::Client::Result object
 
 =head1 DESCRIPTION
 
@@ -193,17 +172,13 @@ Return: NGCP::API::Client object
 
 Send a REST API request provided by a method (GET,POST,PUT,PATCH,DELETE)
 
-Return: NGCP::API::Client::Result object
+Return: NGCP::API::Client::Result object which is an extended clone of HTTP:Respone
 
 =head2 set_verbose(0|1)
 
 Enable/disable tracing of the request/response.
 
 Return: undef
-
-=head2 NGCP::API::Client::Result->content()
-
-Return: result as json serialized data
 
 =head2 NGCP::API::Client::Result->as_hash()
 
