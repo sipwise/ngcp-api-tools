@@ -64,12 +64,7 @@ sub request {
 
     my $res = $ua->request($req);
 
-    if($res->is_success) {
-        return NGCP::API::Client::Result->new($res);
-    } else {
-        die $res->as_string;
-    }
-    return;
+    return NGCP::API::Client::Result->new($res);
 }
 
 sub set_verbose {
@@ -105,16 +100,34 @@ sub content {
     return $result->content;
 }
 
-sub status_line {
+sub decoded_content {
     my $self = shift;
 
-    return $result->status_line;
+    return $result->decoded_content;
 }
 
 sub as_hash {
     my $self = shift;
 
     return from_json($result->content, { utf8 => 1 });
+}
+
+sub status_line {
+    my $self = shift;
+
+    return $result->status_line;
+}
+
+sub is_success {
+    my $self = shift;
+
+    return $result->is_success;
+}
+
+sub result {
+    my $self = shift;
+
+    return $result;
 }
 
 1;
@@ -179,7 +192,7 @@ The version is compatible with NGCP platforms version >= mr4.3.x
     my $uri = '/api/customers/2';
     my $res = $client->request("DELETE", $uri);
 
-    # $res - response is a json content
+    # $res - response is an NGCP::API::Client::Result object
 
 =head1 DESCRIPTION
 
@@ -201,13 +214,33 @@ Enable/disable tracing of the request/response.
 
 Return: undef
 
+=head2 NGCP::API::Client::Result->headers()
+
+Return: HTTP::Headers object
+
 =head2 NGCP::API::Client::Result->content()
 
 Return: result as json serialized data
 
+=head2 NGCP::API::Client::Result->decoded_content()
+
+Return: result as json serialized decoded data
+
 =head2 NGCP::API::Client::Result->as_hash()
 
 Return: result as a hash reference
+
+=head2 NGCP::API::Client::Result->is_success()
+
+Return: true if the request is successful
+
+=head2 NGCP::API::Client::Result->status_line()
+
+Return: HTTP status line of the respone
+
+=head2 NGCP::API::Client::Result->result()
+
+Return: raw LWP::UserAgent->result object
 
 =head1 BUGS AND LIMITATIONS
 
