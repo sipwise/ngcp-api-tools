@@ -96,6 +96,15 @@ sub as_hash {
     return from_json($self->content, { utf8 => 1 });
 }
 
+sub result {
+    my $self = shift;
+
+    my $location = $self->headers->header('Location') || '';
+    return $self->is_success
+        ? sprintf "%s %s", $self->status_line, $location
+        : sprintf "%s %s", $self->status_line, $self->content;
+}
+
 1;
 
 __END__
@@ -183,6 +192,10 @@ Return: undef
 =head2 NGCP::API::Client::Result->as_hash()
 
 Return: result as a hash reference
+
+=head2 NGCP::API::Client::Result->result()
+
+Return: return a result string based on the request success
 
 =head1 BUGS AND LIMITATIONS
 
