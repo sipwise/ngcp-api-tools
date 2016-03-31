@@ -22,7 +22,7 @@ Description: NGCP REST API related tools
 Package: ngcp-billing-tools
 Architecture: all
 Depends: ngcp-panel,
-         ngcp-templates-ce-ngcp-billing-tools | ngcp-templates-pro-ngcp-billing-tools,
+         ngcp-templates,
          perl,
          ${misc:Depends}
 Provides: ngcp-api-tools
@@ -38,7 +38,7 @@ Description: NGCP Billing related tools
 Package: ngcp-provisioning-tools
 Architecture: all
 Depends: ngcp-panel,
-         ngcp-templates-ce-ngcp-provisioning-tools | ngcp-templates-pro-ngcp-provisioning-tools,
+         ngcp-templates,
          perl,
          ${misc:Depends}
 Provides: ngcp-api-tools
