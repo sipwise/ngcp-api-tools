@@ -21,9 +21,7 @@ Description: NGCP REST API related tools
 
 Package: ngcp-billing-tools
 Architecture: all
-Depends: ngcp-panel,
-         ngcp-templates-ce-ngcp-billing-tools | ngcp-templates-pro-ngcp-billing-tools,
-         perl,
+Depends: perl,
          ${misc:Depends}
 Provides: ngcp-api-tools
 Conflicts: ngcp-ossbss,
@@ -37,9 +35,7 @@ Description: NGCP Billing related tools
 
 Package: ngcp-provisioning-tools
 Architecture: all
-Depends: ngcp-panel,
-         ngcp-templates-ce-ngcp-provisioning-tools | ngcp-templates-pro-ngcp-provisioning-tools,
-         perl,
+Depends: perl,
          ${misc:Depends}
 Provides: ngcp-api-tools
 Conflicts: ngcp-ossbss,
