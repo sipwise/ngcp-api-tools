@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dad5f5cf_0be59ea7",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2016-04-01T12:45:55Z",
+      "side": 1,
+      "message": "Again it would be nice to have here the motivation for the change to have some context, and to be able to evaluate what the change is supposed to do, otherwise one needs to try to infer, or go read the entire bug report (which might be long and implies a context switch :).",
+      "revId": "ce0f7e5d41b27ae55912c79045fb1c9f9ad922e1",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
