@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dad5f5cf_1c1de6bd",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-04-04T11:25:34Z",
+      "side": 1,
+      "message": "AFAIK, we do:\n\n\u003euse NGCP::API::Client;\n\nhttps://git.mgm.sipwise.com/gitweb/?p\u003dngcp-api-tools.git;a\u003dblob;f\u003dbin/ngcp-terminate_subscriber;h\u003df8cd0f41a8ba832f8b4cd295e4b8909187841d4f;hb\u003d30248346a32fcc60facad5287fc2a6c9cd2feb54",
+      "range": {
+        "startLine": 9,
+        "startChar": 0,
+        "endLine": 10,
+        "endChar": 55
+      },
+      "revId": "30248346a32fcc60facad5287fc2a6c9cd2feb54",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
