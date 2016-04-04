@@ -1,3 +1,13 @@
+ngcp-api-tools (1.0.2.0+0~mr4.3.2.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [b6f7b2a] MT#17801 NGCP::API::Client::Result uses HTTP::Response as base
+  * [8cefce2] MT#17801 added NGCP::API::Client::Result->result() method
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 04 Apr 2016 23:30:30 +0200
+
 ngcp-api-tools (1.0.1.0+0~mr4.3.1.0) unstable; urgency=medium
 
   [ Dominik Kukacka ]
