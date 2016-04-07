@@ -64,6 +64,8 @@ sub main {
     my $res = $client->request("PATCH", $uri, $data);
     print $res->result."\n";
 
+    exit !$res->is_success;
+
     return;
 }
 

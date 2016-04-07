@@ -70,6 +70,8 @@ sub main {
     my $res = $client->request("POST", $uri, \%data);
     print $res->result."\n";
 
+    exit !$res->is_success;
+
     return;
 }
 
