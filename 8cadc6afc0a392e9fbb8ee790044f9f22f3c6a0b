@@ -1,0 +1,7 @@
+Verified+1: Jenkins Jenkins <jenkins@sipwise.com>
+Code-Review+2: Alexander Lutay <alutay@sipwise.com>
+Submitted-by: Kirill Solomko <ksolomko@sipwise.com>
+Submitted-at: Thu, 07 Apr 2016 15:24:40 +0200
+Reviewed-on: http://gerrit.mgm.sipwise.com/5556
+Project: ngcp-api-tools
+Branch: refs/heads/mr4.3.1
