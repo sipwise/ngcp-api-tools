@@ -65,6 +65,8 @@ sub main {
     my $res = $client->request("DELETE", $uri, \%data);
     print $res->result."\n";
 
+    exit !$res->is_success;
+
     return;
 }
 
