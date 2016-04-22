@@ -73,15 +73,26 @@ sub get_email_template {
     my $event = shift;
     my $lock_type = $event->{interval_lock} ? 'lock' : 'warning';
     my $reseller_id = $event->{reseller_id};
-    my $templates_data = get_data('/api/emailtemplates/', 'emailtemplates');
+    my @templates_data = ();
+    foreach my $reseller ($event->{reseller_id}, 'NULL') {
+        @templates_data = (
+            @templates_data,
+            @{get_data(sprintf('/api/emailtemplates/?reseller_id=%s', $reseller),
+                       'emailtemplates')});
+    }
     my $selected_template;
-    foreach my $template (@{$templates_data}) {
+    foreach my $template (@templates_data) {
         next if $template->{name} ne 'customer_fraud_'.$lock_type.'_default_email'
              && $template->{name} ne 'customer_fraud_'.$lock_type.'_email';
         next if $template->{reseller_id} && $template->{reseller_id} != $reseller_id;
         $selected_template = $template;
         last if $template->{reseller_id};
     }
+
+    unless ($selected_template) {
+        die sprintf "No template 'customer_fraud_%s_default_email' OR 'customer_fraud_%s_email' is defined.", $lock_type, $lock_type;
+    }
+
     return $selected_template;
 }
 
@@ -110,6 +121,10 @@ sub send_email {
           $tt->process(\$template->{$_}, $vars, \$out);
           $out and $template->{$_} = $out;
         } keys %{$template};
+
+    die "'To' header is empty in the email" unless $event->{interval_notify};
+    die "'From' header is empty in the email" unless $template->{from_email};
+    die "'Subject' header is empty in the email" unless $template->{subject};
 
     my $transport = Email::Sender::Transport::Sendmail->new;
     my $email = Email::Simple->create(
