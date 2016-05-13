@@ -1,3 +1,12 @@
+ngcp-api-tools (1.0.1.4+0~mr4.3.1.4) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [b63ea00] MT#18411 add fraud template variable "interval" (month, day)
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Fri, 13 May 2016 16:40:03 +0200
+
 ngcp-api-tools (1.0.1.3+0~mr4.3.1.3) unstable; urgency=medium
 
   [ Kirill Solomko ]
