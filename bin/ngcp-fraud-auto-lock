@@ -103,6 +103,7 @@ sub send_email {
 
     my $vars = { adminmail => $config->{adminmail},
                  customer_id => $event->{id},
+                 interval => $event->{interval},
                  interval_cost  => sprintf('%.2f', $event->{interval_cost}/100),
                  interval_limit => sprintf('%.2f', $event->{interval_limit}/100),
                  type => $event->{type} eq 'profile_limit'
@@ -180,6 +181,7 @@ sub main {
         my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
                                    $event->{id}),
                                    'subscribers');
+        $event->{interval} = 'month';
         if ($event->{interval_lock} > 0) {
             lock_customer($event, $subscribers);
         }
