@@ -1,3 +1,20 @@
+ngcp-api-tools (1.2.0.0+0~mr4.5.0.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [ff1ecaa] MT#17801 NGCP::API::Client::Result uses HTTP::Response as base
+  * [82a1be5] MT#17801 added NGCP::API::Client::Result->result() method
+  * [3d65648] MT#18411 provisioning scripts rework
+  * [289c9ff] MT#18411 add exit codes, minor fixes
+  * [0ed5a53] MT#18411 ngcp-fraud-*-lock fixes
+  * [e11ab08] MT#18411 add fraud template variable "interval" (month, day)
+
+  [ Victor Seva ]
+  * [aa089fe] MT#18815 debian: remove depends on ngcp-templates and ngcp-panel
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 23 May 2016 18:50:40 +0200
+
 ngcp-api-tools (1.1.0.0+0~mr4.4.0.0) unstable; urgency=medium
 
   [ Dominik Kukacka ]
