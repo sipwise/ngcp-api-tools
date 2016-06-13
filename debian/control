@@ -8,9 +8,10 @@ Homepage: https://www.sipwise.com/
 
 Package: ngcp-api-tools
 Architecture: all
-Depends: ngcp-panel,
-         perl,
-         ${misc:Depends}
+Depends:
+ ngcp-panel,
+ ${misc:Depends},
+ ${perl:Depends},
 Provides: ngcp-api-tools
 Conflicts: ngcp-ossbss,
            ngcp-www-admin (<= 2)
@@ -21,8 +22,9 @@ Description: NGCP REST API related tools
 
 Package: ngcp-billing-tools
 Architecture: all
-Depends: perl,
-         ${misc:Depends}
+Depends:
+ ${misc:Depends},
+ ${perl:Depends},
 Provides: ngcp-api-tools
 Conflicts: ngcp-ossbss,
            ngcp-ossbss-billing (<< 3.19),
@@ -35,8 +37,9 @@ Description: NGCP Billing related tools
 
 Package: ngcp-provisioning-tools
 Architecture: all
-Depends: perl,
-         ${misc:Depends}
+Depends:
+ ${misc:Depends},
+ ${perl:Depends},
 Provides: ngcp-api-tools
 Conflicts: ngcp-ossbss,
            ngcp-ossbss-clients-perl (<< 3.19),
