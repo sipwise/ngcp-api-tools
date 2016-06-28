@@ -17,12 +17,14 @@ sub new {
     my $class  = shift;
     my $self   = {};
 
-    $opts{host}      = $cfg->{_}->{NGCP_API_IP};
-    $opts{port}      = $cfg->{_}->{NGCP_API_PORT};
-    $opts{sslverify} = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-    $opts{auth_user} = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
-    $opts{auth_pass} = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
-    $opts{verbose}   = 0;
+    $opts{host}         = $cfg->{_}->{NGCP_API_IP};
+    $opts{port}         = $cfg->{_}->{NGCP_API_PORT};
+    $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
+    $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
+    $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
+    $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
+    $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
+    $opts{verbose}      = 0;
 
     return bless $self, $class;
 }
@@ -31,7 +33,8 @@ sub request {
     my ($self, $method, $uri, $data) = @_;
 
     my $ua = LWP::UserAgent->new();
-    if ($opts{sslverify} eq 'no') {
+    if ($opts{sslverify} eq 'no' ||
+            ($opts{sslverify_lb} eq 'no' && $opts{iface} =~ /^(lo|dummy)/)) {
         $ua->ssl_opts(
             verify_hostname => 0,
             SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
