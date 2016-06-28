@@ -7,6 +7,7 @@ use JSON qw(to_json);
 use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
+use Data::Validate::IP qw(is_ipv4 is_ipv6);
 
 Readonly my $cfg => Config::Tiny->read("/etc/default/ngcp-api")
                         or die "Cannot read /etc/default/ngcp-api: $ERRNO";
@@ -31,7 +32,7 @@ sub request {
     my ($self, $method, $uri, $data) = @_;
 
     my $ua = LWP::UserAgent->new();
-    if ($opts{sslverify} eq 'no') {
+    if ($opts{sslverify} eq 'no' || is_ipv4($opts{host}) || is_ipv6($opts{host})) {
         $ua->ssl_opts(
             verify_hostname => 0,
             SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
