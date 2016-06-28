@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bab3e1c7_030cbd41",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2016-06-28T13:18:38Z",
+      "side": 1,
+      "message": "IMHO it is very dangerous.\n\nif someone will use IP 92.42.136.65 instead of hostname demo.sipwise.com it will silently loose SSL protection and can be affected with MITM on selfsigned cert _siletnly_\n\nI do understand if you do this for localhost only...\nWhich I still do NOT like, while\nI do not see other option here honestly :-(\n\nSo, why not localhost only?",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 58
+      },
+      "revId": "3f8a5b9bd07d7f352862e53603368a332619c346",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
