@@ -1,3 +1,18 @@
+ngcp-api-tools (1.0.3.0+0~mr4.3.3.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [532c2ee] MT#18411 provisioning scripts rework
+  * [6f16ff9] MT#18411 add exit codes, minor fixes
+  * [4b4f718] MT#18411 ngcp-fraud-*-lock fixes
+  * [7fa289a] MT#18411 add fraud template variable "interval" (month, day)
+
+  [ Victor Seva ]
+  * [b1f8601] MT#18815 debian: remove depends on ngcp-templates and ngcp-panel
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 04 Jul 2016 13:09:06 +0200
+
 ngcp-api-tools (1.0.2.0+0~mr4.3.2.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
