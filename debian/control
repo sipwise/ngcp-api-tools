@@ -2,7 +2,9 @@ Source: ngcp-api-tools
 Section: admin
 Priority: extra
 Maintainer: Sipwise Development Team <support@sipwise.com>
-Build-Depends: debhelper (>= 9~)
+Build-Depends:
+ debhelper (>= 9~),
+ libmodule-build-perl | perl (<< 5.21.0~),
 Standards-Version: 3.9.8
 Homepage: https://www.sipwise.com/
 
