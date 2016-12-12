@@ -140,7 +140,10 @@ sub main {
                 { map { $_ => $balance->{$_} } qw(id cash_balance) };
         }
         if (@contracts) {
-            send_email($cwarning, \@contracts);
+            eval {
+                send_email($cwarning, \@contracts);
+            };
+            print $EVAL_ERROR if $EVAL_ERROR;
         }
     }
     return;
