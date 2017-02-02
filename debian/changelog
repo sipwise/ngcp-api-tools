@@ -1,3 +1,12 @@
+ngcp-api-tools (5.2.0.0+0~mr5.2.0.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [94266a5] TT#6702 do not die on fraud/credidwarning send mail errors
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Fri, 03 Feb 2017 00:36:47 +0100
+
 ngcp-api-tools (5.1.0.0+0~mr5.1.0.0) unstable; urgency=medium
 
   [ Michael Prokop ]
