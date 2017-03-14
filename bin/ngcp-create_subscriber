@@ -63,7 +63,12 @@ sub main {
     # domain_id
     my $dom = $client->request("GET", "/api/domains/?domain=".$opts->{domain});
     if ($dom->as_hash->{total_count} == 1) {
-        $data{domain_id} = $dom->as_hash->{_embedded}->{'ngcp:domains'}->{id};
+        my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
+        if (ref $tmp eq 'ARRAY') {
+            $data{domain_id} = $tmp[0]->{id};
+        } else {
+            $data{domain_id} = $tmp->{id};
+        }
     } else {
         usage("Domain not found");
     }
