@@ -52,7 +52,7 @@ sub main {
     my $sub = $client->request("GET", $uri);
     my $sub_id;
     if ($sub->as_hash->{total_count} == 1) {
-        $sub_id = $sub->as_hash->{_embedded}->{'ngcp:subscribers'}->{id};
+        $sub_id = $sub->as_hash->{_embedded}->{'ngcp:subscribers'}[0]->{id};
         usage("Wrong subscriber id found") unless $sub_id =~ /^\d$/;
     } else {
         usage("Subscriber not found");
