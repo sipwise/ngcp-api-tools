@@ -65,7 +65,7 @@ sub main {
     if ($dom->as_hash->{total_count} == 1) {
         my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
         if (ref $tmp eq 'ARRAY') {
-            $data{domain_id} = $tmp[0]->{id};
+            $data{domain_id} = @{$tmp}[0]->{id};
         } else {
             $data{domain_id} = $tmp->{id};
         }

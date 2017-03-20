@@ -54,7 +54,7 @@ sub main {
     if ($sub->as_hash->{total_count} == 1) {
         my $tmp = $sub->as_hash->{_embedded}->{'ngcp:subscribers'};
         if (ref $tmp eq 'ARRAY') {
-            $sub_id = $tmp[0]->{id};
+            $sub_id = @{$tmp}[0]->{id};
         } else {
             $sub_id = $tmp->{id};
         }
