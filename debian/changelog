@@ -1,3 +1,14 @@
+ngcp-api-tools (5.2.1.0+0~mr5.2.1.0) unstable; urgency=medium
+
+  [ Victor Seva ]
+  * [0b49ec4] TT#12905 ngcp-panel API will change, '_embedded' will be an array
+  * [f25c4f5] TT#12905 fix error introduced at 0b49ec43f3ee
+  * [32b50f1] TT#5420 debian: refresh debian packaging
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 22 Mar 2017 10:56:46 +0100
+
 ngcp-api-tools (5.2.0.0+0~mr5.2.0.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
