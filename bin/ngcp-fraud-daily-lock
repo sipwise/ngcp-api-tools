@@ -182,7 +182,7 @@ sub main {
                                    $event->{id}),
                                    'subscribers');
         $event->{interval} = 'day';
-        if ($event->{interval_lock} > 0) {
+        if (defined $event->{interval_lock} && $event->{interval_lock} > 0) {
             lock_customer($event, $subscribers);
         }
         eval {
