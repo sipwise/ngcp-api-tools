@@ -182,7 +182,7 @@ sub main {
                                    $event->{id}),
                                    'subscribers');
         $event->{interval} = 'month';
-        if ($event->{interval_lock} > 0) {
+        if (defined $event->{interval_lock} && $event->{interval_lock} > 0) {
             lock_customer($event, $subscribers);
         }
         eval {
@@ -202,6 +202,10 @@ __END__
 =head1 NAME
 
 ngcp-fraud-auto-lock - checks for contract balances above fraud limit thresholds
+
+=head1 SYNOPSIS
+
+ngcp-fraud-daily-lock
 
 =head1 OPTIONS
 
@@ -259,9 +263,11 @@ Development Team <support@sipwise.com>.
 
 Kirill Solomko <ksolomko@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 COPYRIGHT
 
 Copyright (C) 2016 Sipwise GmbH, Austria
+
+=head1 LICENSE
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
