@@ -1,0 +1,7 @@
+Verified+1: Jenkins Jenkins
+Code-Review+2: Rene Krenn <rkrenn@sipwise.com>
+Submitted-by: Kirill Solomko <ksolomko@sipwise.com>
+Submitted-at: Thu, 27 Apr 2017 18:06:16 +0200
+Reviewed-on: http://gerrit.mgm.sipwise.com/12936
+Project: ngcp-api-tools
+Branch: refs/heads/master
