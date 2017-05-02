@@ -32,7 +32,6 @@ sub usage {
     my $missing = shift;
     pod2usage(-exitval => $missing ? 1 : 0,
               -verbose => 99,
-              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $missing ? "Missing parameters: $missing" : '',
              );
     return;
@@ -64,29 +63,9 @@ __END__
 
 ngcp-terminate_customer - terminate an NGCP Customer
 
-=head1 OPTIONS
+=head1 SYNOPSIS
 
-=over 8
-
-=item B<-help>
-
-Print a brief help message.
-
-=item B<-customer_id>
-
-Customer id
-
-=item B<-verbose>
-
-Show additional debug information. Default false.
-
-=back
-
-=head1 USAGE
-
-ngcp-terminate_customer [options]
-
-ngcp-terminate_customer --customer_id 11
+B<ngcp-terminate_customer> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 
@@ -96,7 +75,23 @@ B<This program> terminates a customer on the NGCP platform.
 
 =over 8
 
-=item B<-customer_id>
+=item B<--customer_id> I<cid>
+
+Customer ID.
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--verbose>
+
+Show additional debug information. Default false.
+
+=item B<--help>
+
+Print a brief help message.
 
 =back
 
@@ -104,22 +99,9 @@ B<This program> terminates a customer on the NGCP platform.
 
 Exit code 0 means everything is ok otherwise 1.
 
-=head1 CONFIGURATION
-
-=head1 DIAGNOSTICS
-
 =head1 SEE ALSO
 
 NGCP::API::Client
-
-=head1 DEPENDENCIES
-
-ngcp-terminate_customer relies on a bunch of Perl modules, all of them specified as
-dependencies through the Debian package.
-
-=head1 INCOMPATIBILITIES
-
-No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -130,7 +112,7 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 

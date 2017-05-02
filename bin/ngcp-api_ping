@@ -31,7 +31,6 @@ sub usage {
     my $missing = shift;
     pod2usage(-exitval => $missing ? 1 : 0,
               -verbose => 99,
-              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $missing ? "Missing parameters: $missing" : '',
              );
     return;
@@ -66,52 +65,35 @@ __END__
 
 ngcp-api_ping - check NGCP API status
 
+=head1 SYNOPSIS
+
+B<ngcp-api_ping> [I<options>]
+
+=head1 DESCRIPTION
+
+B<This program> checks whether NGCP API is running.
+
 =head1 OPTIONS
 
 =over 8
 
-=item B<-help>
+=item B<--help>
 
 Print a brief help message.
 
-=item B<-verbose>
+=item B<--verbose>
 
 Show additional debug information. Default false.
 
 =back
 
-=head1 USAGE
-
-ngcp-api_ping [options]
-
-=head1 DESCRIPTION
-
-B<This program> checks if NGCP API is running.
-
-=head1 REQUIRED ARGUMENTS
-
-None
-
 =head1 EXIT STATUS
 
 Exit code 0 means everything is fine otherwise 1.
 
-=head1 CONFIGURATION
-
-=head1 DIAGNOSTICS
-
 =head1 SEE ALSO
 
 NGCP::API::Client
-
-=head1 DEPENDENCIES
-
-ngcp-api_ping relies on a bunch of Perl modules, all of them specified as
-dependencies through the ngcp-panel Debian package.
-
-=head1 INCOMPATIBILITIES
-
-No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -122,7 +104,7 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 

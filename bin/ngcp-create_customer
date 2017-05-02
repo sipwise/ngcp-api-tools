@@ -36,7 +36,6 @@ sub usage {
     my $missing = shift;
     pod2usage(-exitval => $missing ? 1 : 0,
               -verbose => 99,
-              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $missing ? "Missing parameters: $missing" : '',
              );
     return;
@@ -68,38 +67,9 @@ __END__
 
 ngcp-create_customer - create a customer
 
-=head1 OPTIONS
+=head1 SYNOPSIS
 
-=over 8
-
-=item B<-help>
-
-Print a brief help message.
-
-=item B<-billing_profile_id>
-
-Billing profile id.
-
-=item B<-contact_id>
-
-Contact id.
-
-=item B<-type>
-
-Customer can be one of the "sipaccount" or "pbxaccount" type. Defaults to
-"sipaccount".
-
-=item B<-verbose>
-
-Show additional debug information. Default false.
-
-=back
-
-=head1 USAGE
-
-ngcp-create_customer [options]
-
-ngcp-create_customer --billing_profile_id 1 --contact_id 4 --type sipaccount
+B<ngcp-create_customer> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 
@@ -109,9 +79,32 @@ B<This program> creates a customer on the NGCP platform.
 
 =over 8
 
-=item B<-billing_profile_id>
+=item B<--billing_profile_id>
 
-=item B<-contact_id>
+Billing profile id.
+
+=item B<--contact_id>
+
+Contact id.
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--type>
+
+Customer can be one of the "sipaccount" or "pbxaccount" type. Defaults to
+"sipaccount".
+
+=item B<--verbose>
+
+Show additional debug information. Default false.
+
+=item B<--help>
+
+Print a brief help message.
 
 =back
 
@@ -119,22 +112,9 @@ B<This program> creates a customer on the NGCP platform.
 
 Exit code 0 means everything is ok otherwise 1.
 
-=head1 CONFIGURATION
-
-=head1 DIAGNOSTICS
-
 =head1 SEE ALSO
 
 NGCP::API::Client
-
-=head1 DEPENDENCIES
-
-ngcp-create_customer relies on a bunch of Perl modules, all of them specified as
-dependencies through the Debian package.
-
-=head1 INCOMPATIBILITIES
-
-No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -145,7 +125,7 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 

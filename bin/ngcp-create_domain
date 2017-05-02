@@ -44,7 +44,6 @@ sub usage {
     my $missing = shift;
     pod2usage(-exitval => $missing ? 1 : 0,
               -verbose => 99,
-              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $missing ? "Missing parameters: $missing" : '',
              );
     return;
@@ -75,39 +74,9 @@ __END__
 
 ngcp-create_domain - create an NGCP domain
 
-=head1 OPTIONS
+=head1 SYNOPSIS
 
-=over 8
-
-=item B<-help>
-
-Print a brief help message.
-
-=item B<-reseller_id>
-
-Reseller id. Default 1.
-
-=item B<-skip_sip>
-
-Skip reloading SIP services. If true, changes will not be effective immedeately
-until the respective service is restarted or properly notified. Default false.
-
-=item B<-skip_xmpp>
-
-Skip reloading XMPP services. If true, changes will not be effective immedeately
-until the respective service is restarted or properly notified. Default false.
-
-=item B<-verbose>
-
-Show additional debug information. Default false.
-
-=back
-
-=head1 USAGE
-
-ngcp-create_domain [options]
-
-ngcp-create_domain --domain example.org
+B<ngcp-create_domain> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 
@@ -117,7 +86,37 @@ B<This program> creates a domain on the NGCP platform.
 
 =over 8
 
-=item B<-domain>
+=item B<--domain> I<domain>
+
+The domain to create.
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--reseller_id> I<rid>
+
+Reseller id. Default 1.
+
+=item B<--skip_sip>
+
+Skip reloading SIP services. If true, changes will not be effective immedeately
+until the respective service is restarted or properly notified. Default false.
+
+=item B<--skip_xmpp>
+
+Skip reloading XMPP services. If true, changes will not be effective immedeately
+until the respective service is restarted or properly notified. Default false.
+
+=item B<--verbose>
+
+Show additional debug information. Default false.
+
+=item B<--help>
+
+Print a brief help message.
 
 =back
 
@@ -125,22 +124,9 @@ B<This program> creates a domain on the NGCP platform.
 
 Exit code 0 means everything is ok otherwise 1.
 
-=head1 CONFIGURATION
-
-=head1 DIAGNOSTICS
-
 =head1 SEE ALSO
 
 NGCP::API::Client
-
-=head1 DEPENDENCIES
-
-ngcp-create_domain relies on a bunch of Perl modules, all of them specified as
-dependencies through the Debian package.
-
-=head1 INCOMPATIBILITIES
-
-No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -151,7 +137,7 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 

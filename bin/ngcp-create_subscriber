@@ -41,7 +41,6 @@ sub usage {
     my $msg = shift;
     pod2usage(-exitval => $msg ? 1 : 0,
               -verbose => 99,
-              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $msg
                             ? $msg =~ /not found/i
                                 ? $msg
@@ -90,62 +89,9 @@ __END__
 
 ngcp-create_subscriber - create a subscriber
 
-=head1 OPTIONS
+=head1 SYNOPSIS
 
-=over 8
-
-=item B<-help>
-
-Print a brief help message.
-
-=item B<-customer_id>
-
-An existing customer id to assign this subscriber to.
-
-=item B<-username|u>
-
-A SIP username.
-
-=item B<-domain|d>
-
-An existing domain for the new subscriber.
-
-=item B<-password|p>
-
-An unencrypted SIP password for the new subscriber.
-
-=item B<-webpassword|w>
-
-An unencrypted web password for the new subscriber.
-
-=item B<-cc|c>
-
-A country code part of the subscriber's number.
-
-=item B<-ac|a>
-
-An area code part of the subscriber's number.
-
-=item B<-number|n>
-
-A local number part of the subscriber's number.
-
-=item B<-admin|s>
-
-Set the administrative flag for the new subscriber.
-Defaults to 0 (no).
-
-=item B<-verbose>
-
-Show additional debug information. Default false.
-
-=back
-
-=head1 USAGE
-
-ngcp-create_subscriber [options]
-
-ngcp-create_subscriber --customer_id 1 --username 4311101 --domain sipwise.com --password SecurePassword1 --cc 43 --ac 111 --sn 01
+B<ngcp-create_subscriber> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 
@@ -155,19 +101,62 @@ B<This program> creates a subscriber on the NGCP platform.
 
 =over 8
 
-=item B<-customer_id>
+=item B<--customer_id> I<cid>
 
-=item B<-username>
+An existing customer id to assign this subscriber to.
 
-=item B<-domain>
+=item B<-u>, B<--username> I<username>
 
-=item B<-password>
+A SIP username.
 
-=item B<-cc>
+=item B<-d>, B<--domain> I<domain>
 
-=item B<-ac>
+An existing domain for the new subscriber.
 
-=item B<-sn>
+=item B<-p>, B<--password> I<password>
+
+An unencrypted SIP password for the new subscriber.
+
+B<Note:> using this option is a security hole, as it will be visible to
+other users at least from the /proc filesystem.
+
+=item B<-w>, B<--webpassword> I<password>
+
+An unencrypted web password for the new subscriber.
+
+B<Note:> using this option is a security hole, as it will be visible to
+other users at least from the /proc filesystem.
+
+=item B<-c>, B<--cc> I<country-code>
+
+A country code part of the subscriber's number.
+
+=item B<-a>, B<--ac> I<area-code>
+
+An area code part of the subscriber's number.
+
+=item B<-n>, B<--sn> I<sub-number>
+
+A local number part of the subscriber's number.
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<-s>, B<--admin>
+
+Set the administrative flag for the new subscriber.
+Defaults to 0 (no).
+
+=item B<--verbose>
+
+Show additional debug information. Default false.
+
+=item B<--help>
+
+Print a brief help message.
 
 =back
 
@@ -175,22 +164,9 @@ B<This program> creates a subscriber on the NGCP platform.
 
 Exit code 0 means everything is ok otherwise 1.
 
-=head1 CONFIGURATION
-
-=head1 DIAGNOSTICS
-
 =head1 SEE ALSO
 
 NGCP::API::Client
-
-=head1 DEPENDENCIES
-
-ngcp-create_customer relies on a bunch of Perl modules, all of them specified as
-dependencies through the Debian package.
-
-=head1 INCOMPATIBILITIES
-
-No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -201,7 +177,7 @@ Development Team <support@sipwise.com>.
 
 Victor Seva <vseva@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 

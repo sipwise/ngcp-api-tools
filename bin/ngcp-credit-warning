@@ -40,7 +40,6 @@ sub usage {
     my $msg = shift;
     pod2usage(-exitval => $msg ? 1 : 0,
               -verbose => 99,
-              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $msg
                             ? $msg =~ /not found/i
                                 ? $msg
@@ -159,52 +158,36 @@ __END__
 
 ngcp-credit-warning - checks for contract balances above credit warning thresholds
 
+=head1 SYNOPSIS
+
+B<ngcp-credit-warning> [I<options>...]
+
+=head1 DESCRIPTION
+
+B<This program> checks for contract balances above credit warning thresholds
+and sends email notifications about the incidents.
+
 =head1 OPTIONS
 
 =over 8
 
-=item B<-help>
-
-Print a brief help message.
-
-=item B<-verbose>
+=item B<--verbose>
 
 Show additional debug information. Default false.
 
+=item B<--help>
+
+Print a brief help message.
+
 =back
-
-=head1 USAGE
-
-ngcp-credit-warning [options]
-
-=head1 DESCRIPTION
-
-B<This program> checks for contract balances above credit warning thresholds and sends email notifications about the incidents
-
-=head1 REQUIRED ARGUMENTS
-
-None
 
 =head1 EXIT STATUS
 
 Exit code 0 means everything is ok otherwise 1.
 
-=head1 CONFIGURATION
-
-=head1 DIAGNOSTICS
-
 =head1 SEE ALSO
 
 NGCP::API::Client
-
-=head1 DEPENDENCIES
-
-ngcp-credit-warning relies on a bunch of Perl modules, all of them specified as
-dependencies through the Debian package.
-
-=head1 INCOMPATIBILITIES
-
-No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -215,7 +198,7 @@ Development Team <support@sipwise.com>.
 
 Kirill Solomko <ksolomko@sipwise.com>
 
-=head1 LICENSE AND COPYRIGHT
+=head1 LICENSE
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 
