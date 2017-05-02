@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a166590_79b0efdd",
+        "filename": "bin/ngcp-api_ping",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-05-02T12:20:51Z",
+      "side": 0,
+      "message": "what did it here previously?",
+      "range": {
+        "startLine": 34,
+        "startChar": 15,
+        "endLine": 34,
+        "endChar": 23
+      },
+      "revId": "6cab5bb0f2da5660e5bae9b3b6ef6600e01ebae4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
