@@ -22,6 +22,30 @@
       "revId": "6cab5bb0f2da5660e5bae9b3b6ef6600e01ebae4",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_3904b77d",
+        "filename": "bin/ngcp-api_ping",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2017-05-02T12:52:19Z",
+      "side": 0,
+      "message": "Because we were diverging from the standard sections, the function needed to be told which ones to show. Now that we are using the default/standard ones, there\u0027s no need to diverge anymore. :)",
+      "parentUuid": "5a166590_79b0efdd",
+      "range": {
+        "startLine": 34,
+        "startChar": 15,
+        "endLine": 34,
+        "endChar": 23
+      },
+      "revId": "6cab5bb0f2da5660e5bae9b3b6ef6600e01ebae4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
