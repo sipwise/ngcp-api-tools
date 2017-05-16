@@ -1,3 +1,15 @@
+ngcp-api-tools (5.3.1.0+0~mr5.3.1.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [6cab5bb] TT#15208 fix undef interval_lock variable check
+
+  [ Guillem Jover ]
+  * [c346334] TT#15450 Fix POD sections, markup and content
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 16 May 2017 21:38:46 +0200
+
 ngcp-api-tools (5.3.0.0+0~mr5.3.0.0) unstable; urgency=medium
 
   [ Victor Seva ]
