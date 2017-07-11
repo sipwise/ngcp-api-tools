@@ -185,9 +185,11 @@ sub main {
         if (defined $event->{interval_lock} && $event->{interval_lock} > 0) {
             lock_customer($event, $subscribers);
         }
-        eval {
-            send_email($event, $subscribers);
-        };
+        if ($event->{interval_notify}) {
+            eval {
+                send_email($event, $subscribers);
+            };
+        }
         print $EVAL_ERROR if $EVAL_ERROR;
     }
     return;
