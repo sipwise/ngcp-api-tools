@@ -8,8 +8,18 @@ use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
 
-Readonly my $cfg => Config::Tiny->read("/etc/default/ngcp-api")
-                        or die "Cannot read /etc/default/ngcp-api: $ERRNO";
+my $config;
+
+BEGIN {
+    #without this, Readonly raises a misleading "... attempt
+    #to modify readonly ..." when instantiating a
+    #NGCP::API::Client if the file is not present
+    my $cfg_file = "/etc/default/ngcp-api";
+    $config = Config::Tiny->read($cfg_file)
+                        or die "Cannot read $cfg_file: $ERRNO";
+};
+
+Readonly::Scalar my $cfg => $config;
 
 my %opts = ();
 
@@ -26,12 +36,14 @@ sub new {
     $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
     $opts{verbose}      = 0;
 
-    return bless $self, $class;
+    bless $self, $class;
+    $self->page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
+
+    return $self;
 }
 
-sub request {
-    my ($self, $method, $uri, $data) = @_;
-
+sub _create_ua {
+    my ($self, $uri) = @_;
     my $ua = LWP::UserAgent->new();
     if ($opts{sslverify} eq 'no' ||
             ($opts{sslverify_lb} eq 'no' && $opts{iface} =~ /^(lo|dummy)/)) {
@@ -42,17 +54,21 @@ sub request {
     }
 
     my $urlbase = sprintf "%s:%s", @{opts}{qw(host port)};
-    my $url     = sprintf "https://%s%s", $urlbase, $uri =~ m#^/# ? $uri
-                                                                  : "/".$uri;
-    $ua->credentials($urlbase, 'api_admin_system',
+
+    $ua->credentials($urlbase, 'api_admin_http',
                      @{opts}{qw(auth_user auth_pass)});
 
-    if($opts{verbose}) {
+    #if($opts{verbose}) {
         $ua->show_progress(1);
         $ua->add_handler("request_send",  sub { shift->dump; return });
         $ua->add_handler("response_done", sub { shift->dump; return });
-    }
+    #}
 
+    return ($ua,$urlbase);
+}
+
+sub _create_req {
+    my ($self, $method, $url) = @_;
     my $req = HTTP::Request->new($method, $url);
 
     if ($method eq "PATCH") {
@@ -61,13 +77,65 @@ sub request {
         $req->header('Content-Type' => 'application/json');
     }
     $req->header('Prefer' => 'return=representation');
-    $req->header('NGCP-UserAgent' => 'NGCP::API::Client');
+    #$req->header('NGCP-UserAgent' => 'NGCP::API::Client');
+    return $req;
+}
+
+sub _get_url {
+    my ($self, $urlbase, $uri) = @_;
+    return sprintf "https://%s%s", $urlbase, $uri =~ m#^/# ? $uri : "/".$uri;
+}
+
+sub request {
+    my ($self, $method, $uri, $data) = @_;
+
+    my ($ua,$urlbase) = $self->_create_ua($uri);
+
+    my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
 
     $data and $req->content(to_json($data));
 
     my $res = $ua->request($req);
 
     return NGCP::API::Client::Result->new($res);
+}
+
+sub next_page {
+    my ($self, $uri) = @_;
+
+    unless ($self->{_ua}) {
+        ($self->{_ua},$self->{_urlbase}) = $self->_create_ua($uri);
+        $self->{_collection_url} = sprintf "https://%s%s%spage=1&rows=%d", $self->{_urlbase},
+            $uri =~ m#^/# ? $uri : "/".$uri,
+            $uri =~ m#\?# ? '&' : '?',
+            $self->{_rows};
+    }
+
+    return unless $self->{_collection_url};
+
+    my $req = $self->_create_req('GET', $self->{_collection_url});
+
+    my $res = NGCP::API::Client::Result->new($self->{_ua}->request($req));
+
+    undef $self->{_collection_url};
+    if ('HASH' eq ref (my $data = $res->as_hash())) {
+        $uri = $data->{_links}->{next}->{href};
+        $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri) if $uri;
+    }
+
+    return $res;
+}
+
+sub page_rows {
+    my $self = shift;
+
+    if (@_) {
+        $self->{_rows} = shift;
+        undef $self->{_collection_url};
+        undef $self->{_ua};
+    }
+
+    return $self->{_rows};
 }
 
 sub set_verbose {
@@ -77,6 +145,7 @@ sub set_verbose {
 
     return;
 }
+
 
 package NGCP::API::Client::Result;
 use warnings;
@@ -90,13 +159,15 @@ sub new {
                                   $res_obj->message,
                                   $res_obj->headers,
                                   $res_obj->content);
+    $self->{_cached} = undef;
     return $self;
 }
 
 sub as_hash {
     my $self = shift;
-
-    return from_json($self->content, { utf8 => 1 });
+    return $self->{_cached} if $self->{_cached};
+    $self->{_cached} = from_json($self->content, { utf8 => 1 });
+    return $self->{_cached};
 }
 
 sub result {
