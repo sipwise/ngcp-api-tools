@@ -52,7 +52,7 @@ sub _create_ua {
 
     my $urlbase = sprintf "%s:%s", @{opts}{qw(host port)};
 
-    $ua->credentials($urlbase, 'api_admin_system',
+    $ua->credentials($urlbase, 'api_admin_system', #'api_admin_http'
                      @{opts}{qw(auth_user auth_pass)});
 
     if($opts{verbose}) {
@@ -74,7 +74,7 @@ sub _create_req {
         $req->header('Content-Type' => 'application/json');
     }
     $req->header('Prefer' => 'return=representation');
-    $req->header('NGCP-UserAgent' => 'NGCP::API::Client');
+    $req->header('NGCP-UserAgent' => 'NGCP::API::Client'); #remove for 'api_admin_http'
     return $req;
 }
 
