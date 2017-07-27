@@ -60,12 +60,19 @@ sub get_data {
     my ($uri, $link) = @_;
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    my $res = $client->request("GET", $uri);
-    die $res->result unless $res->is_success;
-    my $res_hash = $res->as_hash;
-    return [] unless $res_hash->{total_count} && $res_hash->{total_count} > 0;
-    my $data = $res_hash->{_embedded}{'ngcp:'.$link};
-    return ref $data eq 'ARRAY' ? $data : [ $data ];
+    $client->set_page_rows(10);
+    my @result = ();
+    while (my $res = $client->next_page($uri)) {
+        die $res->result unless $res->is_success;
+        my $res_hash = $res->as_hash;
+        my $data = $res_hash->{_embedded}{'ngcp:'.$link};
+        if ('ARRAY' eq ref $data) {
+            push(@result,@$data);
+        } elsif ($data) {
+            push(@result,$data);
+        }
+    }
+    return \@result;
 }
 
 sub get_email_template {
