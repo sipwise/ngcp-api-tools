@@ -96,15 +96,27 @@ EOF
 }
 
 sub get_data {
-    my ($uri, $link) = @_;
+    my ($uri, $link, $process_code) = @_;
+    $process_code = sub { my $data = shift; return 0; } unless 'CODE' eq ref $process_code;
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    my $res = $client->request("GET", $uri);
-    die $res->result unless $res->is_success;
-    my $res_hash = $res->as_hash;
-    return [] unless $res_hash->{total_count} && $res_hash->{total_count} > 0;
-    my $data = $res_hash->{_embedded}{'ngcp:'.$link};
-    return ref $data eq 'ARRAY' ? $data : [ $data ];
+    $client->set_page_rows(10);
+    my @result = ();
+    while (my $res = $client->next_page($uri)) {
+        die $res->result unless $res->is_success;
+        my $res_hash = $res->as_hash;
+        my $data = $res_hash->{_embedded}{'ngcp:'.$link};
+        if ('ARRAY' eq ref $data) {
+            unless (&$process_code($data)) {
+                push(@result,@$data);
+            }
+        } elsif ($data) {
+            unless (&$process_code([$data])) {
+                push(@result,$data);
+            }
+        }
+    }
+    return \@result;
 }
 
 sub get_email_template {
@@ -130,15 +142,19 @@ sub main {
             die "Missing domain in a credit warning check";
         }
         my @contracts;
-        my $balances =
-            get_data(sprintf('/api/customerbalances/?domain=%s',
-                             $cwarning->{domain}),
-                             'customerbalances');
-        foreach my $balance (@{$balances}) {
-            next if $balance->{cash_balance} >= $cwarning->{threshold};
-            push @contracts,
-                { map { $_ => $balance->{$_} } qw(id cash_balance) };
-        }
+        get_data(sprintf('/api/customerbalances/?domain=%s&prepaid=1',
+            $cwarning->{domain}),
+            'customerbalances',
+            sub {
+                my $balances = shift;
+                foreach my $balance (@{$balances}) {
+                    next if $balance->{cash_balance} >= $cwarning->{threshold};
+                    push @contracts,
+                        { map { $_ => $balance->{$_} } qw(id cash_balance) };
+                }
+                return 1;
+            }
+        );
         if (@contracts) {
             eval {
                 send_email($cwarning, \@contracts);
@@ -231,5 +247,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-=cut
