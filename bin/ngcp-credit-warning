@@ -40,6 +40,7 @@ sub usage {
     my $msg = shift;
     pod2usage(-exitval => $msg ? 1 : 0,
               -verbose => 99,
+              -sections => [ qw(NAME OPTIONS USAGE) ],
               -message => $msg
                             ? $msg =~ /not found/i
                                 ? $msg
@@ -95,15 +96,27 @@ EOF
 }
 
 sub get_data {
-    my ($uri, $link) = @_;
+    my ($uri, $link, $process_code) = @_;
+    $process_code = sub { my $data = shift; return 0; } unless 'CODE' eq ref $process_code;
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    my $res = $client->request("GET", $uri);
-    die $res->result unless $res->is_success;
-    my $res_hash = $res->as_hash;
-    return [] unless $res_hash->{total_count} && $res_hash->{total_count} > 0;
-    my $data = $res_hash->{_embedded}{'ngcp:'.$link};
-    return ref $data eq 'ARRAY' ? $data : [ $data ];
+    $client->set_page_rows(10);
+    my @result = ();
+    while (my $res = $client->next_page($uri)) {
+        die $res->result unless $res->is_success;
+        my $res_hash = $res->as_hash;
+        my $data = $res_hash->{_embedded}{'ngcp:'.$link};
+        if ('ARRAY' eq ref $data) {
+            unless (&$process_code($data)) {
+                push(@result,@$data);
+            }
+        } elsif ($data) {
+            unless (&$process_code([$data])) {
+                push(@result,$data);
+            }
+        }
+    }
+    return \@result;
 }
 
 sub get_email_template {
@@ -129,15 +142,17 @@ sub main {
             die "Missing domain in a credit warning check";
         }
         my @contracts;
-        my $balances =
-            get_data(sprintf('/api/customerbalances/?domain=%s',
-                             $cwarning->{domain}),
-                             'customerbalances');
-        foreach my $balance (@{$balances}) {
-            next if $balance->{cash_balance} >= $cwarning->{threshold};
-            push @contracts,
-                { map { $_ => $balance->{$_} } qw(id cash_balance) };
-        }
+        get_data(sprintf('/api/customerbalances/?domain=%s',
+            $cwarning->{domain}),
+            'customerbalances', sub {
+            my $balances = shift;
+            foreach my $balance (@{$balances}) {
+                next if $balance->{cash_balance} >= $cwarning->{threshold};
+                push @contracts,
+                    { map { $_ => $balance->{$_} } qw(id cash_balance) };
+            }
+            return 1;
+        });
         if (@contracts) {
             eval {
                 send_email($cwarning, \@contracts);
@@ -158,36 +173,52 @@ __END__
 
 ngcp-credit-warning - checks for contract balances above credit warning thresholds
 
-=head1 SYNOPSIS
-
-B<ngcp-credit-warning> [I<options>...]
-
-=head1 DESCRIPTION
-
-B<This program> checks for contract balances above credit warning thresholds
-and sends email notifications about the incidents.
-
 =head1 OPTIONS
 
 =over 8
 
-=item B<--verbose>
-
-Show additional debug information. Default false.
-
-=item B<--help>
+=item B<-help>
 
 Print a brief help message.
 
+=item B<-verbose>
+
+Show additional debug information. Default false.
+
 =back
+
+=head1 USAGE
+
+ngcp-credit-warning [options]
+
+=head1 DESCRIPTION
+
+B<This program> checks for contract balances above credit warning thresholds and sends email notifications about the incidents
+
+=head1 REQUIRED ARGUMENTS
+
+None
 
 =head1 EXIT STATUS
 
 Exit code 0 means everything is ok otherwise 1.
 
+=head1 CONFIGURATION
+
+=head1 DIAGNOSTICS
+
 =head1 SEE ALSO
 
 NGCP::API::Client
+
+=head1 DEPENDENCIES
+
+ngcp-credit-warning relies on a bunch of Perl modules, all of them specified as
+dependencies through the Debian package.
+
+=head1 INCOMPATIBILITIES
+
+No known at this time.
 
 =head1 BUGS AND LIMITATIONS
 
@@ -198,7 +229,7 @@ Development Team <support@sipwise.com>.
 
 Kirill Solomko <ksolomko@sipwise.com>
 
-=head1 LICENSE
+=head1 LICENSE AND COPYRIGHT
 
 Copyright (C) 2016 Sipwise GmbH, Austria
 
