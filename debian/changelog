@@ -1,3 +1,16 @@
+ngcp-api-tools (1.2.6.1+0~mr4.5.6.1) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [4f3c5d4] TT#16933 ngcp fraud notify events with no emails
+
+  [ Rene Krenn ]
+  * [d5c0cc3] TT#19211 collection iteration support
+  * [c24422b] TT#18755 load full fraud event collection
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 25 Sep 2017 14:31:20 +0200
+
 ngcp-api-tools (1.2.6.0+0~mr4.5.6.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
