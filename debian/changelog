@@ -1,3 +1,14 @@
+ngcp-api-tools (6.0.0.0+0~mr6.0.0.0) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [9f6af87] TT#19211 collection iteration support
+  * [26d2324] TT#18755 load full fraud event collection
+  * [9f7800a] TT#10964 paginated retrieval of /api/customerbalances
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 02 Oct 2017 23:40:54 +0200
+
 ngcp-api-tools (5.5.0.0+0~mr5.5.0.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
