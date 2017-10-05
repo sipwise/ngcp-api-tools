@@ -65,9 +65,15 @@ sub send_email {
                  adminmail => $config->{adminmail} };
 
     foreach my $data (@{$contracts}) {
-        $vars->{contracts} .= sprintf <<EOF, @{$data}{qw(id cash_balance)};
+        if (exists $data->{threshold}) {
+            $vars->{contracts} .= sprintf <<EOF_RATIO, @{$data}{qw(id cash_balance threshold)};
+contract_id: %s cash_balance: %s (threshold: %s)
+EOF_RATIO
+        } else {
+            $vars->{contracts} .= sprintf <<EOF, @{$data}{qw(id cash_balance)};
 contract_id: %s cash_balance: %s
 EOF
+        }
     }
 
     my $tt = Template->new();
@@ -147,9 +153,12 @@ sub main {
             sub {
                 my $balances = shift;
                 foreach my $balance (@{$balances}) {
-                    next if $balance->{cash_balance} >= $cwarning->{threshold};
-                    push @contracts,
-                        { map { $_ => $balance->{$_} } qw(id cash_balance) };
+                    my $ratio = $balance->{ratio} // 1.0;
+                    my $threshold = $cwarning->{threshold} * $ratio;
+                    next if $balance->{cash_balance} >= $threshold;
+                    my $data = { map { $_ => $balance->{$_} } qw(id cash_balance) };
+                    $data->{threshold} = $threshold if $ratio < 1.0;
+                    push @contracts,$data;
                 }
                 return 1;
             }
