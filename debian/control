@@ -8,28 +8,38 @@ Build-Depends:
 Standards-Version: 3.9.8
 Homepage: https://www.sipwise.com/
 
-Package: ngcp-api-tools
+Package: libngcp-api-client-perl
 Architecture: all
 Depends:
- ngcp-panel,
  ${misc:Depends},
  ${perl:Depends},
-Provides:
- ngcp-api-tools,
+Recommends:
+ ngcp-panel,
 Conflicts:
  ngcp-ossbss,
  ngcp-www-admin (<= 2),
 Replaces:
+ ngcp-api-tools,
  ngcp-ossbss,
-Description: NGCP REST API related tools
- This package contains files needed by all interface modules on
- NGCP management hosts.
+Section: perl
+Description: NGCP REST API related module
+ This package contains the NGCP::API::Client module needed by all interface
+ modules on NGCP management hosts.
+
+Package: ngcp-api-tools
+Architecture: all
+Depends:
+ libngcp-api-client-perl,
+Description: transitional dummy package
+ This package has been renamed to libngcp-api-client-perl. It can be safely
+ removed once it is not depended on by other packages.
 
 Package: ngcp-billing-tools
 Architecture: all
 Depends:
  ${misc:Depends},
  ${perl:Depends},
+ libngcp-api-client-perl,
 Provides:
  ngcp-api-tools,
 Conflicts:
@@ -41,14 +51,15 @@ Replaces:
 Breaks:
  ngcp-ossbss-billing (<< 3.19),
 Description: NGCP Billing related tools
- This package contains files needed by all interface modules on
- NGCP management hosts.
+ This package contains NGCP billing related tools that use the NGCP API,
+ needed by all interface modules on NGCP management hosts.
 
 Package: ngcp-provisioning-tools
 Architecture: all
 Depends:
  ${misc:Depends},
  ${perl:Depends},
+ libngcp-api-client-perl,
 Provides:
  ngcp-api-tools,
 Conflicts:
@@ -60,5 +71,5 @@ Breaks:
 Replaces:
  ngcp-ossbss,
 Description: NGCP Provisioning related tools
- This package contains files needed by all interface modules on
- NGCP management hosts.
+ This package contains NGCP provisioning tools that use the NGCP API,
+ needed by all interface modules on NGCP management hosts.
