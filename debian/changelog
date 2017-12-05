@@ -1,3 +1,15 @@
+ngcp-api-tools (6.1.0.0+0~mr6.1.0.0) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [11a6a03] TT#21871 consider ratio for credit warnings
+
+  [ Guillem Jover ]
+  * [2086680] TT#22072 Update packaging
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 06 Dec 2017 00:07:41 +0100
+
 ngcp-api-tools (6.0.0.0+0~mr6.0.0.0) unstable; urgency=medium
 
   [ Rene Krenn ]
