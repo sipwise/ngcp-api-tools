@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ab29df4_8be2dd01",
+        "filename": "debian/ngcp-provisioning-tools.links",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-12-11T16:19:38Z",
+      "side": 0,
+      "message": "Just in case, you should properly announce removal\n\n/usr/bin/ngcp-get_customer\n/usr/bin/ngcp-terminate_customer\n/usr/bin/ngcp-terminate_subscriber \n\nthey will not be available anymore.\nOr improve review here to provide them further.",
+      "revId": "a6375b0bd7e4c7d547505d9e379dc43499717066",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
