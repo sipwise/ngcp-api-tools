@@ -7,19 +7,15 @@ use Pod::Usage;
 use NGCP::API::Client;
 use Readonly;
 
-Readonly my @required => qw(billing_profile_id contact_id);
+Readonly my @required => qw(customer_id);
 
 my $opts = {
-    type    => 'sipaccount',
-    status  => 'active',
     verbose => 0,
 };
 
 GetOptions( $opts,
     "help|h" => \&usage,
-    "billing_profile_id=i",
-    "contact_id=i",
-    "type=s",
+    "customer_id=i",
     "verbose",
 ) or usage();
 
@@ -43,13 +39,13 @@ sub usage {
 
 sub main {
     check_params();
-
-    my $uri = '/api/customers/';
-    my %data = map { $_ => $opts->{$_} }
-                    qw(billing_profile_id contact_id type status);
+    my $uri = '/api/customers/'.$opts->{customer_id};
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    my $res = $client->request("POST", $uri, \%data);
+    my $data = [ { op => 'replace',
+                   path => '/status',
+                   value => 'terminated' } ];
+    my $res = $client->request("PATCH", $uri, $data);
     print $res->result."\n";
 
     exit !$res->is_success;
@@ -65,38 +61,29 @@ __END__
 
 =head1 NAME
 
-ngcp-create_customer - create a customer
+ngcp-terminate-customer - terminate an NGCP Customer
 
 =head1 SYNOPSIS
 
-B<ngcp-create_customer> [I<options>...] I<required-arguments>...
+B<ngcp-terminate-customer> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 
-B<This program> creates a customer on the NGCP platform.
+B<This program> terminates a customer on the NGCP platform.
 
 =head1 REQUIRED ARGUMENTS
 
 =over 8
 
-=item B<--billing_profile_id>
+=item B<--customer_id> I<cid>
 
-Billing profile id.
-
-=item B<--contact_id>
-
-Contact id.
+Customer ID.
 
 =back
 
 =head1 OPTIONS
 
 =over 8
-
-=item B<--type>
-
-Customer can be one of the "sipaccount" or "pbxaccount" type. Defaults to
-"sipaccount".
 
 =item B<--verbose>
 

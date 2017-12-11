@@ -3,36 +3,23 @@ use strict;
 use warnings;
 use English;
 use Getopt::Long;
-use Pod::Usage;
 use NGCP::API::Client;
+use Pod::Usage;
 use Readonly;
 
-Readonly my @required => qw(domain);
+Readonly my @required => qw();
 
 my $opts = {
-    reseller_id => 1,
-    skip_xmpp => 0,
-    skip_sip => 0,
     verbose => 0,
 };
 
 GetOptions( $opts,
     "help|h" => \&usage,
-    "domain=s",
-    "reseller_id=i",
-    "skip_xmpp",
-    "skip_sip",
     "verbose",
 ) or usage();
 
 sub check_params {
     my @missing;
-    foreach my $arg (@ARGV) {
-        if ($arg =~ /^[^-]/) {
-            $opts->{domain} = $arg;
-            last;
-        }
-    }
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
@@ -51,15 +38,19 @@ sub usage {
 
 sub main {
     check_params();
-    my $uri = '/api/domains/';
-    my %data = map { $_ => $opts->{$_} } qw(reseller_id domain);
-    map { $data{"_".$_."_reload"} = $opts->{$_} } qw(skip_xmpp skip_sip);
     my $client = new NGCP::API::Client;
+    my $uri = '/api/domains/';
     $client->set_verbose($opts->{verbose});
-    my $res = $client->request("POST", $uri, \%data);
-    print $res->result."\n";
+    my $res = $client->request("GET", $uri);
+    my $rc = 0;
+    if (defined $res->as_hash->{total_count}) {
+        print "API is up\n";
+    } else {
+        print "API is down\n";
+        $rc = 1;
+    }
 
-    exit !$res->is_success;
+    exit $rc;
 
     return;
 }
@@ -72,57 +63,33 @@ __END__
 
 =head1 NAME
 
-ngcp-create_domain - create an NGCP domain
+ngcp-api-ping - check NGCP API status
 
 =head1 SYNOPSIS
 
-B<ngcp-create_domain> [I<options>...] I<required-arguments>...
+B<ngcp-api-ping> [I<options>]
 
 =head1 DESCRIPTION
 
-B<This program> creates a domain on the NGCP platform.
-
-=head1 REQUIRED ARGUMENTS
-
-=over 8
-
-=item B<--domain> I<domain>
-
-The domain to create.
-
-=back
+B<This program> checks whether NGCP API is running.
 
 =head1 OPTIONS
 
 =over 8
 
-=item B<--reseller_id> I<rid>
+=item B<--help>
 
-Reseller id. Default 1.
-
-=item B<--skip_sip>
-
-Skip reloading SIP services. If true, changes will not be effective immedeately
-until the respective service is restarted or properly notified. Default false.
-
-=item B<--skip_xmpp>
-
-Skip reloading XMPP services. If true, changes will not be effective immedeately
-until the respective service is restarted or properly notified. Default false.
+Print a brief help message.
 
 =item B<--verbose>
 
 Show additional debug information. Default false.
 
-=item B<--help>
-
-Print a brief help message.
-
 =back
 
 =head1 EXIT STATUS
 
-Exit code 0 means everything is ok otherwise 1.
+Exit code 0 means everything is fine otherwise 1.
 
 =head1 SEE ALSO
 

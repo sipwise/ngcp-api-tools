@@ -87,11 +87,11 @@ __END__
 
 =head1 NAME
 
-ngcp-create_subscriber - create a subscriber
+ngcp-create-subscriber - create a subscriber
 
 =head1 SYNOPSIS
 
-B<ngcp-create_subscriber> [I<options>...] I<required-arguments>...
+B<ngcp-create-subscriber> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 

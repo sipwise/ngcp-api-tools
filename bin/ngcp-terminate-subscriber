@@ -7,7 +7,7 @@ use Pod::Usage;
 use NGCP::API::Client;
 use Readonly;
 
-Readonly my @required => qw(customer_id);
+Readonly my @required => qw(username domain);
 
 my $opts = {
     verbose => 0,
@@ -15,7 +15,8 @@ my $opts = {
 
 GetOptions( $opts,
     "help|h" => \&usage,
-    "customer_id=i",
+    "username=s",
+    "domain=s",
     "verbose",
 ) or usage();
 
@@ -29,19 +30,38 @@ sub check_params {
 }
 
 sub usage {
-    my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
+    my $msg = shift;
+    pod2usage(-exitval => $msg ? 1 : 0,
               -verbose => 99,
-              -message => $missing ? "Missing parameters: $missing" : '',
+              -message => $msg
+                            ? $msg =~ /not found/i
+                                ? $msg
+                                : "Missing parameters: $msg"
+                            : '',
              );
     return;
 }
 
 sub main {
     check_params();
-    my $uri = '/api/customers/'.$opts->{customer_id};
+    my $uri = sprintf '/api/subscribers/?username=%s&domain=%s',
+              @{$opts}{qw(username domain)};
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
+    my $sub = $client->request("GET", $uri);
+    my $sub_id;
+    if ($sub->as_hash->{total_count} == 1) {
+        my $tmp = $sub->as_hash->{_embedded}->{'ngcp:subscribers'};
+        if (ref $tmp eq 'ARRAY') {
+            $sub_id = @{$tmp}[0]->{id};
+        } else {
+            $sub_id = $tmp->{id};
+        }
+        usage("Wrong subscriber id found") unless $sub_id =~ /^\d$/;
+    } else {
+        usage("Subscriber not found");
+    }
+    $uri = '/api/subscribers/'.$sub_id;
     my $data = [ { op => 'replace',
                    path => '/status',
                    value => 'terminated' } ];
@@ -61,23 +81,27 @@ __END__
 
 =head1 NAME
 
-ngcp-terminate_customer - terminate an NGCP Customer
+ngcp-terminate-subscriber - terminate an NGCP Subscriber
 
 =head1 SYNOPSIS
 
-B<ngcp-terminate_customer> [I<options>...] I<required-arguments>...
+B<ngcp-terminate-subscriber> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 
-B<This program> terminates a customer on the NGCP platform.
+B<This program> terminates a subscriber on the NGCP platform.
 
 =head1 REQUIRED ARGUMENTS
 
 =over 8
 
-=item B<--customer_id> I<cid>
+=item B<--username> I<name>
 
-Customer ID.
+Subscriber username.
+
+=item B<--domain> I<domain>
+
+Subscriber domain.
 
 =back
 
@@ -91,7 +115,7 @@ Show additional debug information. Default false.
 
 =item B<--help>
 
-Print a brief help message.
+Print a brief help message
 
 =back
 

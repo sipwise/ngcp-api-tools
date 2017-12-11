@@ -1,8 +1,8 @@
-bin/ngcp-api_ping               usr/bin/
-bin/ngcp-create_customer        usr/bin/
-bin/ngcp-create_domain          usr/bin/
-bin/ngcp-create_subscriber      usr/bin/
-bin/ngcp-delete_domain          usr/bin/
-bin/ngcp-get_customer           usr/bin/
-bin/ngcp-terminate_customer     usr/bin/
-bin/ngcp-terminate_subscriber   usr/bin/
+bin/ngcp-api-ping               usr/bin/
+bin/ngcp-create-customer        usr/bin/
+bin/ngcp-create-domain          usr/bin/
+bin/ngcp-create-subscriber      usr/bin/
+bin/ngcp-delete-domain          usr/bin/
+bin/ngcp-get-customer           usr/bin/
+bin/ngcp-terminate-customer     usr/bin/
+bin/ngcp-terminate-subscriber   usr/bin/
