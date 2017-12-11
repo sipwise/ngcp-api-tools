@@ -16,6 +16,24 @@
       "revId": "a6375b0bd7e4c7d547505d9e379dc43499717066",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ab29df4_0b732d4e",
+        "filename": "debian/ngcp-provisioning-tools.links",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2017-12-11T17:15:06Z",
+      "side": 0,
+      "message": "What do you mean announce removal?\n\nAll the files you list should be provided as backwards compat symlinks.",
+      "parentUuid": "9ab29df4_8be2dd01",
+      "revId": "a6375b0bd7e4c7d547505d9e379dc43499717066",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
