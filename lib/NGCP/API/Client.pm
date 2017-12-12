@@ -29,6 +29,7 @@ sub new {
     $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
     $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
     $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
+    $opts{read_timeout} = $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180;
     $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
     $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
     $opts{verbose}      = 0;
@@ -60,6 +61,8 @@ sub _create_ua {
         $ua->add_handler("request_send",  sub { shift->dump; return });
         $ua->add_handler("response_done", sub { shift->dump; return });
     }
+
+    $ua->timeout($opts{read_timeout});
 
     return ($ua,$urlbase);
 }
