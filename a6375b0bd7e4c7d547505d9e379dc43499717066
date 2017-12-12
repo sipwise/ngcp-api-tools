@@ -34,6 +34,24 @@
       "revId": "a6375b0bd7e4c7d547505d9e379dc43499717066",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5ac4a560_75aac8d5",
+        "filename": "debian/ngcp-provisioning-tools.links",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2017-12-12T08:06:01Z",
+      "side": 0,
+      "message": "Ah right, I was missread link and origin name... all OK here.",
+      "parentUuid": "9ab29df4_0b732d4e",
+      "revId": "a6375b0bd7e4c7d547505d9e379dc43499717066",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
