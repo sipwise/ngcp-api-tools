@@ -6,7 +6,9 @@ use Config::Tiny;
 use JSON qw(to_json);
 use IO::Socket::SSL;
 use LWP::UserAgent;
+use HTTP::Request::Common;
 use Readonly;
+use Data::Dumper;
 
 my $config;
 
@@ -33,6 +35,7 @@ sub new {
     $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
     $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
     $opts{verbose}      = 0;
+    $opts{get_post}     = 0;
 
     bless $self, $class;
     $self->set_page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
@@ -67,16 +70,70 @@ sub _create_ua {
     return ($ua,$urlbase);
 }
 
-sub _create_req {
-    my ($self, $method, $url) = @_;
-    my $req = HTTP::Request->new($method, $url);
+sub set_opts{
+    my ($self, $opts_in) = @_;
+    my @keys = keys %$opts_in;
+    @opts{@keys} = @$opts_in{@keys};
+}
 
-    if ($method eq "PATCH") {
-        $req->content_type("application/json-patch+json; charset='utf8'");
-    } else {
-        $req->content_type("application/json; charset='utf8'");
+sub _create_req {
+    my ($self, $method, $url, $params) = @_;
+    $params //= {};
+
+    my $req;
+    if($params->{request}){
+        $req = $params->{request};
+    }else{
+        my $data = $params->{data};
+        my $make_request_multiform = $params->{make_request_multiform} // 0;
+        if('HASH' eq ref $data && 'HASH' eq ref $data->{json}
+            && !$params->{dont_convert_json}){
+            $make_request_multiform = $params->{make_request_multiform} // 1;
+    #       data format:
+    #       my $data =  {
+    #           json => ${
+    #               var => "val",
+    #               var1 => "val1",
+    #           },
+    #           filename => [ $path_to_file ],
+    #       };
+            my $json = JSON->new->allow_nonref;
+            $data->{json} = Encode::encode_utf8($json->encode($data->{json}));
+            $data = [
+                %$data,
+                $data->{json},
+            ];
+        }
+        if($make_request_multiform){
+            $req = POST $url,
+                Content_Type => 'form-data',
+                Content => $data;
+            $req->method($method);
+        } else {
+            $req = HTTP::Request->new($method, $url, $params->{headers} ? $params->{headers} : () );
+            if($data && !$params->{dont_convert_json}){
+                my $json = JSON->new->allow_nonref;
+                $req->content(Encode::encode_utf8($json->encode($data)));
+            }
+        }
     }
-    $req->header('Prefer' => 'return=representation');
+    $req->uri($url) if !$req->uri;
+    my $headers_requested_hash = {};
+    if('ARRAY' eq ref $params->{headers}){
+        $headers_requested_hash = {@{$params->{headers}}};
+    }
+
+    if(!$params->{request} || !$params->{request}->header('Content-Type')){
+        if ($method eq "PATCH") {
+            $req->content_type("application/json-patch+json; charset='utf8'");
+        } elsif(!$headers_requested_hash->{'Content-Type'}) {
+            $req->content_type("application/json; charset='utf8'");
+        }
+        if(!$headers_requested_hash->{'Prefer'}) {
+            $req->header('Prefer' => 'return=representation');
+        }
+    }
+
     $req->header('NGCP-UserAgent' => 'NGCP::API::Client'); #remove for 'api_admin_http'
     return $req;
 }
@@ -87,19 +144,35 @@ sub _get_url {
 }
 
 sub request {
-    my ($self, $method, $uri, $data) = @_;
+    my ($self, $method, $uri, $data, $params) = @_;
 
+    $params //= {};
+    $params->{data} = $data;
     my ($ua,$urlbase) = $self->_create_ua($uri);
-
-    my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
-
-    if ($data) {
-        $req->content(Encode::encode_utf8(to_json($data)));
-    }
-
+    my $request_uri = $self->_get_url($urlbase,$uri);
+    my $req = $self->_create_req($method, $request_uri, $params);
     my $res = $ua->request($req);
 
     return NGCP::API::Client::Result->new($res);
+}
+
+sub request_ex {
+    my $self = shift;
+    my ($method, $uri, $data, $params) = @_;
+
+    my $res_obj = $self->request(@_);
+    if ( 'POST' eq $method ) {
+        if (299 < $res_obj->code) {
+            die($res_obj->code.':'.$res_obj->content);
+        } else {
+            my ($ua,$urlbase) = $self->_create_ua($uri);
+            my $request_uri = $self->_get_url($urlbase,$res_obj->get_created_location);
+            my $req = $self->_create_req('GET', $request_uri);
+            my $res = $ua->request($req);
+            $res_obj = NGCP::API::Client::Result->new($res);
+        }
+    }
+    return $res_obj;
 }
 
 sub next_page {
@@ -152,6 +225,7 @@ use warnings;
 use strict;
 use base qw(HTTP::Response);
 use JSON qw(from_json);
+use Data::Dumper;
 
 sub new {
     my ($class, $res_obj) = @_;
@@ -160,13 +234,34 @@ sub new {
                                   $res_obj->headers,
                                   $res_obj->content);
     $self->{_cached} = undef;
+    $self->{_api_endpoint} = undef;#like subscribers or subscriberpreferences
+    $self->{_api_endpoint_type} = undef;#type means type of result - collection, item, preferences
     return $self;
+}
+
+sub api_endpoint{
+    my $self = shift;
+    if (@_) {
+        $self->{_api_endpoint} = $_[0];
+    }else{
+        $self->{_api_endpoint} //= $self->get_self_name;
+    }
+    return $self->{_api_endpoint};
+}
+
+sub api_endpoint_type{
+    my $self = shift;
+    if (@_) {
+        $self->{_api_endpoint_type} = $_[0];
+    }
+    return $self->{_api_endpoint_type};
 }
 
 sub as_hash {
     my $self = shift;
     return $self->{_cached} if $self->{_cached};
-    $self->{_cached} = from_json($self->content, { utf8 => 1 });
+    my $json = JSON->new->allow_nonref;
+    $self->{_cached} = $json->utf8(1)->decode($self->content);
     return $self->{_cached};
 }
 
@@ -177,6 +272,49 @@ sub result {
     return $self->is_success
         ? sprintf "%s %s", $self->status_line, $location
         : sprintf "%s %s", $self->status_line, $self->content;
+}
+
+sub get_embedded_item{
+    my $self = shift;
+    my($number, $api_endpoint) = @_;
+    $number //= 0;
+    $api_endpoint //= $self->api_endpoint;
+    return $self->as_hash->{_embedded}->{$self->get_link_name($api_endpoint)}->[$number];
+}
+
+sub get_link_name{
+    my $self = shift;
+    my($api_endpoint) = @_;
+    $api_endpoint //= $self->api_endpoint;
+    return 'ngcp:'.$api_endpoint;
+}
+
+sub get_self_name{
+    my $self = shift;
+    my $href = $self->as_hash->{_links}->{self}->{href};
+    my($api_endpoint) = ( $href =~ m!/api/([^/]+)/! );
+    return $api_endpoint;
+}
+
+sub get_total_count{
+    my $self = shift;
+    return $self->as_hash->{total_count};
+}
+
+sub get_field{
+    my $self = shift;
+    my($field) = @_;
+    return $self->as_hash->{$field};
+}
+
+sub get_id{
+    my $self = shift;
+    return $self->as_hash->{id};
+}
+
+sub get_created_location{
+    my $self = shift;
+    return $self->headers->header('Location');
 }
 
 1;

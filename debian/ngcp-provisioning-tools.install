@@ -6,3 +6,5 @@ bin/ngcp-delete-domain          usr/bin/
 bin/ngcp-get-customer           usr/bin/
 bin/ngcp-terminate-customer     usr/bin/
 bin/ngcp-terminate-subscriber   usr/bin/
+bin/ngcp-conversation-generate.pl   usr/bin/
+bin/ngcp-conversation-executor.pl   usr/bin/
