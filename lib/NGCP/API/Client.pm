@@ -6,6 +6,7 @@ use Config::Tiny;
 use JSON qw(to_json);
 use IO::Socket::SSL;
 use LWP::UserAgent;
+use HTTP::Request::Common;
 use Readonly;
 
 my $config;
@@ -68,15 +69,32 @@ sub _create_ua {
 }
 
 sub _create_req {
-    my ($self, $method, $url) = @_;
-    my $req = HTTP::Request->new($method, $url);
+    my ($self, $method, $url, $params) = @_;
+    $params //= {};
 
-    if ($method eq "PATCH") {
-        $req->header('Content-Type' => 'application/json-patch+json');
-    } else {
-        $req->header('Content-Type' => 'application/json');
+    my $req;
+    if($params->{request}){
+        $req = $params->{request};
+    }else{
+        $req = HTTP::Request->new($method, $url, $params->{headers} ? $params->{headers} : () );
     }
-    $req->header('Prefer' => 'return=representation');
+    $req->uri($url) if !$req->uri;
+    my $headers_requested_hash = {};
+    if($params->{headers} && 'ARRAY' eq ref $params->{headers}){
+        $headers_requested_hash = {@{$params->{headers}}};
+    }
+
+    if(!$params->{request} || !$params->{request}->header('Content-Type')){
+        if ($method eq "PATCH") {
+            $req->header('Content-Type' => 'application/json-patch+json');
+        } elsif(!$headers_requested_hash->{'Content-Type'}) {
+            $req->header('Content-Type' => 'application/json');
+        }
+        if(!$headers_requested_hash->{'Prefer'}) {
+            $req->header('Prefer' => 'return=representation');
+        }
+    }
+
     $req->header('NGCP-UserAgent' => 'NGCP::API::Client'); #remove for 'api_admin_http'
     return $req;
 }
@@ -87,13 +105,42 @@ sub _get_url {
 }
 
 sub request {
-    my ($self, $method, $uri, $data) = @_;
+    my ($self, $method, $uri, $data, $params) = @_;
 
     my ($ua,$urlbase) = $self->_create_ua($uri);
-
-    my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
-
-    $data and $req->content(to_json($data));
+    my $request_uri = $self->_get_url($urlbase,$uri);
+    my $req;
+    my $make_request_multiform = 0;
+    if('HASH' eq ref $data && 'HASH' eq ref $data->{json}){
+        $make_request_multiform = 1;
+#       data format:
+#       my $data =  {
+#           json => ${
+#               var => "val",
+#               var1 => "val1",
+#           },
+#           filename => [ $path_to_file ],
+#       };
+        my $json = JSON->new->allow_nonref;
+        $data->{json} = $json->encode($data->{json});
+        $data = [
+            %$data,
+            $data->{json},
+        ];
+    }
+    if($make_request_multiform){
+        my $request = POST $request_uri, 
+            Content_Type => 'form-data', 
+            Content => $data;
+        $request->method($method);
+        $req = $self->_create_req($method, $request_uri, {request => $request});
+    }else{
+        $req = $self->_create_req($method, $request_uri, $params);
+        if($data){
+            my $json = JSON->new->allow_nonref;
+            $req->content($json->encode($data));
+        }
+    }
 
     my $res = $ua->request($req);
 
@@ -164,7 +211,8 @@ sub new {
 sub as_hash {
     my $self = shift;
     return $self->{_cached} if $self->{_cached};
-    $self->{_cached} = from_json($self->content, { utf8 => 1 });
+    my $json = JSON->new->allow_nonref;
+    $self->{_cached} = $json->utf8(1)->decode($self->content);
     return $self->{_cached};
 }
 
@@ -175,6 +223,51 @@ sub result {
     return $self->is_success
         ? sprintf "%s %s", $self->status_line, $location
         : sprintf "%s %s", $self->status_line, $self->content;
+}
+
+sub result_struct {
+    my $self = shift;
+    my($name, $type) = @_;
+    return NGCP::API::Client::ResultStruct->new( $self, $name, $type );
+}
+
+
+package NGCP::API::Client::ResultStruct;
+use warnings;
+use strict;
+
+sub new {
+    my ($class, $result, $name, $type) = @_;
+
+    #type means collection, item, preferences (special type of collection)
+    $type //= 'collection';
+
+    my $self = {
+        result => $result,
+        name => $name,
+        type => $type,
+        link => 'ngcp:'.$name,
+    };
+    bless $self, $class;
+}
+
+sub get_embedded_item{
+    my $self = shift;
+    my($number) = @_;
+    $number //= 0;
+    return $self->{result}->as_hash->{_embedded}->{$self->{link}}->[$number];
+}
+
+sub get_total_count{
+    my $self = shift;
+    my($number) = @_;
+    $number //= 0;
+    return $self->{result}->as_hash->{total_count};
+}
+
+sub get_created_location{
+    my $self = shift;
+    return $self->{result}->headers->header('Location');
 }
 
 1;
