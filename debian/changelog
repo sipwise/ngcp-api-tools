@@ -1,3 +1,16 @@
+ngcp-api-tools (1.2.8.0+0~mr4.5.8.0) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [f1029ba] TT#10964 paginated retrieval of /api/customerbalances
+  * [77f6f70] TT#21871 consider ratio for credit warnings
+
+  [ Kirill Solomko ]
+  * [7776bfb] TT#26808 use read_timeout for the UA timeout
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 19 Dec 2017 15:52:08 +0100
+
 ngcp-api-tools (1.2.7.0+0~mr4.5.7.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
