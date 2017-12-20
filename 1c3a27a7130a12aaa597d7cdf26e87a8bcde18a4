@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1abeadc6_d9191324",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2017-12-20T13:36:35Z",
+      "side": 1,
+      "message": "most of us use the native Perl/K\u0026R style,\n\nif () {\n}\n\ncould we please use the same code style by a chance ? :)\n\nas\n\nif(){\n}\n\njust adds some complexity of reading the code smoothly",
+      "range": {
+        "startLine": 76,
+        "startChar": 6,
+        "endLine": 76,
+        "endChar": 7
+      },
+      "revId": "1c3a27a7130a12aaa597d7cdf26e87a8bcde18a4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
