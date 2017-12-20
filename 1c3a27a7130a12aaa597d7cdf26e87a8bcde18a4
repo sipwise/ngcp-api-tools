@@ -22,6 +22,29 @@
       "revId": "1c3a27a7130a12aaa597d7cdf26e87a8bcde18a4",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1abeadc6_59dd0342",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2017-12-20T13:44:24Z",
+      "side": 1,
+      "message": "can\u0027t we just use $params in the request() method to have the \"upload\" part implemented there ?\n\nI think that the \"request_upload_form\" is just a duplicate of what can be done by simply slightly enhancing the request() method by probably just accepting new parameters\"",
+      "range": {
+        "startLine": 122,
+        "startChar": 3,
+        "endLine": 122,
+        "endChar": 23
+      },
+      "revId": "1c3a27a7130a12aaa597d7cdf26e87a8bcde18a4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
