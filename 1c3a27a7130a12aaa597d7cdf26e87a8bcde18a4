@@ -45,6 +45,23 @@
       "revId": "1c3a27a7130a12aaa597d7cdf26e87a8bcde18a4",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1abeadc6_1ca1b9a9",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-21T08:57:35Z",
+      "side": 1,
+      "message": "imo, there should be no need to create the request on 2 different places. instead this kind of request can also be created in the dedicated method \"_create_req\". then it also doesn\u0027t need the possibility to take in a preexisting request",
+      "revId": "1c3a27a7130a12aaa597d7cdf26e87a8bcde18a4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
