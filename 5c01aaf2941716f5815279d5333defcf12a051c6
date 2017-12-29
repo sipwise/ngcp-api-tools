@@ -1,0 +1,112 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9df570_d41f12b6",
+        "filename": "bin/ngcp-conversation-executor.pl",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-29T14:38:41Z",
+      "side": 1,
+      "message": "I\u0027m not sure, whether to put this here in \"ngcp-api-tools\" or in \"dev-tools\".\n\nAdvantage here is of course, that we need \"NGCP::API::Client\" as a dependency. Disadvantage is, that this is installed by default to all customers",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_94258a0c",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-29T14:38:41Z",
+      "side": 1,
+      "message": "as explained below, let\u0027s make this a method, not an option",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_741106ac",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-29T14:38:41Z",
+      "side": 1,
+      "message": "this is an interesting use-case to send two requests in one go. Anyway, I think this should be a separate helper-method, because it\u0027s not the core functionality of \"request\".",
+      "range": {
+        "startLine": 156,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 20
+      },
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_14127ab4",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-29T14:38:41Z",
+      "side": 1,
+      "message": "name is a bit generic, let\u0027s call it maybe \"api_endpoint\"\n\nalso, let\u0027s stay with underscores for private variables like in the line before (there is an accessor anyway)",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_34177ea5",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 225,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-29T14:38:41Z",
+      "side": 1,
+      "message": "I would confuse this with a kind of result-type. maybe \"api_type\"?",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_540c0295",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2017-12-29T14:38:41Z",
+      "side": 1,
+      "message": "corner case: sometimes the content of _embedded is a hash, when there is only one element. it\u0027s probably a good idea to resolve that here",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
