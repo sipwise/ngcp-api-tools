@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "da9df570_f48fb6ca",
+        "filename": "bin/ngcp-conversation-executor.pl",
+        "patchSetId": 4
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000009
+      },
+      "writtenOn": "2017-12-31T16:39:14Z",
+      "side": 1,
+      "message": "It placed here temporarily, just to make access through ppa more easy for the web team.",
+      "parentUuid": "da9df570_d41f12b6",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_94258a0c",
         "filename": "lib/NGCP/API/Client.pm",
         "patchSetId": 4
@@ -47,6 +65,30 @@
       "writtenOn": "2017-12-29T14:38:41Z",
       "side": 1,
       "message": "this is an interesting use-case to send two requests in one go. Anyway, I think this should be a separate helper-method, because it\u0027s not the core functionality of \"request\".",
+      "range": {
+        "startLine": 156,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 20
+      },
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_94882ac8",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000009
+      },
+      "writtenOn": "2017-12-31T16:39:14Z",
+      "side": 1,
+      "message": "Yes, I thought about it too. What name looks reasonable for you? request_ex(tended)? request_api? request_post?",
+      "parentUuid": "da9df570_741106ac",
       "range": {
         "startLine": 156,
         "startChar": 0,
@@ -104,6 +146,24 @@
       "writtenOn": "2017-12-29T14:38:41Z",
       "side": 1,
       "message": "corner case: sometimes the content of _embedded is a hash, when there is only one element. it\u0027s probably a good idea to resolve that here",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_74a4a657",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000009
+      },
+      "writtenOn": "2017-12-31T16:39:14Z",
+      "side": 1,
+      "message": "Yes, I remember, furthermore, preferences has different structure of links too.\nI thought maybe it would be better to implement it when we will need it.\nYou know, from last summer API returns array always. But preferences still have different links structure.",
+      "parentUuid": "da9df570_540c0295",
       "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
