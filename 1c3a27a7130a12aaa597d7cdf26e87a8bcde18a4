@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "1abeadc6_3965a745",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 1000009
+      },
+      "writtenOn": "2017-12-31T16:39:14Z",
+      "side": 1,
+      "message": "I really implemented it from start as a \"request\" parameter, where request can be prepared before metod call. But after this I decided that implement the same way upload method is incorrect. But of course, I can move current differences between  \"request\" method and request_upload_form to the params. Event we can just use presence of the \"json\" field as a signal to make upload request, and will add additional flag to params if we will need it in the future.",
+      "parentUuid": "1abeadc6_59dd0342",
+      "range": {
+        "startLine": 122,
+        "startChar": 3,
+        "endLine": 122,
+        "endChar": 23
+      },
+      "revId": "1c3a27a7130a12aaa597d7cdf26e87a8bcde18a4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1abeadc6_1ca1b9a9",
         "filename": "lib/NGCP/API/Client.pm",
         "patchSetId": 1
