@@ -101,6 +101,30 @@
     },
     {
       "key": {
+        "uuid": "da9df570_374f8094",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2018-01-02T15:16:00Z",
+      "side": 1,
+      "message": "maybe \"request_post_get\" or \"request_postget\"?",
+      "parentUuid": "da9df570_94882ac8",
+      "range": {
+        "startLine": 156,
+        "startChar": 0,
+        "endLine": 162,
+        "endChar": 20
+      },
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_14127ab4",
         "filename": "lib/NGCP/API/Client.pm",
         "patchSetId": 4
@@ -164,6 +188,24 @@
       "side": 1,
       "message": "Yes, I remember, furthermore, preferences has different structure of links too.\nI thought maybe it would be better to implement it when we will need it.\nYou know, from last summer API returns array always. But preferences still have different links structure.",
       "parentUuid": "da9df570_540c0295",
+      "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_f7541823",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2018-01-02T15:16:00Z",
+      "side": 1,
+      "message": "Ah, I knew it has been partly fixed, but missed that it was done completely.",
+      "parentUuid": "da9df570_74a4a657",
       "revId": "5c01aaf2941716f5815279d5333defcf12a051c6",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
