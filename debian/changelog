@@ -1,3 +1,15 @@
+ngcp-api-tools (6.1.1.0+0~mr6.1.1.0) unstable; urgency=medium
+
+  [ Guillem Jover ]
+  * [b6dda76] TT#27502 Normalize program names by switching from _ to -
+
+  [ Kirill Solomko ]
+  * [667ab05] TT#26808 use read_timeout for the UA timeout
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 29 Jan 2018 21:54:20 +0100
+
 ngcp-api-tools (6.1.0.0+0~mr6.1.0.0) unstable; urgency=medium
 
   [ Rene Krenn ]
