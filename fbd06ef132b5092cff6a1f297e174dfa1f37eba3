@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a6ff13c_98af852b",
+        "filename": "debian/ngcp-provisioning-tools.links",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2018-03-09T13:55:01Z",
+      "side": 0,
+      "message": "Not happy about removing the separation here either, it will make cleaning up later on more difficult. :(",
+      "revId": "fbd06ef132b5092cff6a1f297e174dfa1f37eba3",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
