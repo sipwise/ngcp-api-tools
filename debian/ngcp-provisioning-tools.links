@@ -1,16 +1,14 @@
-/usr/bin/ngcp-get-customer          /usr/bin/ngcp-get-voip-account
-/usr/bin/ngcp-terminate-customer    /usr/bin/ngcp-delete-voip-account
-/usr/bin/ngcp-terminate-subscriber  /usr/bin/ngcp-delete-subscriber
-
-# Backwards compatibility symlinks.
 /usr/bin/ngcp-api-ping              /usr/bin/ngcp-api_ping
 /usr/bin/ngcp-create-customer       /usr/bin/ngcp-create_customer
 /usr/bin/ngcp-create-domain         /usr/bin/ngcp-create_domain
 /usr/bin/ngcp-create-subscriber     /usr/bin/ngcp-create_subscriber
 /usr/bin/ngcp-delete-domain         /usr/bin/ngcp-delete_domain
+/usr/bin/ngcp-get-customer          /usr/bin/ngcp-get-voip-account
 /usr/bin/ngcp-get-customer          /usr/bin/ngcp-get_customer
 /usr/bin/ngcp-get-customer          /usr/bin/ngcp-get_voip_account
+/usr/bin/ngcp-terminate-customer    /usr/bin/ngcp-delete-voip-account
 /usr/bin/ngcp-terminate-customer    /usr/bin/ngcp-delete_voip_account
 /usr/bin/ngcp-terminate-customer    /usr/bin/ngcp-terminate_customer
+/usr/bin/ngcp-terminate-subscriber  /usr/bin/ngcp-delete-subscriber
 /usr/bin/ngcp-terminate-subscriber  /usr/bin/ngcp-delete_subscriber
 /usr/bin/ngcp-terminate-subscriber  /usr/bin/ngcp-terminate_subscriber
