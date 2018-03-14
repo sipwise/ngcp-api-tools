@@ -72,9 +72,9 @@ sub _create_req {
     my $req = HTTP::Request->new($method, $url);
 
     if ($method eq "PATCH") {
-        $req->header('Content-Type' => 'application/json-patch+json');
+        $req->content_type("application/json-patch+json; charset='utf8'");
     } else {
-        $req->header('Content-Type' => 'application/json');
+        $req->content_type("application/json; charset='utf8'");
     }
     $req->header('Prefer' => 'return=representation');
     $req->header('NGCP-UserAgent' => 'NGCP::API::Client'); #remove for 'api_admin_http'
@@ -93,7 +93,9 @@ sub request {
 
     my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
 
-    $data and $req->content(to_json($data));
+    if ($data) {
+        $req->content(Encode::encode_utf8(to_json($data)));
+    }
 
     my $res = $ua->request($req);
 
