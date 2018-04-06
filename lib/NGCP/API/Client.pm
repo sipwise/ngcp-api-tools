@@ -7,7 +7,7 @@ use JSON qw(to_json);
 use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
-
+use Encode;
 my $config;
 
 BEGIN {
