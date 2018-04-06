@@ -12,8 +12,8 @@ use File::Basename;
 print 'Note that the next tests require at least one sip account customer,subscriber,call,fax,voicemail,sms,xmpp to be present'."\n";
 
 my $SERVER = {
-    CALLS => '192.168.1.118',
-    XMPP  => '192.168.1.118',
+    CALLS => '192.168.1.183',
+    XMPP  => '192.168.1.183',
     FAX   => '127.0.0.1',#dummy for now, not used in the executor
     SMS   => '127.0.0.1',#dummy for now, not used in the executor
 };
@@ -26,23 +26,23 @@ my $AMOUNT = {
     XMPP        => 1,
 };
 my $SUBSCRIBERS_EXISTING_ID = {
-    caller => [315],
-    callee => [317],
+    caller => [],
+    callee => [],
 };
 my $SUBSCRIBER_TEMPLATE = {
-    username_format            => 'sub1_%04d',
-    username_format_caller     => 'sub1_caller_%04d',
-    username_format_callee     => 'sub1_callee_%04d',
-    display_name_format        => 'sub1 %04d',
-    display_name_format_caller => 'sub1 caller %04d',
-    display_name_format_callee => 'sub1 callee %04d',
+    username_format            => 'sub_%04d',
+    username_format_caller     => 'sub_caller_%04d',
+    username_format_callee     => 'sub_callee_%04d',
+    display_name_format        => 'sub %04d',
+    display_name_format_caller => 'sub caller %04d',
+    display_name_format_callee => 'sub callee %04d',
     password_format            => 'sub_pwd_%04d',
     #we repeate it intentionally, to somplify logic
     password_format_caller     => 'sub_pwd_%04d',
     password_format_callee     => 'sub_pwd_%04d',
     subscriber_data => {
-        customer_id => 69,
-        domain => '192.168.1.118',
+        customer_id => 139,
+        domain => '192.168.1.183',
         pbx_extension => '1',
         primary_number => {
             ac => '1',
