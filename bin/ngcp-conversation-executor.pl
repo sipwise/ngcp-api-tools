@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Data::Dumper;
 
+use lib qw(/root/VMHost/ngcp-api-tools/lib/);
+
 use NGCP::API::Client;
 use Path::Tiny qw();
 use File::Slurp qw/write_file/;
