@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_2c2b78ed",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2018-04-13T13:47:19Z",
+      "side": 1,
+      "message": "if it works, but would use the lower-precedence andi would",
+      "range": {
+        "startLine": 128,
+        "startChar": 27,
+        "endLine": 128,
+        "endChar": 29
+      },
+      "revId": "730482ed5759c026690f15b4cf49d696951cf063",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_8c3cc430",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2018-04-13T13:47:19Z",
+      "side": 1,
+      "message": "some quotemeta needed?\n\ni would rather simply die(), if there is no rows or page.",
+      "range": {
+        "startLine": 129,
+        "startChar": 51,
+        "endLine": 129,
+        "endChar": 58
+      },
+      "revId": "730482ed5759c026690f15b4cf49d696951cf063",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
