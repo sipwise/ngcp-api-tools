@@ -8,6 +8,7 @@ use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
 use Encode;
+
 my $config;
 
 BEGIN {
@@ -105,6 +106,8 @@ sub request {
 sub next_page {
     my ($self, $uri) = @_;
 
+    (my $params = $uri) =~ s/^[^?]+\?//;
+
     unless ($self->{_ua}) {
         ($self->{_ua},$self->{_urlbase}) = $self->_create_ua($uri);
         $self->{_collection_url} = sprintf "https://%s%s%spage=1&rows=%d", $self->{_urlbase},
@@ -120,8 +123,12 @@ sub next_page {
     my $res = NGCP::API::Client::Result->new($self->{_ua}->request($req));
 
     undef $self->{_collection_url};
-    if ('HASH' eq ref (my $data = $res->as_hash())) {
+
+    my $data = $res->as_hash();
+    if ($data && ref($data) eq 'HASH') {
         $uri = $data->{_links}->{next}->{href};
+        return $res unless $uri && $uri =~ /rows/;
+        $uri .= '&'.$params if $params && $uri !~ /$params/;
         $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri) if $uri;
     }
 
