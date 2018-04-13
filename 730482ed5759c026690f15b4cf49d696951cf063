@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_6ce500a7",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 1
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2018-04-13T14:10:03Z",
+      "side": 1,
+      "message": "in this context it works as expected.",
+      "parentUuid": "baa041b7_2c2b78ed",
+      "range": {
+        "startLine": 128,
+        "startChar": 27,
+        "endLine": 128,
+        "endChar": 29
+      },
+      "revId": "730482ed5759c026690f15b4cf49d696951cf063",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_8c3cc430",
         "filename": "lib/NGCP/API/Client.pm",
         "patchSetId": 1
