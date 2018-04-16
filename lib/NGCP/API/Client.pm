@@ -104,6 +104,8 @@ sub next_page {
     my ($self, $uri) = @_;
 
     (my $params = $uri) =~ s/^[^?]+\?//;
+    $params =~ s/[&?]rows(=\d+)?//;
+    $params =~ s/[&?]page(=\d+)?//;
 
     unless ($self->{_ua}) {
         ($self->{_ua},$self->{_urlbase}) = $self->_create_ua($uri);
@@ -124,7 +126,7 @@ sub next_page {
     my $data = $res->as_hash();
     if ($data && ref($data) eq 'HASH') {
         $uri = $data->{_links}->{next}->{href};
-        return $res unless $uri && $uri =~ /rows/;
+        return $res unless $uri && $uri =~ /page/;
         $uri .= '&'.$params if $params && $uri !~ /\Q$params\E/;
         $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri) if $uri;
     }
