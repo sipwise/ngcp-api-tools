@@ -1,3 +1,15 @@
+ngcp-api-tools (6.2.1.1+0~mr6.2.1.1) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [7186743] TT#35715 ensure that next_page() retains original query params
+
+  [ Rene Krenn ]
+  * [1a4ec15] TT#35715 tolerate collection uris including pagination query params
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Wed, 02 May 2018 12:56:28 +0200
+
 ngcp-api-tools (6.2.1.0+0~mr6.2.1.0) unstable; urgency=medium
 
   [ Andreas Granig ]
