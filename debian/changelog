@@ -1,3 +1,18 @@
+ngcp-api-tools (6.3.1.0+0~mr6.3.1.0) unstable; urgency=medium
+
+  [ Irina Peshinskaya ]
+  * [d0d3686] TT#34260 Load Encode library
+
+  [ Kirill Solomko ]
+  * [bb51c3e] TT#35715 ensure that next_page() retains original query params
+
+  [ Rene Krenn ]
+  * [9a8c580] TT#35715 tolerate collection uris including pagination query params
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 29 May 2018 10:05:09 +0200
+
 ngcp-api-tools (6.3.0.0+0~mr6.3.0.0) unstable; urgency=medium
 
   [ Andreas Granig ]
