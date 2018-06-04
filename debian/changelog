@@ -1,3 +1,12 @@
+ngcp-api-tools (5.5.6.0+0~mr5.5.6.0) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [7bcebc9] TT#35715 tolerate collection uris including pagination query params
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 04 Jun 2018 16:16:49 +0200
+
 ngcp-api-tools (5.5.5.0+0~mr5.5.5.0) unstable; urgency=medium
 
   [ Kirill Solomko ]
