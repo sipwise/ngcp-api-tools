@@ -1,3 +1,9 @@
+ngcp-api-tools (6.5.2.0+0~mr6.5.2.0) unstable; urgency=medium
+
+  * New release.
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 15 Oct 2018 21:17:23 +0200
+
 ngcp-api-tools (6.5.1.0+0~mr6.5.1.0) unstable; urgency=medium
 
   * New release.
