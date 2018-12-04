@@ -16,6 +16,8 @@ use Email::Sender::Transport::Sendmail qw();
 Readonly my @required => qw();
 Readonly my $config_file => '/etc/ngcp-panel/provisioning.conf';
 
+my $page_size = 10;
+
 my $opts = {
     verbose => 0,
 };
@@ -105,7 +107,7 @@ sub get_data {
     $process_code = sub { my $data = shift; return 0; } unless 'CODE' eq ref $process_code;
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    $client->set_page_rows(10);
+    $client->set_page_rows($page_size);
     my @result = ();
     while (my $res = $client->next_page($uri)) {
         die $res->result unless $res->is_success;
@@ -147,7 +149,7 @@ sub main {
             die "Missing domain in a credit warning check";
         }
         my @contracts;
-        get_data(sprintf('/api/customerbalances/?domain=%s&prepaid=1',
+        get_data(sprintf('/api/customerbalances/?no_count=true&domain=%s&prepaid=1',
             $cwarning->{domain}),
             'customerbalances',
             sub {
