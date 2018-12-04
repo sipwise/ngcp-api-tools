@@ -17,6 +17,8 @@ Readonly my @required => qw();
 Readonly my $config_file => '/etc/ngcp-panel/provisioning.conf';
 Readonly my $interval => 'day';
 
+my $page_size = 100;
+
 my $opts = {
     verbose => 0,
 };
@@ -60,7 +62,7 @@ sub get_data {
     my ($uri, $link) = @_;
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    $client->set_page_rows(10);
+    $client->set_page_rows($page_size);
     my @result = ();
     while (my $res = $client->next_page($uri)) {
         die $res->result unless $res->is_success;
@@ -180,7 +182,7 @@ sub lock_customer {
 sub main {
     check_params();
     load_config();
-    my $events = get_data(sprintf('/api/customerfraudevents/?interval=%s',
+    my $events = get_data(sprintf('/api/customerfraudevents/?no_count=true&interval=%s',
                                   $interval),
                                   'customerfraudevents');
     foreach my $event (@{$events}) {
