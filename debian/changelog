@@ -1,3 +1,12 @@
+ngcp-api-tools (7.0.1.1+0~mr7.0.1.1) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [8687b39] TT#48198 TT#48196 use ?no_count=true in fraud scripts
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 10 Dec 2018 22:08:04 +0100
+
 ngcp-api-tools (7.0.1.0+0~mr7.0.1.0) unstable; urgency=medium
 
   * New release.
