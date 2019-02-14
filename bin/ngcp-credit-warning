@@ -52,7 +52,7 @@ sub usage {
 }
 
 sub load_config {
-    $config = XML::Simple->new()->XMLin($config_file, ForceArray => 0)
+    $config = XML::Simple->new()->XMLin($config_file, ForceArray => [ 'credit_warnings' ])
         or die "Cannot load config: $config_file: $ERRNO";
     return;
 }
