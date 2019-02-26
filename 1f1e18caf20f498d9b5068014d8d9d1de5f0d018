@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_5748962d",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2019-02-26T15:52:42Z",
+      "side": 1,
+      "message": "s/Trantision/Transition/?",
+      "revId": "1f1e18caf20f498d9b5068014d8d9d1de5f0d018",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_975cceee",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2019-02-26T15:52:42Z",
+      "side": 1,
+      "message": "You changed the Depends on ngcp-panel to a Recommends, can you please mention this (and the rational for it) in the commit message as well?",
+      "revId": "1f1e18caf20f498d9b5068014d8d9d1de5f0d018",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
