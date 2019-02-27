@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a0c5dc1_c7861e65",
+        "filename": "debian/control",
+        "patchSetId": 4
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-02-27T08:57:44Z",
+      "side": 1,
+      "message": "I find the repetition of NGCP three times, and another one in the short description, a bit too... repetitive :)\n\nWe can probable do without some of them, e.g. the last, and maybe the first due to being already in the short description.",
+      "range": {
+        "startLine": 55,
+        "startChar": 36,
+        "endLine": 55,
+        "endChar": 40
+      },
+      "revId": "56a5e78ff0a7be40c5ddf37a7aa665c2d7583996",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_e781224f",
+        "filename": "debian/control",
+        "patchSetId": 4
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-02-27T08:57:44Z",
+      "side": 1,
+      "message": "Same here",
+      "range": {
+        "startLine": 75,
+        "startChar": 36,
+        "endLine": 75,
+        "endChar": 40
+      },
+      "revId": "56a5e78ff0a7be40c5ddf37a7aa665c2d7583996",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
