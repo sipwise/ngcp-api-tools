@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9a0c5dc1_27761a3f",
+        "filename": "debian/control",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-02-27T13:03:13Z",
+      "side": 1,
+      "message": "No, depends on the packages the contents it was moved to. So that we do not break depending packages. :)",
+      "parentUuid": "9a0c5dc1_078d567b",
+      "range": {
+        "startLine": 32,
+        "startChar": 1,
+        "endLine": 32,
+        "endChar": 24
+      },
+      "revId": "56a5e78ff0a7be40c5ddf37a7aa665c2d7583996",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a0c5dc1_c7861e65",
         "filename": "debian/control",
         "patchSetId": 4
