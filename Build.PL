@@ -9,7 +9,6 @@ my $builder = Module::Build->new(
         'IO::Socket::SSL'   => 0,
         'JSON'              => 0,
         'LWP::UserAgent'    => 0,
-        'NGCP::Panel'       => 0.01,
         'Readonly'          => 0,
     },
 );
