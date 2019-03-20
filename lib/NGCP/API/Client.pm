@@ -8,6 +8,7 @@ use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
 use Encode;
+use URI;
 
 my $config;
 
@@ -104,12 +105,7 @@ sub request {
 }
 
 sub next_page {
-    my ($self, $uri) = @_;
-
-    (my $params = $uri) =~ s/^[^?]+\?//;
-    $params =~ s/[&?]rows(=\d+)?//;
-    $params =~ s/[&?]page(=\d+)?//;
-
+    my ( $self, $uri ) = @_;
     unless ($self->{_ua}) {
         ($self->{_ua},$self->{_urlbase}) = $self->_create_ua($uri);
         $self->{_collection_url} = sprintf "https://%s%s%spage=1&rows=%d", $self->{_urlbase},
@@ -130,8 +126,8 @@ sub next_page {
     if ($data && ref($data) eq 'HASH') {
         $uri = $data->{_links}->{next}->{href};
         return $res unless $uri && $uri =~ /page/;
-        $uri .= '&'.$params if $params && $uri !~ /\Q$params\E/;
-        $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri) if $uri;
+        my $uri_obj = URI->new($uri);
+        $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri_obj->as_string) if $uri_obj;
     }
 
     return $res;
