@@ -8,6 +8,7 @@ use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
 use Encode;
+use URI;
 
 my $config;
 
@@ -104,18 +105,16 @@ sub request {
 }
 
 sub next_page {
-    my ($self, $uri) = @_;
+    my ( $self, $uri ) = @_;
 
-    (my $params = $uri) =~ s/^[^?]+\?//;
-    $params =~ s/[&?]rows(=\d+)?//;
-    $params =~ s/[&?]page(=\d+)?//;
-
+    my $uri_obj = URI->new( $uri );
     unless ($self->{_ua}) {
         ($self->{_ua},$self->{_urlbase}) = $self->_create_ua($uri);
-        $self->{_collection_url} = sprintf "https://%s%s%spage=1&rows=%d", $self->{_urlbase},
-            $uri =~ m#^/# ? $uri : "/".$uri,
-            $uri =~ m#\?# ? '&' : '?',
-            $self->{_rows};
+        my %params = $uri_obj->query_form;
+        $params{page} = 1 unless $params{page};
+        $params{rows} = $self->{_rows} unless $params{rows};
+        $uri_obj->query_form( \%params );
+        $self->{_collection_url} = sprintf "https://%s%s", $self->{_urlbase}, $uri_obj->as_string;
     }
 
     return unless $self->{_collection_url};
@@ -124,14 +123,19 @@ sub next_page {
 
     my $res = NGCP::API::Client::Result->new($self->{_ua}->request($req));
 
+    my $collection_uri_obj = URI->new( $self->{_collection_url} );
+
     undef $self->{_collection_url};
 
     my $data = $res->as_hash();
     if ($data && ref($data) eq 'HASH') {
-        $uri = $data->{_links}->{next}->{href};
-        return $res unless $uri && $uri =~ /page/;
-        $uri .= '&'.$params if $params && $uri !~ /\Q$params\E/;
-        $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri) if $uri;
+        $uri_obj = URI->new( $data->{_links}->{next}->{href} );
+        return $res unless $uri_obj;
+        my %params = $uri_obj->query_form;
+        return $res unless grep { $_ eq 'page' } keys %params;
+        %params = ($collection_uri_obj->query_form, $uri_obj->query_form);
+        $uri_obj->query_form( \%params );
+        $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri_obj->as_string) if $uri_obj;
     }
 
     return $res;
