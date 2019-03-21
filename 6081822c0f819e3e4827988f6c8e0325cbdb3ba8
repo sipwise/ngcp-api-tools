@@ -39,6 +39,52 @@
       "revId": "6081822c0f819e3e4827988f6c8e0325cbdb3ba8",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_713151ec",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-03-21T13:38:29Z",
+      "side": 1,
+      "message": "can be also changed to as_string as essentially they do the same (for both ASCII and UTF escapings)",
+      "range": {
+        "startLine": 117,
+        "startChar": 88,
+        "endLine": 117,
+        "endChar": 100
+      },
+      "revId": "6081822c0f819e3e4827988f6c8e0325cbdb3ba8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_d13a3dcd",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-03-21T13:38:29Z",
+      "side": 1,
+      "message": "what if there is a parameter \"something_page\" but no \"page\"  ...  ?\ncan\u0027t we just check that a form param eq \u0027page\u0027 ?",
+      "range": {
+        "startLine": 131,
+        "startChar": 39,
+        "endLine": 131,
+        "endChar": 68
+      },
+      "revId": "6081822c0f819e3e4827988f6c8e0325cbdb3ba8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
