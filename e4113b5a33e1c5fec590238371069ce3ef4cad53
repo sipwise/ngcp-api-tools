@@ -1,0 +1,84 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a0c5dc1_f1e1c1ff",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 5
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-03-21T15:30:58Z",
+      "side": 1,
+      "message": "good trick!",
+      "revId": "e4113b5a33e1c5fec590238371069ce3ef4cad53",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_51d3ed38",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 5
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-03-21T15:30:58Z",
+      "side": 1,
+      "message": "unless exists $params{page}",
+      "revId": "e4113b5a33e1c5fec590238371069ce3ef4cad53",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_11dd7542",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 5
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-03-21T15:30:58Z",
+      "side": 1,
+      "message": "unless exists $params{rows}",
+      "range": {
+        "startLine": 115,
+        "startChar": 39,
+        "endLine": 115,
+        "endChar": 73
+      },
+      "revId": "e4113b5a33e1c5fec590238371069ce3ef4cad53",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_711711ee",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 5
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-03-21T15:30:58Z",
+      "side": 1,
+      "message": "if ($data \u0026\u0026 ref($data) eq \u0027HASH\u0027) {\n  $uri_obj \u003d URI-\u003enew( $data-\u003e{_links}-\u003e{next}-\u003e{href} );\n  return $res unless $uri_obj;\n  my $collection_uri_obj \u003d URI-\u003enew($self-\u003e{_collection_url});\n  my %params \u003d ($collection_uri_obj-\u003equery_form, $uri_obj-\u003equery_form); #merge\n  $uri_obj-\u003equery_form( \\%params );\n  $self-\u003e{_collection_url} \u003d $self-\u003e_get_url($self-\u003e{_urlbase},$uri_obj-\u003eas_string);\n}",
+      "range": {
+        "startLine": 131,
+        "startChar": 8,
+        "endLine": 133,
+        "endChar": 102
+      },
+      "revId": "e4113b5a33e1c5fec590238371069ce3ef4cad53",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
