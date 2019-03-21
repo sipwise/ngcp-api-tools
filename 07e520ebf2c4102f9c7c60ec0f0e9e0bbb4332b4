@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a0c5dc1_1109f52c",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 3
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-03-21T13:06:53Z",
+      "side": 1,
+      "message": "we should also remove this one and use URI to fill in the params\n\nmy $uri_obj \u003d URI-\u003enew($uri);\nmy %params \u003d $uri-\u003equery_form;\n$params{page} //\u003d 1;\n$params{rows} //\u003d $self-\u003e{rows} // 10;\n$uri_obj-\u003equery_form(%params);\n$self-\u003e{_collection_url} \u003d sprintf \"https://%s%s\", $self-\u003e{_urlbase}, $uri_obj-\u003epath_query;",
+      "range": {
+        "startLine": 112,
+        "startChar": 0,
+        "endLine": 113,
+        "endChar": 38
+      },
+      "revId": "07e520ebf2c4102f9c7c60ec0f0e9e0bbb4332b4",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
