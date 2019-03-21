@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a0c5dc1_9134c5de",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-03-21T13:37:58Z",
+      "side": 1,
+      "message": "new deps must also be enlisted in debian/control",
+      "revId": "6081822c0f819e3e4827988f6c8e0325cbdb3ba8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a0c5dc1_b137c9e2",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-03-21T13:37:58Z",
+      "side": 1,
+      "message": "this default is covered by NGCP_API_PAGE_ROWS",
+      "range": {
+        "startLine": 115,
+        "startChar": 42,
+        "endLine": 115,
+        "endChar": 44
+      },
+      "revId": "6081822c0f819e3e4827988f6c8e0325cbdb3ba8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
