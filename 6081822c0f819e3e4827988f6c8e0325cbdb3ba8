@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9a0c5dc1_d196bd93",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 4
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-03-21T14:37:25Z",
+      "side": 1,
+      "message": "well, we do not have other deps in debian/control added specifically but we have ${perl:Depends}, should be fine for now I think.",
+      "parentUuid": "9a0c5dc1_9134c5de",
+      "revId": "6081822c0f819e3e4827988f6c8e0325cbdb3ba8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a0c5dc1_b137c9e2",
         "filename": "lib/NGCP/API/Client.pm",
         "patchSetId": 4
