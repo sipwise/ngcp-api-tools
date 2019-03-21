@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a0c5dc1_f6165754",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 2
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-03-21T12:29:55Z",
+      "side": 1,
+      "message": "you do not need to apply any regex here I think.\njust \nmy $uri_obj \u003d \u003d URI-\u003enew($uri);\n(p.s. please also do not implicitly convert variable type as $uri is initially a string, hence $uri_obj)",
+      "range": {
+        "startLine": 130,
+        "startChar": 8,
+        "endLine": 131,
+        "endChar": 30
+      },
+      "revId": "2aa175d7fb6127e08427e59d095977f2c03c1c89",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
