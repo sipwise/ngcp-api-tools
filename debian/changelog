@@ -1,3 +1,12 @@
+ngcp-api-tools (5.5.7.4+0~mr5.5.7.4) unstable; urgency=medium
+
+  [ Flaviu Mates ]
+  * [778a363] TT#53575 Fix next page method
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 25 Mar 2019 12:25:39 +0100
+
 ngcp-api-tools (5.5.7.3+0~mr5.5.7.3) unstable; urgency=medium
 
   [ Rene Krenn ]
