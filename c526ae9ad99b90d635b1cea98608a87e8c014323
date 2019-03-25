@@ -1,0 +1,7 @@
+Verified+1: Jenkins Jenkins
+Code-Review+2: Alexander Lutay <alutay@sipwise.com>
+Submitted-by: Flaviu Mates <fmates@sipwise.com>
+Submitted-at: Mon, 25 Mar 2019 12:24:30 +0100
+Reviewed-on: http://gerrit.mgm.sipwise.com/28330
+Project: ngcp-api-tools
+Branch: refs/heads/mr5.5.8
