@@ -1,3 +1,15 @@
+ngcp-api-tools (6.5.4.1+0~mr6.5.4.1) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [5b92608] TT#45455 fix reading multiple cdredit_warnings configs
+
+  [ Flaviu Mates ]
+  * [ced7635] TT#53575 Fix next page method
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 02 Apr 2019 00:38:27 +0200
+
 ngcp-api-tools (6.5.4.0+0~mr6.5.4.0) unstable; urgency=medium
 
   [ Rene Krenn ]
