@@ -55,7 +55,7 @@ sub main {
     my $uri = '/api/subscribers/';
     my %data = map { $_ => $opts->{$_} }
                     qw(customer_id username password webpassword);
-    $data{primary_number} = { map { $_ => $opts->{$_} } @{$opts}{qw(cc ac sn)} };
+    $data{primary_number} = { map { $_ => $opts->{$_} } qw(cc ac sn) };
     $data{administrative} = $opts->{admin};
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
