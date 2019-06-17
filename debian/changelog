@@ -1,3 +1,12 @@
+ngcp-api-tools (7.5.0.0+0~mr7.5.0.0) unstable; urgency=medium
+
+  [ Flaviu Mates ]
+  * [689bfc1] TT#58863 - Primary numbers creation on provisioning
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 17 Jun 2019 14:36:48 +0200
+
 ngcp-api-tools (7.4.0.0+0~mr7.4.0.0) unstable; urgency=medium
 
   [ Guillem Jover ]
