@@ -9,6 +9,7 @@ Standards-Version: 3.9.8
 Homepage: https://www.sipwise.com/
 
 Package: libngcp-api-client-perl
+Section: perl
 Architecture: all
 Depends:
  ${misc:Depends},
@@ -21,12 +22,12 @@ Conflicts:
 Replaces:
  ngcp-api-tools,
  ngcp-ossbss,
-Section: perl
 Description: NGCP REST API client module
  This package contains the NGCP::API::Client module needed by all interface
  modules on NGCP management hosts.
 
 Package: ngcp-api-tools
+Section: oldlibs
 Architecture: all
 Depends:
  libngcp-api-client-perl,
