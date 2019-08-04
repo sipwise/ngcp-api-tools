@@ -12,10 +12,23 @@ use Email::Sender::Simple qw();
 use Email::Simple;
 use Email::Simple::Creator;
 use Email::Sender::Transport::Sendmail qw();
+use POSIX qw(strftime);
+use File::Pid;
+use Data::Dumper;
 
 Readonly my @required => qw();
 Readonly my $config_file => '/etc/ngcp-panel/provisioning.conf';
-Readonly my $interval => 'day';
+
+my $PROGRAM_BASE = "ngcp-fraud-notifier";
+my $retcode = 0;
+my $piddir  = "/run/ngcp-fraud-notifier";
+my $pidfile = "$piddir/ngcp-fraud-notifier.pid";
+my $pf      =  File::Pid->new({ file => $pidfile });
+
+local $PROGRAM_NAME = $PROGRAM_BASE;
+local $OUTPUT_AUTOFLUSH = 1;
+
+local $SIG{INT} = \&cleanup;
 
 my $page_size = 100;
 
@@ -29,6 +42,10 @@ GetOptions( $opts,
     "help|h" => \&usage,
     "verbose",
 ) or usage();
+
+sub DESTROY {
+    cleanup();
+}
 
 sub check_params {
     my @missing;
@@ -149,52 +166,55 @@ sub send_email {
         or die sprintf "Cannot send fraud daily lock notification to %s: $ERRNO",
                        $email->header('To');
 
+    update_notify_status($event);
+
     return;
 }
 
 
-sub lock_customer {
-    my ($event, $subscribers) = @_;
+sub update_notify_status {
+    my $event = shift;
 
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    my $uri = '/api/customers/'.$event->{id};
+    my $id = sprintf("%d-%s-%s",
+                     @{$event}{qw(id interval interval_date)});
+    my $now = strftime('%Y-%m-%d %H:%M:%S', localtime(time));
+    my $uri = '/api/customerfraudevents/'.$id;
     my $data = [ { op => 'replace',
-                   path => '/status',
-                   value => 'locked' } ];
+                   path => '/notify_status',
+                   value => 'notified' },
+                 { op => 'replace',
+                   path => '/notified_at',
+                   value => $now } ];
     my $res = $client->request("PATCH", $uri, $data);
-    if ($res->status_line =~ /200 OK/) {
-        foreach my $subscriber (@{$subscribers}) {
-            $uri = '/api/subscribers/'.$subscriber->{id};
-            $data = [ { op => 'replace',
-                        path => '/status',
-                        value => 'locked' },
-                      { op => 'replace',
-                        path => '/lock',
-                        value => $event->{interval_lock} } ];
-            $res = $client->request("PATCH", $uri, $data);
-        }
-    }
 
     return;
 }
 
 sub main {
+
+    if (my $num = $pf->running) {
+        print "$PROGRAM_BASE is already running.\n";
+        $retcode = 1;
+        exit $retcode;
+    }
+    mkdir $piddir unless -e $piddir;
+    $pf->write;
+
     check_params();
     load_config();
-    my $events = get_data(sprintf('/api/customerfraudevents/?no_count=true&interval=%s',
-                                  $interval),
+    my $events = get_data(sprintf('/api/customerfraudevents/?no_count=true&notify_status=%s',
+                                  'new'),
                                   'customerfraudevents');
     foreach my $event (@{$events}) {
+        print Dumper $event;
         my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
                                    $event->{id}),
                                    'subscribers');
-        $event->{interval} = 'day';
-        if (defined $event->{interval_lock} && $event->{interval_lock} > 0) {
-            lock_customer($event, $subscribers);
-        }
         if ($event->{interval_notify}) {
             eval {
+                print "send_email\n";
                 send_email($event, $subscribers);
             };
         }
@@ -203,25 +223,34 @@ sub main {
     return;
 }
 
-main();
+sub cleanup {
+    $pf->remove;
+    rmdir $piddir if $piddir;
+}
 
-exit 0;
+eval { main() };
+
+if ($EVAL_ERROR) {
+    print STDERR $EVAL_ERROR;
+    $retcode = 1;
+}
+
+exit $retcode;
 
 __END__
 
 =head1 NAME
 
-ngcp-fraud-daily-lock - checks for contract balances above fraud limit thresholds
+ngcp-fraud-notifier - sends fraud notifications for customers that exceed the threshold
 
 =head1 SYNOPSIS
 
-B<ngcp-fraud-daily-lock> [I<options>...]
+B<ngcp-fraud-nofifier> [I<options>...]
 
 =head1 DESCRIPTION
 
 B<This program> checks for contract balances above fraud limit warning
-thresholds and sends email notifications about the incidents as applying
-actions on such contracts (e.g. lock). Interval: 'day'.
+thresholds and sends email notifications about the incidents.
 
 =head1 OPTIONS
 
@@ -256,7 +285,7 @@ Kirill Solomko <ksolomko@sipwise.com>
 
 =head1 LICENSE
 
-Copyright (C) 2016 Sipwise GmbH, Austria
+Copyright (C) 2019 Sipwise GmbH, Austria
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
