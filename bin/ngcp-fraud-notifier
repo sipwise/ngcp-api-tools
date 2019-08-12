@@ -75,7 +75,7 @@ sub load_config {
 }
 
 sub get_data {
-    my ($uri, $link) = @_;
+    my ($uri, $link, $code) = @_;
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
     $client->set_page_rows($page_size);
@@ -88,6 +88,10 @@ sub get_data {
             push(@result,@$data);
         } elsif ($data) {
             push(@result,$data);
+        }
+        if (defined $code and 'CODE' eq ref $code) {
+            &$code(\@result);
+            @result = ();
         }
     }
     return \@result;
@@ -126,7 +130,7 @@ sub send_email {
     my $template = get_email_template($event);
 
     my $vars = { adminmail => $config->{adminmail},
-                 customer_id => $event->{id},
+                 customer_id => $event->{contract_id},
                  interval => $event->{interval},
                  interval_cost  => sprintf('%.2f', $event->{interval_cost}/100),
                  interval_limit => sprintf('%.2f', $event->{interval_limit}/100),
@@ -161,9 +165,9 @@ sub send_email {
         body => $template->{body},
     );
 
-    Email::Sender::Simple->send($email, { transport => $transport })
-        or die sprintf "Cannot send fraud daily lock notification to %s: $ERRNO",
-                       $email->header('To');
+    #Email::Sender::Simple->send($email, { transport => $transport })
+    #    or die sprintf "Cannot send fraud daily lock notification to %s: $ERRNO",
+    #                   $email->header('To');
 
     update_notify_status($event);
 
@@ -176,10 +180,8 @@ sub update_notify_status {
 
     my $client = new NGCP::API::Client;
     $client->set_verbose($opts->{verbose});
-    my $id = sprintf("%d-%s-%s",
-                     @{$event}{qw(id interval interval_date)});
     my $now = strftime('%Y-%m-%d %H:%M:%S', localtime(time));
-    my $uri = '/api/customerfraudevents/'.$id;
+    my $uri = '/api/customerfraudevents/'.$event->{id};
     my $data = [ { op => 'replace',
                    path => '/notify_status',
                    value => 'notified' },
@@ -203,20 +205,22 @@ sub main {
 
     check_params();
     load_config();
-    my $events = get_data(sprintf('/api/customerfraudevents/?no_count=true&notify_status=%s',
-                                  'new'),
-                                  'customerfraudevents');
-    foreach my $event (@{$events}) {
-        my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
-                                   $event->{id}),
-                                   'subscribers');
-        if ($event->{interval_notify}) {
-            eval {
-                send_email($event, $subscribers);
-            };
+    get_data(
+        sprintf('/api/customerfraudevents/?no_count=true&notify_status=%s','new'),'customerfraudevents', sub {
+        my $events = shift;
+        foreach my $event (@{$events}) {
+            if ($event->{interval_notify}) {
+                my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
+                    $event->{contract_id}),
+                    'subscribers');
+                next unless scalar @$subscribers;
+                eval {
+                    send_email($event, $subscribers);
+                };
+                print $EVAL_ERROR if $EVAL_ERROR;
+            }
         }
-        print $EVAL_ERROR if $EVAL_ERROR;
-    }
+    });
     return;
 }
 
