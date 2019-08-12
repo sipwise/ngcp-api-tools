@@ -11,11 +11,15 @@ use Encode;
 use URI;
 
 my $config;
+my $use_system_auth;
 
 BEGIN {
-    my $cfg_file = "/etc/default/ngcp-api";
-    $config = Config::Tiny->read($cfg_file)
-                        or die "Cannot read $cfg_file: $ERRNO";
+    $use_system_auth = 0;
+    if ($use_system_auth) {
+        my $cfg_file = "/etc/default/ngcp-api";
+        $config = Config::Tiny->read($cfg_file)
+                            or die "Cannot read $cfg_file: $ERRNO";
+    }
 };
 
 Readonly::Scalar my $cfg => $config;
@@ -26,18 +30,30 @@ sub new {
     my $class  = shift;
     my $self   = {};
 
-    $opts{host}         = $cfg->{_}->{NGCP_API_IP};
-    $opts{port}         = $cfg->{_}->{NGCP_API_PORT};
-    $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
-    $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-    $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
-    $opts{read_timeout} = $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180;
-    $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
-    $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
-    $opts{verbose}      = 0;
+    my $page_rows;
+    if ($use_system_auth) {
+        $opts{host}         = $cfg->{_}->{NGCP_API_IP};
+        $opts{port}         = $cfg->{_}->{NGCP_API_PORT};
+        $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
+        $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
+        $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
+        $opts{read_timeout} = $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180;
+        $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
+        $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
+        $page_rows          = $cfg->{_}->{NGCP_API_PAGE_ROWS};
+        $opts{verbose}      = 0;
+        $opts{realm}        = 'api_admin_system';
+    } else {
+        $opts{host}         = "127.0.0.1";
+        $opts{port}         = "1443";
+        $opts{sslverify}    = 'no';
+        $opts{auth_user}    = "administrator";
+        $opts{auth_pass}    = "administrator";
+        $opts{realm}        = 'api_admin_http';
+    }
 
     bless $self, $class;
-    $self->set_page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
+    $self->set_page_rows($page_rows // 10);
 
     return $self;
 }
@@ -55,8 +71,7 @@ sub _create_ua {
 
     my $urlbase = sprintf "%s:%s", @{opts}{qw(host port)};
 
-    $ua->credentials($urlbase, 'api_admin_system', #'api_admin_http'
-                     @{opts}{qw(auth_user auth_pass)});
+    $ua->credentials($urlbase, @{opts}{qw(realm auth_user auth_pass)});
 
     if($opts{verbose}) {
         $ua->show_progress(1);
@@ -79,7 +94,7 @@ sub _create_req {
         $req->content_type("application/json; charset='utf8'");
     }
     $req->header('Prefer' => 'return=representation');
-    $req->header('NGCP-UserAgent' => 'NGCP::API::Client'); #remove for 'api_admin_http'
+    $req->header('NGCP-UserAgent' => 'NGCP::API::Client') if $opts{realm} eq 'api_admin_system';
     return $req;
 }
 
