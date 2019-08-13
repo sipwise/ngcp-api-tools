@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "5b939a6d_2d308bf5",
+        "filename": "bin/ngcp-fraud-notifier",
+        "patchSetId": 3
+      },
+      "lineNbr": 209,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-08-13T10:20:43Z",
+      "side": 1,
+      "message": "?",
+      "range": {
+        "startLine": 209,
+        "startChar": 73,
+        "endLine": 209,
+        "endChar": 90
+      },
+      "revId": "b2c14f5e792f6cfe5e9c6cc8198ad3fa7ed72e97",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "e497d887_06e5d156",
         "filename": "lib/NGCP/API/Client.pm",
         "patchSetId": 3
