@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e497d887_06e5d156",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 3
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-08-13T10:18:51Z",
+      "side": 1,
+      "message": "what is this for ?",
+      "range": {
+        "startLine": 47,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 47
+      },
+      "revId": "b2c14f5e792f6cfe5e9c6cc8198ad3fa7ed72e97",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
+    }
+  ]
+}
