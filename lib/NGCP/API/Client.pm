@@ -1,6 +1,8 @@
 package NGCP::API::Client;
 use strict;
 use warnings;
+use feature qw(state);
+
 use English qw(-no_match_vars);
 use Config::Tiny;
 use JSON::XS;
@@ -9,15 +11,34 @@ use LWP::UserAgent;
 use Readonly;
 use URI;
 
-my $config;
+sub _load_config_defaults {
+    my $cfg_file = '/etc/default/ngcp-api';
+    my $cfg;
 
-BEGIN {
-    my $cfg_file = "/etc/default/ngcp-api";
-    $config = Config::Tiny->read($cfg_file)
-                        or die "Cannot read $cfg_file: $ERRNO";
-};
+    $cfg = Config::Tiny->read($cfg_file)
+        or die "Cannot read $cfg_file: $ERRNO";
 
-Readonly::Scalar my $cfg => $config;
+    Readonly my $config => {
+        host          => $cfg->{_}->{NGCP_API_IP},
+        port          => $cfg->{_}->{NGCP_API_PORT},
+        iface         => $cfg->{_}->{NGCP_API_IFACE},
+        sslverify     => $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes',
+        sslverify_lb  => $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no',
+        read_timeout  => $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180,
+        page_rows     => $cfg->{_}->{NGCP_API_PAGE_ROWS} // 10,
+        auth_user     => $cfg->{_}->{AUTH_SYSTEM_LOGIN},
+        auth_pass     => $cfg->{_}->{AUTH_SYSTEM_PASSWORD},
+        verbose       => 0,
+    };
+
+    return $config;
+}
+
+sub _get_config_defaults {
+    state $config = _load_config_defaults();
+
+    return $config;
+}
 
 my %opts = ();
 
@@ -83,18 +104,12 @@ sub new {
     my $class  = shift;
     my $self   = {};
 
-    $opts{host}         = $cfg->{_}->{NGCP_API_IP};
-    $opts{port}         = $cfg->{_}->{NGCP_API_PORT};
-    $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
-    $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-    $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
-    $opts{read_timeout} = $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180;
-    $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
-    $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
-    $opts{verbose}      = 0;
-
     bless $self, $class;
-    $self->set_page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
+
+    my $default_opts = _get_config_defaults();
+    foreach my $opt (keys %{$default_opts}) {
+        $opts{$opt} //= $default_opts->{$opt};
+    }
     $self->_create_ua();
 
     return $self;
