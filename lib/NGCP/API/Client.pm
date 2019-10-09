@@ -33,9 +33,13 @@ sub _create_ua {
         );
     }
 
-    my $urlbase = sprintf "%s:%s", @{opts}{qw(host port)};
+    my $urlbase = URI->new();
+    $urlbase->scheme('https');
+    $urlbase->host($opts{host});
+    $urlbase->port($opts{port});
 
-    $ua->credentials($urlbase, 'api_admin_system', #'api_admin_http'
+    $ua->credentials($urlbase->host_port,
+                     'api_admin_system', #'api_admin_http'
                      @{opts}{qw(auth_user auth_pass)});
 
     if($opts{verbose}) {
@@ -46,13 +50,16 @@ sub _create_ua {
 
     $ua->timeout($opts{read_timeout});
 
+    $self->{_ua} = $ua;
+    $self->{_urlbase} = $urlbase;
+
     return ($ua,$urlbase);
 }
 
 sub _create_req {
     my ($self, $method, $url) = @_;
-    my $req = HTTP::Request->new($method, $url);
 
+    my $req = HTTP::Request->new($method, $url->canonical);
     if ($method eq "PATCH") {
         $req->content_type("application/json-patch+json; charset='utf8'");
     } else {
@@ -64,8 +71,12 @@ sub _create_req {
 }
 
 sub _get_url {
-    my ($self, $urlbase, $uri) = @_;
-    return sprintf "https://%s%s", $urlbase, $uri =~ m#^/# ? $uri : "/".$uri;
+    my ($self, $uri) = @_;
+
+    my $url = $self->{_urlbase}->clone();
+    $url->path($uri);
+
+    return $url;
 }
 
 sub new {
@@ -84,6 +95,7 @@ sub new {
 
     bless $self, $class;
     $self->set_page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
+    $self->_create_ua();
 
     return $self;
 }
@@ -91,15 +103,13 @@ sub new {
 sub request {
     my ($self, $method, $uri, $data) = @_;
 
-    my ($ua, $urlbase) = $self->_create_ua();
-
-    my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
+    my $req = $self->_create_req($method, $self->_get_url($uri));
 
     if ($data) {
         $req->content(encode_json($data));
     }
 
-    my $res = $ua->request($req);
+    my $res = $self->{_ua}->request($req);
 
     return NGCP::API::Client::Result->new($res);
 }
@@ -107,35 +117,36 @@ sub request {
 sub next_page {
     my ( $self, $uri ) = @_;
 
-    my $uri_obj = URI->new( $uri );
-    unless ($self->{_ua}) {
-        ($self->{_ua}, $self->{_urlbase}) = $self->_create_ua();
-        my %params = $uri_obj->query_form;
+    my $collection_url;
+    if ($self->{_collection_url}) {
+        $collection_url = $self->{_collection_url};
+    } else {
+        $collection_url = $self->_get_url($uri);
+
+        my %params = $collection_url->query_form;
         $params{page} //= 1;
         $params{rows} //= $self->{_rows};
-        $uri_obj->query_form( \%params );
-        $self->{_collection_url} = sprintf "https://%s%s", $self->{_urlbase}, $uri_obj->as_string;
+        $collection_url->query_form(\%params);
+
+        $self->{_collection_url} = $collection_url;
     }
 
-    return unless $self->{_collection_url};
-
-    my $req = $self->_create_req('GET', $self->{_collection_url});
-
+    my $req = $self->_create_req('GET', $collection_url);
     my $res = NGCP::API::Client::Result->new($self->{_ua}->request($req));
-
-    my $collection_uri_obj = URI->new( $self->{_collection_url} );
-
-    undef $self->{_collection_url};
 
     my $data = $res->as_hash();
     if ($data && ref($data) eq 'HASH') {
-        $uri_obj = URI->new( $data->{_links}->{next}->{href} );
-        return $res unless $uri_obj;
-        my %params = $uri_obj->query_form;
+        my $new_url = URI->new($data->{_links}->{next}->{href});
+        return $res unless $new_url;
+
+        my %params = $new_url->query_form;
         return $res unless grep { $_ eq 'page' } keys %params;
-        %params = ($collection_uri_obj->query_form, $uri_obj->query_form);
-        $uri_obj->query_form( \%params );
-        $self->{_collection_url} = $self->_get_url($self->{_urlbase},$uri_obj->as_string) if $uri_obj;
+        %params = ( $collection_url->query_form, $new_url->query_form );
+        $new_url->query_form(\%params);
+
+        $self->{_collection_url} = $self->_get_url($new_url->canonical);
+    } else {
+        undef $self->{_collection_url};
     }
 
     return $res;
@@ -146,7 +157,6 @@ sub set_page_rows {
 
     $self->{_rows} = $rows;
     undef $self->{_collection_url};
-    undef $self->{_ua};
 
     return;
 }
