@@ -4,6 +4,7 @@ use warnings;
 use feature qw(state);
 
 use English qw(-no_match_vars);
+use Carp;
 use Config::Tiny;
 use JSON::XS;
 use IO::Socket::SSL;
@@ -16,7 +17,7 @@ sub _load_config_defaults {
     my $cfg;
 
     $cfg = Config::Tiny->read($cfg_file)
-        or die "Cannot read $cfg_file: $ERRNO";
+        or croak("Cannot read $cfg_file: $ERRNO");
 
     Readonly my $config => {
         host          => $cfg->{_}->{NGCP_API_IP},
