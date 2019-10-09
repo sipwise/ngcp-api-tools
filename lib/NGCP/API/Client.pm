@@ -103,10 +103,10 @@ sub _get_url {
 }
 
 sub new {
-    my $class  = shift;
+    my ($class, %opts) = @_;
 
     my $self = {
-        _opts => { },
+        _opts => { %opts },
     };
     bless $self, $class;
 
