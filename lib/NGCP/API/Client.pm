@@ -21,26 +21,6 @@ Readonly::Scalar my $cfg => $config;
 
 my %opts = ();
 
-sub new {
-    my $class  = shift;
-    my $self   = {};
-
-    $opts{host}         = $cfg->{_}->{NGCP_API_IP};
-    $opts{port}         = $cfg->{_}->{NGCP_API_PORT};
-    $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
-    $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
-    $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
-    $opts{read_timeout} = $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180;
-    $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
-    $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
-    $opts{verbose}      = 0;
-
-    bless $self, $class;
-    $self->set_page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
-
-    return $self;
-}
-
 sub _create_ua {
     my ($self, $uri) = @_;
     my $ua = LWP::UserAgent->new();
@@ -85,6 +65,26 @@ sub _create_req {
 sub _get_url {
     my ($self, $urlbase, $uri) = @_;
     return sprintf "https://%s%s", $urlbase, $uri =~ m#^/# ? $uri : "/".$uri;
+}
+
+sub new {
+    my $class  = shift;
+    my $self   = {};
+
+    $opts{host}         = $cfg->{_}->{NGCP_API_IP};
+    $opts{port}         = $cfg->{_}->{NGCP_API_PORT};
+    $opts{iface}        = $cfg->{_}->{NGCP_API_IFACE};
+    $opts{sslverify}    = $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes';
+    $opts{sslverify_lb} = $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no';
+    $opts{read_timeout} = $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180;
+    $opts{auth_user}    = $cfg->{_}->{AUTH_SYSTEM_LOGIN};
+    $opts{auth_pass}    = $cfg->{_}->{AUTH_SYSTEM_PASSWORD};
+    $opts{verbose}      = 0;
+
+    bless $self, $class;
+    $self->set_page_rows($cfg->{_}->{NGCP_API_PAGE_ROWS} // 10);
+
+    return $self;
 }
 
 sub request {
