@@ -22,7 +22,8 @@ Readonly::Scalar my $cfg => $config;
 my %opts = ();
 
 sub _create_ua {
-    my ($self, $uri) = @_;
+    my $self = shift;
+
     my $ua = LWP::UserAgent->new();
     if ($opts{sslverify} eq 'no' ||
             ($opts{sslverify_lb} eq 'no' && $opts{iface} =~ /^(lo|dummy)/)) {
@@ -90,7 +91,7 @@ sub new {
 sub request {
     my ($self, $method, $uri, $data) = @_;
 
-    my ($ua,$urlbase) = $self->_create_ua($uri);
+    my ($ua, $urlbase) = $self->_create_ua();
 
     my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
 
@@ -108,7 +109,7 @@ sub next_page {
 
     my $uri_obj = URI->new( $uri );
     unless ($self->{_ua}) {
-        ($self->{_ua},$self->{_urlbase}) = $self->_create_ua($uri);
+        ($self->{_ua}, $self->{_urlbase}) = $self->_create_ua();
         my %params = $uri_obj->query_form;
         $params{page} //= 1;
         $params{rows} //= $self->{_rows};
