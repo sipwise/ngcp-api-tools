@@ -254,7 +254,7 @@ The version is compatible with NGCP platforms version >= mr4.3.x
 
 =head2
 
-    my $client = new NGCP::API::Client;
+    my $client = NGCP::API::Client->new();
 
     # GET (list)
 
@@ -308,31 +308,91 @@ The version is compatible with NGCP platforms version >= mr4.3.x
 
 =head1 DESCRIPTION
 
-The client is for internal REST API usage primarily by internal scripts and modules
+The client is for internal NGCP REST API usage, primarily by internal
+scripts and modules.
 
-=head2 new()
+=head2 $client = NGCP::API::Client->new(%opts)
 
-Return: NGCP::API::Client object
+Creates a new NGCP::API::Client object.
 
-=head2 request($method, $uri)
+The following options are supported:
 
-Send a REST API request provided by a method (GET,POST,PUT,PATCH,DELETE)
+=over
 
-Return: NGCP::API::Client::Result object which is an extended clone of HTTP:Respone
+=item B<host>
 
-=head2 set_verbose(0|1)
+Sets the IP to connect to.
+Defaults to I<127.0.0.1>.
 
-Enable/disable tracing of the request/response.
+=item B<port>
 
-Return: undef
+Sets the port to connect to.
+Defaults to I<80>.
 
-=head2 NGCP::API::Client::Result->as_hash()
+=item B<iface>
 
-Return: result as a hash reference
+Sets the network interface name.
+Defaults to I<lo>.
 
-=head2 NGCP::API::Client::Result->result()
+=item B<sslverify>
 
-Return: return a result string based on the request success
+Sets whether the TLS certificates should be verified.
+Defaults to I<yes>.
+
+=item B<sslverify_lb>
+
+Sets whether the TLS certificates should be verified for the loopback
+interface.
+This setting will override the B<sslverify> if the B<iface> is set to I<lo>.
+Defaults to I<no>.
+
+=item B<read_timeout>
+
+Sets the connection read timeout.
+Defaults to I<180> seconds.
+
+=item B<page_rows>
+
+Sets the number of page rows to use on each next_page iteration.
+Defaults to I<10>.
+
+=item B<auth_user>
+
+Sets the authentication user.
+
+=item B<auth_pass>
+
+Sets the authentication password.
+
+=item B<verbose>
+
+Set the verbose level.
+Defaults to I<0>.
+
+=back
+
+=head2 $res = $client->request($method, $uri)
+
+Sends a REST API request provided by a method (GET, POST, PUT, PATCH, DELETE).
+
+Returns an NGCP::API::Client::Result object which inherits from HTTP:Respone.
+
+=head2 $client->set_verbose(0|1)
+
+Sets the verbosity of request and response operations, by enabling or
+disabling debugging traces.
+
+=head2 $res = NGCP::API::Client::Result->new()
+
+Creates a new NGCP::API::Client::Result object.
+
+=head2 $href = $res->as_hash()
+
+Returns the result as a hash reference.
+
+=head2 $str = $res->result()
+
+Returns the result as a string based on the request success.
 
 =head1 BUGS AND LIMITATIONS
 
