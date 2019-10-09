@@ -59,9 +59,11 @@ sub _create_ua {
     $urlbase->host($self->{_opts}{host});
     $urlbase->port($self->{_opts}{port});
 
-    $ua->credentials($urlbase->host_port,
-                     'api_admin_system', #'api_admin_http'
-                     @{$self->{_opts}}{qw(auth_user auth_pass)});
+    if (defined $self->{_opts}{auth_user}) {
+        $ua->credentials($urlbase->host_port,
+                         'api_admin_system', #'api_admin_http'
+                         @{$self->{_opts}}{qw(auth_user auth_pass)});
+    }
 
     if ($self->{_opts}{verbose}) {
         $ua->show_progress(1);
