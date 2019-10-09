@@ -16,8 +16,10 @@ sub _load_config_defaults {
     my $cfg_file = '/etc/default/ngcp-api';
     my $cfg;
 
-    $cfg = Config::Tiny->read($cfg_file)
-        or croak("Cannot read $cfg_file: $ERRNO");
+    if (-e $cfg_file) {
+        $cfg = Config::Tiny->read($cfg_file)
+            or croak("Cannot read $cfg_file: $ERRNO");
+    }
 
     Readonly my $config => {
         host          => $cfg->{_}->{NGCP_API_IP} // '127.0.0.1',
