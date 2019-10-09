@@ -20,9 +20,9 @@ sub _load_config_defaults {
         or croak("Cannot read $cfg_file: $ERRNO");
 
     Readonly my $config => {
-        host          => $cfg->{_}->{NGCP_API_IP},
-        port          => $cfg->{_}->{NGCP_API_PORT},
-        iface         => $cfg->{_}->{NGCP_API_IFACE},
+        host          => $cfg->{_}->{NGCP_API_IP} // '127.0.0.1',
+        port          => $cfg->{_}->{NGCP_API_PORT} // 80,
+        iface         => $cfg->{_}->{NGCP_API_IFACE} // 'lo',
         sslverify     => $cfg->{_}->{NGCP_API_SSLVERIFY} // 'yes',
         sslverify_lb  => $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} // 'no',
         read_timeout  => $cfg->{_}->{NGCP_API_READ_TIMEOUT} // 180,
