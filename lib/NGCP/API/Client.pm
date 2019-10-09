@@ -1,4 +1,5 @@
 package NGCP::API::Client;
+
 use strict;
 use warnings;
 use feature qw(state);
@@ -77,14 +78,14 @@ sub _create_ua {
     $self->{_ua} = $ua;
     $self->{_urlbase} = $urlbase;
 
-    return ($ua,$urlbase);
+    return ($ua, $urlbase);
 }
 
 sub _create_req {
     my ($self, $method, $url) = @_;
 
     my $req = HTTP::Request->new($method, $url->canonical);
-    if ($method eq "PATCH") {
+    if ($method eq 'PATCH') {
         $req->content_type("application/json-patch+json; charset='utf8'");
     } else {
         $req->content_type("application/json; charset='utf8'");
@@ -135,7 +136,7 @@ sub request {
 }
 
 sub next_page {
-    my ( $self, $uri ) = @_;
+    my ($self, $uri) = @_;
 
     my $collection_url;
     if ($self->{_collection_url}) {
@@ -173,7 +174,7 @@ sub next_page {
 }
 
 sub set_page_rows {
-    my ($self,$rows) = @_;
+    my ($self, $rows) = @_;
 
     $self->{_rows} = $rows;
     undef $self->{_collection_url};
@@ -182,15 +183,15 @@ sub set_page_rows {
 }
 
 sub set_verbose {
-    my $self = shift;
+    my ($self, $verbose) = @_;
 
-    $self->{_opts}{verbose} = shift // 0;
+    $self->{_opts}{verbose} = $verbose // 0;
 
     return;
 }
 
-
 package NGCP::API::Client::Result;
+
 use warnings;
 use strict;
 use parent qw(HTTP::Response);
@@ -199,18 +200,22 @@ use JSON::XS;
 
 sub new {
     my ($class, $res_obj) = @_;
+
     my $self = $class->SUPER::new($res_obj->code,
                                   $res_obj->message,
                                   $res_obj->headers,
                                   $res_obj->content);
     $self->{_cached} = undef;
+
     return $self;
 }
 
 sub as_hash {
     my $self = shift;
+
     return $self->{_cached} if $self->{_cached};
     $self->{_cached} = decode_json($self->content);
+
     return $self->{_cached};
 }
 
@@ -254,40 +259,50 @@ The version is compatible with NGCP platforms version >= mr4.3.x
     # GET (list)
 
     my $uri = '/api/customers/';
-    my $res = $client->request("GET", $uri);
+    my $res = $client->request('GET', $uri);
 
     # POST (create)
 
     my $uri = '/api/customers/';
-    my $data = { contact_id         => 4,
-                 status             => "test",
-                 billing_profile_id => 4,
-                 type               => "sipaccount" };
-    my $res = $client->request("POST", $uri, $data);
+    my $data = {
+        contact_id         => 4,
+        status             => 'test',
+        billing_profile_id => 4,
+        type               => 'sipaccount',
+    };
+    my $res = $client->request('POST', $uri, $data);
 
     # PUT (update)
 
     my $uri = '/api/customers/2';
-    my $data = { contact_id         => 4,
-                 status             => "test",
-                 billing_profile_id => 4,
-                 type               => "sipaccount" };
-    my $res = $client->request("POST", $uri, $data);
+    my $data = {
+        contact_id         => 4,
+        status             => 'test',
+        billing_profile_id => 4,
+        type               => 'sipaccount',
+    };
+    my $res = $client->request('POST', $uri, $data);
 
     # PATCH (update fields)
 
     my $uri = '/api/customers/2';
-    my $data = [ { op   => "remove",
-                   path => "/add_vat" },
-                 { op    => "replace",
-                   path  => "/contact_id",
-                   value => 5 } ];
+    my $data = [
+        {
+            op   => 'remove',
+            path => '/add_vat',
+        },
+        {
+            op    => 'replace',
+            path  => '/contact_id',
+            value => 5,
+        },
+    ];
     my $res = $client->request("PATCH", $uri, $data);
 
     # DELETE (remove)
 
     my $uri = '/api/customers/2';
-    my $res = $client->request("DELETE", $uri);
+    my $res = $client->request('DELETE', $uri);
 
     # $res - response is an NGCP::API::Client::Result object
 
