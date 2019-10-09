@@ -40,14 +40,13 @@ sub _get_config_defaults {
     return $config;
 }
 
-my %opts = ();
-
 sub _create_ua {
     my $self = shift;
 
     my $ua = LWP::UserAgent->new();
-    if ($opts{sslverify} eq 'no' ||
-            ($opts{sslverify_lb} eq 'no' && $opts{iface} =~ /^(lo|dummy)/)) {
+    if ($self->{_opts}{sslverify} eq 'no' ||
+        ($self->{_opts}{sslverify_lb} eq 'no' &&
+         $self->{_opts}{iface} =~ /^(lo|dummy)/)) {
         $ua->ssl_opts(
             verify_hostname => 0,
             SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
@@ -56,20 +55,20 @@ sub _create_ua {
 
     my $urlbase = URI->new();
     $urlbase->scheme('https');
-    $urlbase->host($opts{host});
-    $urlbase->port($opts{port});
+    $urlbase->host($self->{_opts}{host});
+    $urlbase->port($self->{_opts}{port});
 
     $ua->credentials($urlbase->host_port,
                      'api_admin_system', #'api_admin_http'
-                     @{opts}{qw(auth_user auth_pass)});
+                     @{$self->{_opts}}{qw(auth_user auth_pass)});
 
-    if($opts{verbose}) {
+    if ($self->{_opts}{verbose}) {
         $ua->show_progress(1);
         $ua->add_handler("request_send",  sub { shift->dump; return });
         $ua->add_handler("response_done", sub { shift->dump; return });
     }
 
-    $ua->timeout($opts{read_timeout});
+    $ua->timeout($self->{_opts}{read_timeout});
 
     $self->{_ua} = $ua;
     $self->{_urlbase} = $urlbase;
@@ -102,13 +101,15 @@ sub _get_url {
 
 sub new {
     my $class  = shift;
-    my $self   = {};
 
+    my $self = {
+        _opts => { },
+    };
     bless $self, $class;
 
     my $default_opts = _get_config_defaults();
     foreach my $opt (keys %{$default_opts}) {
-        $opts{$opt} //= $default_opts->{$opt};
+        $self->{_opts}{$opt} //= $default_opts->{$opt};
     }
     $self->_create_ua();
 
@@ -179,7 +180,7 @@ sub set_page_rows {
 sub set_verbose {
     my $self = shift;
 
-    $opts{verbose} = shift || 0;
+    $self->{_opts}{verbose} = shift || 0;
 
     return;
 }
