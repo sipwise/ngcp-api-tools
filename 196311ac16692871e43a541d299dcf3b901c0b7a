@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "617ec4c2_bebbee43",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2019-10-09T17:28:18Z",
+      "side": 1,
+      "message": "`decode_jsona` is not really a function, is it? :)",
+      "range": {
+        "startLine": 7,
+        "startChar": 46,
+        "endLine": 7,
+        "endChar": 58
+      },
+      "revId": "196311ac16692871e43a541d299dcf3b901c0b7a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
