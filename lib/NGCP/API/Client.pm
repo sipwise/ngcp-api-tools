@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use feature qw(state);
 
-use English qw(-no_match_vars);
 use Carp;
 use Config::Tiny;
 use JSON::XS;
@@ -18,7 +17,7 @@ sub _load_config_defaults {
 
     if (-e $cfg_file) {
         $cfg = Config::Tiny->read($cfg_file)
-            or croak("Cannot read $cfg_file: $ERRNO");
+            or croak("Cannot read $cfg_file: $!");
     }
 
     Readonly my $config => {
