@@ -3,11 +3,10 @@ use strict;
 use warnings;
 use English qw(-no_match_vars);
 use Config::Tiny;
-use JSON qw(to_json);
+use JSON::XS;
 use IO::Socket::SSL;
 use LWP::UserAgent;
 use Readonly;
-use Encode;
 use URI;
 
 my $config;
@@ -96,7 +95,7 @@ sub request {
     my $req = $self->_create_req($method, $self->_get_url($urlbase,$uri));
 
     if ($data) {
-        $req->content(Encode::encode_utf8(to_json($data)));
+        $req->content(encode_json($data));
     }
 
     my $res = $ua->request($req);
@@ -165,7 +164,7 @@ use warnings;
 use strict;
 use parent qw(HTTP::Response);
 
-use JSON qw(from_json);
+use JSON::XS;
 
 sub new {
     my ($class, $res_obj) = @_;
@@ -180,7 +179,7 @@ sub new {
 sub as_hash {
     my $self = shift;
     return $self->{_cached} if $self->{_cached};
-    $self->{_cached} = from_json($self->content, { utf8 => 1 });
+    $self->{_cached} = decode_json($self->content);
     return $self->{_cached};
 }
 

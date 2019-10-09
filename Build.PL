@@ -7,7 +7,7 @@ my $builder = Module::Build->new(
     requires          => {
         'Config::Tiny'      => 0,
         'IO::Socket::SSL'   => 0,
-        'JSON'              => 0,
+        'JSON::XS'          => 0,
         'LWP::UserAgent'    => 0,
         'Readonly'          => 0,
     },
