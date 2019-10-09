@@ -23,9 +23,9 @@ sub _load_config_defaults {
         host          => $cfg->{_}->{NGCP_API_IP},
         port          => $cfg->{_}->{NGCP_API_PORT},
         iface         => $cfg->{_}->{NGCP_API_IFACE},
-        sslverify     => $cfg->{_}->{NGCP_API_SSLVERIFY} || 'yes',
-        sslverify_lb  => $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} || 'no',
-        read_timeout  => $cfg->{_}->{NGCP_API_READ_TIMEOUT} || 180,
+        sslverify     => $cfg->{_}->{NGCP_API_SSLVERIFY} // 'yes',
+        sslverify_lb  => $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} // 'no',
+        read_timeout  => $cfg->{_}->{NGCP_API_READ_TIMEOUT} // 180,
         page_rows     => $cfg->{_}->{NGCP_API_PAGE_ROWS} // 10,
         auth_user     => $cfg->{_}->{AUTH_SYSTEM_LOGIN},
         auth_pass     => $cfg->{_}->{AUTH_SYSTEM_PASSWORD},
@@ -181,7 +181,7 @@ sub set_page_rows {
 sub set_verbose {
     my $self = shift;
 
-    $self->{_opts}{verbose} = shift || 0;
+    $self->{_opts}{verbose} = shift // 0;
 
     return;
 }
