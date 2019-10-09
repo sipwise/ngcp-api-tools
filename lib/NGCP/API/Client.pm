@@ -217,10 +217,14 @@ sub as_hash {
 sub result {
     my $self = shift;
 
-    my $location = $self->headers->header('Location') || '';
-    return $self->is_success
-        ? sprintf "%s %s", $self->status_line, $location
-        : sprintf "%s %s", $self->status_line, $self->content;
+    my $content;
+    if ($self->is_success) {
+        $content = $self->headers->header('Location') // '';
+    } else {
+        $content = $self->content;
+    }
+
+    return sprintf "%s %s", $self->status_line, $content;
 }
 
 1;
