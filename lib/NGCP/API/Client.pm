@@ -163,7 +163,8 @@ sub set_verbose {
 package NGCP::API::Client::Result;
 use warnings;
 use strict;
-use base qw(HTTP::Response);
+use parent qw(HTTP::Response);
+
 use JSON qw(from_json);
 
 sub new {
