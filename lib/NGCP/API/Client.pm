@@ -404,11 +404,9 @@ Kirill Solomko <ksolomko@sipwise.com>
 
 =head1 LICENSE
 
-This software is Copyright (c) 2016 by Sipwise GmbH, Austria.
+Copyright (c) 2016-2019 Sipwise GmbH, Austria.
 
-All rights reserved. You may not copy, distribute
-or modify without prior written permission from
-Sipwise GmbH, Austria.
+GPL-3+, Sipwise GmbH, Austria.
 
 =cut
 
