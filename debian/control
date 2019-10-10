@@ -14,6 +14,12 @@ Architecture: all
 Depends:
  ${misc:Depends},
  ${perl:Depends},
+ libconfig-tiny-perl,
+ libio-socket-ssl-perl,
+ libjson-xs-perl,
+ libreadonly-perl,
+ liburi-perl,
+ libwww-perl,
 Recommends:
  ngcp-panel,
 Conflicts:
@@ -40,7 +46,13 @@ Architecture: all
 Depends:
  ${misc:Depends},
  ${perl:Depends},
+ libemail-sender-perl,
+ libemail-simple-perl,
+ libfile-pid-perl,
  libngcp-api-client-perl,
+ libreadonly-perl,
+ libtemplate-perl,
+ libxml-simple-perl,
 Provides:
  ngcp-api-tools,
 Conflicts:
@@ -61,6 +73,7 @@ Depends:
  ${misc:Depends},
  ${perl:Depends},
  libngcp-api-client-perl,
+ libreadonly-perl,
 Provides:
  ngcp-api-tools,
 Conflicts:
