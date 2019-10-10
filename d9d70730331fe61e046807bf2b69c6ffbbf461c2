@@ -34,6 +34,24 @@
       "revId": "d9d70730331fe61e046807bf2b69c6ffbbf461c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dbe3c940_6ff03811",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2019-10-10T10:13:26Z",
+      "side": 1,
+      "message": "Nope. Just having this line in commit message will help non-Perl people like me :-)",
+      "parentUuid": "b1634e4f_219f13cf",
+      "revId": "d9d70730331fe61e046807bf2b69c6ffbbf461c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
