@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b94bde32_d55d0aae",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 2
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2019-10-10T10:49:29Z",
+      "side": 1,
+      "message": "Join in one line and leave wrapping to perldoc/pager?\n(I like having each sentence in one single line, makes e.g. diffing on changes easier)",
+      "revId": "72debc790d394c39d9a64f3808a77c8534dfd396",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
+    }
+  ]
+}
