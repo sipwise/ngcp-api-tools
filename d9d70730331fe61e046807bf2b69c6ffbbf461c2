@@ -16,6 +16,24 @@
       "revId": "d9d70730331fe61e046807bf2b69c6ffbbf461c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b1634e4f_219f13cf",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-10T09:16:04Z",
+      "side": 1,
+      "message": "Because the method does not use it. :D Or I\u0027m misunderstanding the question?",
+      "parentUuid": "7a1abe40_e310c578",
+      "revId": "d9d70730331fe61e046807bf2b69c6ffbbf461c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
