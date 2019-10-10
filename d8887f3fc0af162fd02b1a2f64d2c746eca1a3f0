@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ddfc376e_c97b7a96",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2019-10-10T11:02:19Z",
+      "side": 1,
+      "message": "Ok, but *why*? :)\nIs this about precedence / best practice?",
+      "revId": "d8887f3fc0af162fd02b1a2f64d2c746eca1a3f0",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
+    }
+  ]
+}
