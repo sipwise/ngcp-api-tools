@@ -22,6 +22,30 @@
       "revId": "196311ac16692871e43a541d299dcf3b901c0b7a",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4b1e1136_1f5b40ad",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-10T07:52:58Z",
+      "side": 1,
+      "message": "Probably not. :D",
+      "parentUuid": "617ec4c2_bebbee43",
+      "range": {
+        "startLine": 7,
+        "startChar": 46,
+        "endLine": 7,
+        "endChar": 58
+      },
+      "revId": "196311ac16692871e43a541d299dcf3b901c0b7a",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
