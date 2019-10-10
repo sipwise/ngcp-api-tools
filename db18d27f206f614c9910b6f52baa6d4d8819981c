@@ -33,6 +33,24 @@
       "revId": "db18d27f206f614c9910b6f52baa6d4d8819981c",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3645410d_6d6c8f65",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 2
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-10T11:53:11Z",
+      "side": 1,
+      "message": "This is an URI method, which $url is what _get_url returns now. It canonicalizes the URI to a normalized form:\n\n  https://metacpan.org/pod/URI#$uri-%3Ecanonical",
+      "parentUuid": "d4131a77_32773445",
+      "revId": "db18d27f206f614c9910b6f52baa6d4d8819981c",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
