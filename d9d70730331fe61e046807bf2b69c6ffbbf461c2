@@ -52,6 +52,24 @@
       "revId": "d9d70730331fe61e046807bf2b69c6ffbbf461c2",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "57040e4d_122baff8",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-10T11:48:46Z",
+      "side": 1,
+      "message": "I thought the subject was already self-explanatory, can clarify further I guess. :)",
+      "parentUuid": "dbe3c940_6ff03811",
+      "revId": "d9d70730331fe61e046807bf2b69c6ffbbf461c2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
