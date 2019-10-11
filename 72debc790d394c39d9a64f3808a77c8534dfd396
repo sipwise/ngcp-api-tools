@@ -16,6 +16,24 @@
       "revId": "72debc790d394c39d9a64f3808a77c8534dfd396",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f6a0cbc4_1d8d6060",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 2
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-11T13:31:59Z",
+      "side": 1,
+      "message": "As mentioned on jabber, due to 80-char column excess.",
+      "parentUuid": "b94bde32_d55d0aae",
+      "revId": "72debc790d394c39d9a64f3808a77c8534dfd396",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
