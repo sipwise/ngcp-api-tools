@@ -99,7 +99,7 @@ sub _get_url {
     my ($self, $uri) = @_;
 
     my $url = $self->{_urlbase}->clone();
-    $url->path($uri);
+    $url->path_query($uri);
 
     return $url;
 }
