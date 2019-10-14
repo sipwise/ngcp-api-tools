@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "85227206_72d3302c",
+        "filename": "bin/ngcp-terminate-subscriber",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2019-10-14T12:09:18Z",
+      "side": 1,
+      "message": "Maybe we should remove msg from usage() as well?\nIt is useless now, isn\u0027t it?",
+      "range": {
+        "startLine": 39,
+        "startChar": 30,
+        "endLine": 39,
+        "endChar": 60
+      },
+      "revId": "9524c1c248d54309ee41c72e59725487d55291e2",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
