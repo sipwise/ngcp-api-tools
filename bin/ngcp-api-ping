@@ -30,7 +30,7 @@ sub check_params {
 sub usage {
     my $missing = shift;
     pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 99,
+              -verbose => 1,
               -message => $missing ? "Missing parameters: $missing" : '',
              );
     return;

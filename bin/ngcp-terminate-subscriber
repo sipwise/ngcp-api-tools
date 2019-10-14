@@ -33,6 +33,7 @@ sub usage {
     my $msg = shift;
     pod2usage(-exitval => $msg ? 1 : 0,
               -verbose => 99,
+              -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
               -message => $msg
                             ? $msg =~ /not found/i
                                 ? $msg
