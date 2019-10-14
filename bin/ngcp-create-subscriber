@@ -69,7 +69,7 @@ sub main {
             $data{domain_id} = $tmp->{id};
         }
     } else {
-        usage("Domain not found");
+        die "Domain $opts->{domain} not found\n";
     }
     my $res = $client->request("POST", $uri, \%data);
     print $res->result."\n";

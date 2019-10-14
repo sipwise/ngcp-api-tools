@@ -62,10 +62,10 @@ sub main {
         } else {
             $dom_id = $tmp->{id};
         }
-        usage("Domain not found") unless $dom_id;
+        die "Domain $opts->{domain} not found\n" unless $dom_id;
         $uri .= $dom_id;
     } else {
-        usage("Domain not found");
+        die "Domain $opts->{domain} not found\n";
     }
     my $res = $client->request("DELETE", $uri, \%data);
     print $res->result."\n";

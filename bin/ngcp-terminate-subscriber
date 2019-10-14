@@ -57,9 +57,9 @@ sub main {
         } else {
             $sub_id = $tmp->{id};
         }
-        usage("Wrong subscriber id found") unless $sub_id =~ /^\d$/;
+        die "Wrong subscriber id $sub_id found\n" unless $sub_id =~ /^\d$/;
     } else {
-        usage("Subscriber not found");
+        die "Subscriber $opts->{username}\@$opts->{domain} not found\n";
     }
     $uri = '/api/subscribers/'.$sub_id;
     my $data = [ { op => 'replace',
