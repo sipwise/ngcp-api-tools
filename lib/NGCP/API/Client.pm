@@ -139,7 +139,7 @@ sub next_page {
     my ($self, $uri) = @_;
 
     my $collection_url;
-    if ($self->{_collection_url}) {
+    if ($self->{_collection_iter}) {
         $collection_url = $self->{_collection_url};
     } else {
         $collection_url = $self->_get_url($uri);
@@ -150,10 +150,15 @@ sub next_page {
         $collection_url->query_form(\%params);
 
         $self->{_collection_url} = $collection_url;
+        $self->{_collection_iter} = 1;
     }
+
+    return unless $self->{_collection_url};
 
     my $req = $self->_create_req('GET', $collection_url);
     my $res = NGCP::API::Client::Result->new($self->{_ua}->request($req));
+
+    undef $self->{_collection_url};
 
     my $data = $res->as_hash();
     if ($data && ref($data) eq 'HASH') {
@@ -166,8 +171,6 @@ sub next_page {
         $new_url->query_form(\%params);
 
         $self->{_collection_url} = $self->_get_url($new_url->canonical);
-    } else {
-        undef $self->{_collection_url};
     }
 
     return $res;
@@ -178,6 +181,7 @@ sub set_page_rows {
 
     $self->{_opts}{page_rows} = $rows;
     undef $self->{_collection_url};
+    undef $self->{_collection_iter};
 
     return;
 }
