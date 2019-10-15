@@ -146,7 +146,7 @@ sub next_page {
 
         my %params = $collection_url->query_form;
         $params{page} //= 1;
-        $params{rows} //= $self->{_rows};
+        $params{rows} //= $self->{_opts}{page_rows};
         $collection_url->query_form(\%params);
 
         $self->{_collection_url} = $collection_url;
@@ -176,7 +176,7 @@ sub next_page {
 sub set_page_rows {
     my ($self, $rows) = @_;
 
-    $self->{_rows} = $rows;
+    $self->{_opts}{page_rows} = $rows;
     undef $self->{_collection_url};
 
     return;
