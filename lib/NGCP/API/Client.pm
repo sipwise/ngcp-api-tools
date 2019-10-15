@@ -67,13 +67,9 @@ sub _create_ua {
                          @{$self->{_opts}}{qw(auth_user auth_pass)});
     }
 
-    if ($self->{_opts}{verbose}) {
-        $ua->show_progress(1);
-        $ua->add_handler("request_send",  sub { shift->dump; return });
-        $ua->add_handler("response_done", sub { shift->dump; return });
-    }
-
     $ua->timeout($self->{_opts}{read_timeout});
+
+    $self->set_verbose($self->{_opts}{verbose});
 
     $self->{_ua} = $ua;
     $self->{_urlbase} = $urlbase;
@@ -188,6 +184,14 @@ sub set_page_rows {
 
 sub set_verbose {
     my ($self, $verbose) = @_;
+
+    $self->{_ua}->show_progress($verbose);
+
+    my $handler_op = $verbose ? 'add_handler' : 'remove_handler';
+    foreach my $phase (qw(request_send response_done)) {
+        $self->{_ua}->$handler_op($phase, sub { shift->dump; return },
+                                  owner => 'NGCP::API::Client::set_verbose');
+    }
 
     $self->{_opts}{verbose} = $verbose // 0;
 
