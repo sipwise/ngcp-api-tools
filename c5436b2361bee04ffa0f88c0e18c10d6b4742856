@@ -22,6 +22,30 @@
       "revId": "c5436b2361bee04ffa0f88c0e18c10d6b4742856",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "420f01b9_a87a8a0c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-15T10:14:19Z",
+      "side": 1,
+      "message": "Personally I always get annoyed when that happens to me. If I want a man page I call «man foo», and if I want a short reminder of how to call the program I call «foo --help».",
+      "parentUuid": "83f0201a_63095a7e",
+      "range": {
+        "startLine": 9,
+        "startChar": 46,
+        "endLine": 9,
+        "endChar": 69
+      },
+      "revId": "c5436b2361bee04ffa0f88c0e18c10d6b4742856",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
