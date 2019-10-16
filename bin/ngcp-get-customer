@@ -14,7 +14,7 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => \&usage,
+    "help|h" => sub { usage() },
     "customer_id=i",
     "verbose",
 ) or usage();

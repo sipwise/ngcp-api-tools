@@ -38,7 +38,7 @@ my $opts = {
 my $config;
 
 GetOptions( $opts,
-    "help|h" => \&usage,
+    "help|h" => sub { usage() },
     "verbose",
 ) or usage();
 

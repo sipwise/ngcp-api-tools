@@ -17,7 +17,7 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => \&usage,
+    "help|h" => sub { usage() },
     "domain=s",
     "skip_xmpp",
     "skip_sip",

@@ -16,7 +16,7 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => \&usage,
+    "help|h" => sub { usage() },
     "billing_profile_id=i",
     "contact_id=i",
     "type=s",
