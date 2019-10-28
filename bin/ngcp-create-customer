@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -15,7 +17,7 @@ my $opts = {
     verbose => 0,
 };
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'billing_profile_id=i',
     'contact_id=i',
@@ -25,20 +27,25 @@ GetOptions( $opts,
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 99,
-	      -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 99,
+        -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
@@ -48,10 +55,11 @@ sub main {
     my $client = NGCP::API::Client->new(verbose => $opts->{verbos});
 
     my $uri = '/api/customers/';
-    my %data = map { $_ => $opts->{$_} }
-                    qw(billing_profile_id contact_id type status);
+    my %data = map {
+        $_ => $opts->{$_}
+    } qw(billing_profile_id contact_id type status);
     my $res = $client->request('POST', $uri, \%data);
-    print $res->result."\n";
+    print $res->result . "\n";
 
     return !$res->is_success;
 }

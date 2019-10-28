@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -13,7 +15,7 @@ my $opts = {
     verbose => 0,
 };
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'username=s',
     'domain=s',
@@ -22,20 +24,25 @@ GetOptions( $opts,
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 99,
-              -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 99,
+        -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
@@ -51,6 +58,7 @@ sub main {
     my $sub_id;
     if ($sub->as_hash->{total_count} == 1) {
         my $tmp = $sub->as_hash->{_embedded}->{'ngcp:subscribers'};
+
         if (ref $tmp eq 'ARRAY') {
             $sub_id = @{$tmp}[0]->{id};
         } else {
@@ -60,12 +68,16 @@ sub main {
     } else {
         die "Subscriber $opts->{username}\@$opts->{domain} not found\n";
     }
-    $uri = '/api/subscribers/'.$sub_id;
-    my $data = [ { op => 'replace',
-                   path => '/status',
-                   value => 'terminated' } ];
+    $uri = '/api/subscribers/' . $sub_id;
+    my $data = [
+        {
+            op => 'replace',
+            path => '/status',
+            value => 'terminated',
+        },
+    ];
     my $res = $client->request('PATCH', $uri, $data);
-    print $res->result."\n";
+    print $res->result . "\n";
 
     return !$res->is_success;
 }

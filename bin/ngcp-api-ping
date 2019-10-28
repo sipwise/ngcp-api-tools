@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use NGCP::API::Client;
@@ -13,26 +15,31 @@ my $opts = {
     verbose => 0,
 };
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'verbose',
 ) or usage();
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 1,
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 1,
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 

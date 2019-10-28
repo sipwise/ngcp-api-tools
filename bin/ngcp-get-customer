@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -13,7 +15,7 @@ my $opts = {
     verbose => 0,
 };
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'customer_id=i',
     'verbose',
@@ -21,20 +23,25 @@ GetOptions( $opts,
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 99,
-              -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 99,
+        -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
@@ -46,8 +53,8 @@ sub main {
     my $uri = '/api/customers/';
     $uri .= $opts->{customer_id} ? $opts->{customer_id} : '';
     my $res = $client->request('GET', $uri);
-    $res->is_success ? print $res->decoded_content."\n"
-                     : print $res->result."\n";
+    $res->is_success ? print $res->decoded_content . "\n"
+                     : print $res->result . "\n";
 
     return !$res->is_success;
 }
