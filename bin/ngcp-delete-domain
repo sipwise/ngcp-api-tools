@@ -34,15 +34,11 @@ sub check_params {
 }
 
 sub usage {
-    my $msg = shift;
-    pod2usage(-exitval => $msg ? 1 : 0,
+    my $missing = shift;
+    pod2usage(-exitval => $missing ? 1 : 0,
               -verbose => 99,
               -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
-              -message => $msg
-                            ? $msg =~ /not found/i
-                                ? $msg
-                                : "Missing parameters: $msg"
-                            : '',
+              -message => $missing ? "Missing parameters: $missing" : '',
              );
     return;
 }
