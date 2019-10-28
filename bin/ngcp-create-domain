@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -16,7 +18,7 @@ my $opts = {
     verbose => 0,
 };
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'domain=s',
     'reseller_id=i',
@@ -27,6 +29,7 @@ GetOptions( $opts,
 
 sub check_params {
     my @missing;
+
     foreach my $arg (@ARGV) {
         if ($arg =~ /^[^-]/) {
             $opts->{domain} = $arg;
@@ -37,16 +40,20 @@ sub check_params {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 99,
-	      -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 99,
+        -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
@@ -61,7 +68,7 @@ sub main {
         $data{'_' . $elem . '_reload'} = $opts->{$elem};
     }
     my $res = $client->request('POST', $uri, \%data);
-    print $res->result."\n";
+    print $res->result . "\n";
 
     return !$res->is_success;
 }

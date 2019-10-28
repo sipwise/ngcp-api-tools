@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -24,32 +26,40 @@ my $opts = {
 
 my $config;
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'verbose',
 ) or usage();
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 1,
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 1,
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
 sub load_config {
-    $config = XML::Simple->new()->XMLin($config_file, ForceArray => [ 'credit_warnings' ])
-        or die "Cannot load config: $config_file: $ERRNO\n";
+    $config = XML::Simple->new()->XMLin(
+        $config_file,
+        ForceArray => [ 'credit_warnings' ],
+    ) or die "Cannot load config: $config_file: $ERRNO\n";
+
     return;
 }
 
@@ -58,9 +68,11 @@ sub send_email {
 
     my $template = get_email_template() || return;
 
-    my $vars = { domain    => $cwarning->{domain},
-                 threshold => $cwarning->{threshold},
-                 adminmail => $config->{adminmail} };
+    my $vars = {
+        domain    => $cwarning->{domain},
+        threshold => $cwarning->{threshold},
+        adminmail => $config->{adminmail},
+    };
 
     foreach my $data (@{$contracts}) {
         if (exists $data->{threshold}) {
@@ -85,8 +97,8 @@ EOF
     my $email = Email::Simple->create(
         header => [
             To      => ref $cwarning->{recipients} eq 'ARRAY'
-                        ? join(', ', @{$cwarning->{recipients}})
-                        : $cwarning->{recipients},
+                       ? join(', ', @{$cwarning->{recipients}})
+                       : $cwarning->{recipients},
             From    => $template->{from_email},
             Subject => $template->{subject},
         ],
@@ -108,18 +120,19 @@ sub get_data {
         verbose => $opts->{verbose},
         page_rows => $page_size,
     );
+
     my @result = ();
     while (my $res = $client->next_page($uri)) {
         die "$res->result\n" unless $res->is_success;
         my $res_hash = $res->as_hash;
-        my $data = $res_hash->{_embedded}{'ngcp:'.$link};
+        my $data = $res_hash->{_embedded}{'ngcp:' . $link};
         if ('ARRAY' eq ref $data) {
             unless ($process_code->($data)) {
-                push(@result,@$data);
+                push @result, @{$data};
             }
         } elsif ($data) {
             unless ($process_code->([ $data ])) {
-                push(@result,$data);
+                push @result, $data;
             }
         }
     }
@@ -138,6 +151,7 @@ sub get_email_template {
 sub main {
     check_params();
     load_config();
+
     my $cwarnings = ref $config->{credit_warnings} eq 'ARRAY'
                     ? $config->{credit_warnings}
                     : [ $config->{credit_warnings} ];
@@ -158,9 +172,11 @@ sub main {
                     my $ratio = $balance->{ratio} // 1.0;
                     my $threshold = $cwarning->{threshold} * $ratio;
                     next if $balance->{cash_balance} >= $threshold;
-                    my $data = { map { $_ => $balance->{$_} } qw(id cash_balance) };
+                    my $data = {
+                        map { $_ => $balance->{$_} } qw(id cash_balance)
+                    };
                     $data->{threshold} = $threshold if $ratio < 1.0;
-                    push @contracts,$data;
+                    push @contracts, $data;
                 }
                 return 1;
             }
@@ -172,6 +188,7 @@ sub main {
             print $EVAL_ERROR if $EVAL_ERROR;
         }
     }
+
     return 0;
 }
 

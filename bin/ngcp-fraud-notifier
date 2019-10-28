@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -22,7 +24,7 @@ my $PROGRAM_BASE = 'ngcp-fraud-notifier';
 my $retcode = 0;
 my $piddir  = '/run/ngcp-fraud-notifier';
 my $pidfile = "$piddir/ngcp-fraud-notifier.pid";
-my $pf      =  File::Pid->new({ file => $pidfile });
+my $pf      = File::Pid->new({ file => $pidfile });
 
 local $PROGRAM_NAME = $PROGRAM_BASE;
 local $OUTPUT_AUTOFLUSH = 1;
@@ -37,7 +39,7 @@ my $opts = {
 
 my $config;
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'verbose',
 ) or usage();
@@ -48,19 +50,24 @@ sub DESTROY {
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 1,
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 1,
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
@@ -83,11 +90,11 @@ sub get_data {
     while (my $res = $client->next_page($uri)) {
         die "$res->result\n" unless $res->is_success;
         my $res_hash = $res->as_hash;
-        my $data = $res_hash->{_embedded}{'ngcp:'.$link};
+        my $data = $res_hash->{_embedded}{'ngcp:' . $link};
         if ('ARRAY' eq ref $data) {
-            push(@result,@$data);
+            push @result, @{$data};
         } elsif ($data) {
-            push(@result,$data);
+            push @result, $data;
         }
         if (defined $code and 'CODE' eq ref $code) {
             $code->(\@result);
@@ -99,6 +106,7 @@ sub get_data {
 
 sub get_email_template {
     my $event = shift;
+
     my $lock_type = $event->{interval_lock} ? 'lock' : 'warning';
     my $reseller_id = $event->{reseller_id};
     my @templates_data = ();
@@ -110,8 +118,8 @@ sub get_email_template {
     }
     my $selected_template;
     foreach my $template (@templates_data) {
-        next if $template->{name} ne 'customer_fraud_'.$lock_type.'_default_email'
-             && $template->{name} ne 'customer_fraud_'.$lock_type.'_email';
+        next if $template->{name} ne 'customer_fraud_' . $lock_type . '_default_email'
+             && $template->{name} ne 'customer_fraud_' . $lock_type . '_email';
         next if $template->{reseller_id} && $template->{reseller_id} != $reseller_id;
         $selected_template = $template;
         last if $template->{reseller_id};
@@ -130,20 +138,22 @@ sub send_email {
 
     my $template = get_email_template($event);
 
-    my $vars = { adminmail => $config->{adminmail},
-                 customer_id => $event->{contract_id},
-                 interval => $event->{interval},
-                 interval_cost  => sprintf('%.2f', $event->{interval_cost}/100),
-                 interval_limit => sprintf('%.2f', $event->{interval_limit}/100),
-                 type => $event->{type} eq 'profile_limit'
-                            ? 'billing profile' : 'customer',
-               };
+    my $vars = {
+        adminmail => $config->{adminmail},
+        customer_id => $event->{contract_id},
+        interval => $event->{interval},
+        interval_cost  => sprintf('%.2f', $event->{interval_cost} / 100),
+        interval_limit => sprintf('%.2f', $event->{interval_limit} / 100),
+        type => $event->{type} eq 'profile_limit'
+                ? 'billing profile' : 'customer',
+    };
 
     foreach my $subscriber (@{$subscribers}) {
         $vars->{subscribers} .= sprintf "%s\@%s %s\n",
                                 @{$subscriber}{qw(username domain)},
                                 $subscriber->{external_id}
-                                    ? '('.$subscriber->{external_id}.')' : '';
+                                ? '(' . $subscriber->{external_id} . ')'
+                                : '';
     }
 
     my $tt = Template->new();
@@ -183,20 +193,26 @@ sub update_notify_status {
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
 
     my $now = strftime('%Y-%m-%d %H:%M:%S', localtime);
-    my $uri = '/api/customerfraudevents/'.$event->{id};
-    my $data = [ { op => 'replace',
-                   path => '/notify_status',
-                   value => 'notified' },
-                 { op => 'replace',
-                   path => '/notified_at',
-                   value => $now } ];
+    my $uri = '/api/customerfraudevents/' . $event->{id};
+    my $data = [
+        {
+            op => 'replace',
+            path => '/notify_status',
+            value => 'notified',
+        },
+        {
+            op => 'replace',
+            path => '/notified_at',
+            value => $now,
+        },
+    ];
+
     my $res = $client->request('PATCH', $uri, $data);
 
     return;
 }
 
 sub main {
-
     if (my $num = $pf->running) {
         print "$PROGRAM_BASE is already running.\n";
         $retcode = 1;
@@ -207,22 +223,26 @@ sub main {
 
     check_params();
     load_config();
+
     get_data(
-        sprintf('/api/customerfraudevents/?no_count=true&notify_status=%s','new'),'customerfraudevents', sub {
-        my $events = shift;
-        foreach my $event (@{$events}) {
-            if ($event->{interval_notify}) {
-                my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
-                    $event->{contract_id}),
-                    'subscribers');
-                next unless scalar @$subscribers;
-                eval {
-                    send_email($event, $subscribers);
-                };
-                print $EVAL_ERROR if $EVAL_ERROR;
+        sprintf('/api/customerfraudevents/?no_count=true&notify_status=%s', 'new'),
+        'customerfraudevents',
+        sub {
+            my $events = shift;
+            foreach my $event (@{$events}) {
+                if ($event->{interval_notify}) {
+                    my $subscribers = get_data(sprintf('/api/subscribers/?customer_id=%d',
+                        $event->{contract_id}),
+                        'subscribers');
+                    next unless scalar @$subscribers;
+                    eval {
+                        send_email($event, $subscribers);
+                    };
+                    print $EVAL_ERROR if $EVAL_ERROR;
+                }
             }
         }
-    });
+    );
     return;
 }
 

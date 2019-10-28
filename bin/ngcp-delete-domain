@@ -1,6 +1,8 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
+
 use English;
 use Getopt::Long;
 use Pod::Usage;
@@ -16,7 +18,7 @@ my $opts = {
     verbose => 0,
 };
 
-GetOptions( $opts,
+GetOptions($opts,
     'help|h' => sub { usage() },
     'domain=s',
     'skip_xmpp',
@@ -26,20 +28,25 @@ GetOptions( $opts,
 
 sub check_params {
     my @missing;
+
     foreach my $param (@required) {
         push @missing, $param unless $opts->{$param};
     }
     usage(join(' ', @missing)) if scalar @missing;
+
     return;
 }
 
 sub usage {
     my $missing = shift;
-    pod2usage(-exitval => $missing ? 1 : 0,
-              -verbose => 99,
-              -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
-              -message => $missing ? "Missing parameters: $missing" : '',
-             );
+
+    pod2usage(
+        -exitval => $missing ? 1 : 0,
+        -verbose => 99,
+        -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
+        -message => $missing ? "Missing parameters: $missing" : '',
+    );
+
     return;
 }
 
@@ -49,13 +56,15 @@ sub main {
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
 
     # domain_id
-    my $dom = $client->request('GET', '/api/domains/?domain='.$opts->{domain});
+    my $dom = $client->request('GET', '/api/domains/?domain=' . $opts->{domain});
     if ($dom->as_hash->{total_count} != 1) {
         die "Domain $opts->{domain} not found\n";
     }
 
     my $uri = '/api/domains/';
-    my %data = map { '_'.$_.'_reload' => $opts->{$_} } qw(skip_xmpp skip_sip);
+    my %data = map {
+        '_' . $_ . '_reload' => $opts->{$_}
+    } qw(skip_xmpp skip_sip);
     my $dom_id;
     my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
     if (ref $tmp eq 'ARRAY') {
@@ -66,7 +75,7 @@ sub main {
     die "Domain $opts->{domain} not found\n" unless $dom_id;
     $uri .= $dom_id;
     my $res = $client->request('DELETE', $uri, \%data);
-    print $res->result."\n";
+    print $res->result . "\n";
 
     return !$res->is_success;
 }
