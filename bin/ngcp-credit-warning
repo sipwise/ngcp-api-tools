@@ -168,12 +168,10 @@ sub main {
             print $EVAL_ERROR if $EVAL_ERROR;
         }
     }
-    return;
+    return 0;
 }
 
-main();
-
-exit 0;
+exit main();
 
 __END__
 

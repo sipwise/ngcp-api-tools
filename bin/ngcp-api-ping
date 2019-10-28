@@ -42,22 +42,17 @@ sub main {
     my $uri = '/api/domains/';
     $client->set_verbose($opts->{verbose});
     my $res = $client->request("GET", $uri);
-    my $rc = 0;
+
     if (defined $res->as_hash->{total_count}) {
         print "API is up\n";
+        return 0;
     } else {
         print "API is down\n";
-        $rc = 1;
+        return 1;
     }
-
-    exit $rc;
-
-    return;
 }
 
-main();
-
-exit 0;
+exit main();
 
 __END__
 

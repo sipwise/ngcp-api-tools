@@ -49,14 +49,10 @@ sub main {
     my $res = $client->request("PATCH", $uri, $data);
     print $res->result."\n";
 
-    exit !$res->is_success;
-
-    return;
+    return !$res->is_success;
 }
 
-main();
-
-exit 0;
+exit main();
 
 __END__
 
