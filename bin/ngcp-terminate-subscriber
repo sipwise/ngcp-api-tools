@@ -41,10 +41,11 @@ sub usage {
 
 sub main {
     check_params();
+
+    my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
+
     my $uri = sprintf '/api/subscribers/?username=%s&domain=%s',
               @{$opts}{qw(username domain)};
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
     my $sub = $client->request("GET", $uri);
     my $sub_id;
     if ($sub->as_hash->{total_count} == 1) {

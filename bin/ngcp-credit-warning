@@ -101,9 +101,11 @@ EOF
 sub get_data {
     my ($uri, $link, $process_code) = @_;
     $process_code = sub { my $data = shift; return 0; } unless 'CODE' eq ref $process_code;
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
-    $client->set_page_rows($page_size);
+
+    my $client = NGCP::API::Client->new(
+        verbose => $opts->{verbose},
+        page_rows => $page_size,
+    );
     my @result = ();
     while (my $res = $client->next_page($uri)) {
         die $res->result unless $res->is_success;
