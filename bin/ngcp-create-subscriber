@@ -49,13 +49,14 @@ sub usage {
 
 sub main {
     check_params();
+
+    my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
+
     my $uri = '/api/subscribers/';
     my %data = map { $_ => $opts->{$_} }
                     qw(customer_id username password webpassword);
     $data{primary_number} = { map { $_ => $opts->{$_} } qw(cc ac sn) };
     $data{administrative} = $opts->{admin};
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
     # domain_id
     my $dom = $client->request("GET", "/api/domains/?domain=".$opts->{domain});
     if ($dom->as_hash->{total_count} == 1) {

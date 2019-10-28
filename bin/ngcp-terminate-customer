@@ -40,9 +40,10 @@ sub usage {
 
 sub main {
     check_params();
+
+    my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
+
     my $uri = '/api/customers/'.$opts->{customer_id};
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
     my $data = [ { op => 'replace',
                    path => '/status',
                    value => 'terminated' } ];

@@ -72,9 +72,12 @@ sub load_config {
 
 sub get_data {
     my ($uri, $link, $code) = @_;
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
-    $client->set_page_rows($page_size);
+
+    my $client = NGCP::API::Client->new(
+        verbose => $opts->{verbose},
+        page_rows => $page_size,
+    );
+
     my @result = ();
     while (my $res = $client->next_page($uri)) {
         die $res->result unless $res->is_success;
@@ -174,8 +177,8 @@ sub send_email {
 sub update_notify_status {
     my $event = shift;
 
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
+    my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
+
     my $now = strftime('%Y-%m-%d %H:%M:%S', localtime(time));
     my $uri = '/api/customerfraudevents/'.$event->{id};
     my $data = [ { op => 'replace',

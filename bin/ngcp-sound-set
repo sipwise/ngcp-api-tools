@@ -40,10 +40,11 @@ sub usage {
 
 sub main {
     check_params();
+
+    my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
+
     my $uri = '/api/soundsets/';
     $uri .= $opts->{id} ? $opts->{id} : '';
-    my $client = new NGCP::API::Client;
-    $client->set_verbose($opts->{verbose});
     my $res = $client->request("GET", $uri);
     $res->is_success ? print $res->content."\n"
                      : print $res->result."\n";
