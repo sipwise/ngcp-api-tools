@@ -148,7 +148,7 @@ sub send_email {
     foreach my $field (keys %{$template}) {
         my $out;
         $tt->process(\$template->{$_}, $vars, \$out);
-        $out and $template->{$_} = $out;
+        $$template->{$_} = $out if $out;
     }
 
     die "'To' header is empty in the email" unless $event->{interval_notify};
