@@ -34,6 +34,24 @@
       "revId": "c4e10678bd694cee63e8bdce9886d1b3b6729844",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c3479d11_5c3220a3",
+        "filename": "bin/ngcp-api-ping",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-10-29T17:24:20Z",
+      "side": 1,
+      "message": "of course not; you might have various application specific errors, then want to map them to exit codes, as needed by some invoker. but doing that at a definite place.\n\nmy $result;\neval {\n  $result \u003d run_it();\n};\nif ($@) {\n  exit(??);\n} elsif (not ref $result and index($result, \"something failed\") {\n  exit(??);\n} elsif (\u0027ARAY\u0027 eq ref $result and grep { $_ \u003d~ /something else failed\u0027; } @$result) {\n  exit(??);\n} elsif ...\n} else {\n  exit(0);\n}",
+      "parentUuid": "59a1fef8_15630720",
+      "revId": "c4e10678bd694cee63e8bdce9886d1b3b6729844",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
