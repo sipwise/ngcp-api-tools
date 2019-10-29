@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ab2f7bd9_92a41124",
+        "filename": "bin/ngcp-create-subscriber",
+        "patchSetId": 1
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2019-10-29T16:11:09Z",
+      "side": 1,
+      "message": "Should you also move here:\n\n    if ($dom-\u003eas_hash-\u003e{total_count} !\u003d 1) {\n        die \"Domain $opts-\u003e{domain} not found\\n\";\n    }\n\nand have unconditional code further in lines 63-69?",
+      "revId": "466b20fb9a9d5bdc730804a2907db8dd92ef4404",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
