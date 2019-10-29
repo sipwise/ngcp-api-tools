@@ -182,7 +182,7 @@ sub update_notify_status {
 
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
 
-    my $now = strftime('%Y-%m-%d %H:%M:%S', localtime(time));
+    my $now = strftime('%Y-%m-%d %H:%M:%S', localtime);
     my $uri = '/api/customerfraudevents/'.$event->{id};
     my $data = [ { op => 'replace',
                    path => '/notify_status',
