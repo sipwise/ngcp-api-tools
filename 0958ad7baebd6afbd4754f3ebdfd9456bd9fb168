@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a27e3909_de0a718e",
+        "filename": "bin/ngcp-credit-warning",
+        "patchSetId": 1
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000013
+      },
+      "writtenOn": "2019-10-29T16:27:47Z",
+      "side": 1,
+      "message": "a difference is introduced with this: it will also try to execute if $process_code contains a sub name. the old code strictly needs a coderef to not fail. example:\n\nmy $x \u003d \"test\";\n$x-\u003e();\n\nsub test {\n  print \"Hello World!\\n\";\n}\n\nbut should not have impact here, i hope.",
+      "revId": "0958ad7baebd6afbd4754f3ebdfd9456bd9fb168",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
+    }
+  ]
+}
