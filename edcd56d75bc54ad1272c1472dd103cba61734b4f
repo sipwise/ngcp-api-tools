@@ -46,6 +46,29 @@
       "revId": "edcd56d75bc54ad1272c1472dd103cba61734b4f",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "85353a4d_23d1075d",
+        "filename": "bin/ngcp-fraud-notifier",
+        "patchSetId": 1
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2019-10-29T16:15:15Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 151,
+        "startChar": 8,
+        "endLine": 151,
+        "endChar": 11
+      },
+      "revId": "edcd56d75bc54ad1272c1472dd103cba61734b4f",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
