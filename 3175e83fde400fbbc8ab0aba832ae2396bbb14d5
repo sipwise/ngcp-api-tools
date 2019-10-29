@@ -1,0 +1,8 @@
+Verified+1: Jenkins Jenkins
+Code-Review+1: Alexander Lutay <alutay@sipwise.com>
+Code-Review+2: Richard Fuchs <rfuchs@sipwise.com>
+Submitted-by: Guillem Jover <gjover@sipwise.com>
+Submitted-at: Tue, 29 Oct 2019 20:04:55 +0100
+Reviewed-on: http://gerrit.mgm.sipwise.com/c/ngcp-api-tools/+/34748
+Project: ngcp-api-tools
+Branch: refs/heads/master
