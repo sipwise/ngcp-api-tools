@@ -78,7 +78,7 @@ EOF
     foreach my $field (keys %{$template}) {
         my $out;
         $tt->process(\$template->{$field}, $vars, \$out);
-        $out and $template->{$field} = $out;
+        $template->{$field} = $out if $out;
     }
 
     my $transport = Email::Sender::Transport::Sendmail->new;
