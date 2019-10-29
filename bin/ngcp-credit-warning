@@ -49,7 +49,7 @@ sub usage {
 
 sub load_config {
     $config = XML::Simple->new()->XMLin($config_file, ForceArray => [ 'credit_warnings' ])
-        or die "Cannot load config: $config_file: $ERRNO";
+        or die "Cannot load config: $config_file: $ERRNO\n";
     return;
 }
 
@@ -94,7 +94,7 @@ EOF
     );
 
     Email::Sender::Simple->send($email, { transport => $transport })
-        or die sprintf "Cannot send credit warning notification to %s: $ERRNO",
+        or die sprintf "Cannot send credit warning notification to %s: $ERRNO\n",
                        $email->header('To');
     return;
 }
@@ -110,7 +110,7 @@ sub get_data {
     );
     my @result = ();
     while (my $res = $client->next_page($uri)) {
-        die $res->result unless $res->is_success;
+        die "$res->result\n" unless $res->is_success;
         my $res_hash = $res->as_hash;
         my $data = $res_hash->{_embedded}{'ngcp:'.$link};
         if ('ARRAY' eq ref $data) {
@@ -143,10 +143,10 @@ sub main {
                     : [ $config->{credit_warnings} ];
     foreach my $cwarning (@{$cwarnings}) {
         unless ($cwarning->{recipients}) {
-            die "No recipients defined for domain: $cwarning->{domain}";
+            die "No recipients defined for domain: $cwarning->{domain}\n";
         }
         unless ($cwarning->{domain}) {
-            die "Missing domain in a credit warning check";
+            die "Missing domain in a credit warning check\n";
         }
         my @contracts;
         get_data(sprintf('/api/customerbalances/?no_count=true&domain=%s&prepaid=1',

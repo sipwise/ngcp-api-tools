@@ -66,7 +66,8 @@ sub usage {
 
 sub load_config {
     $config = XML::Simple->new()->XMLin($config_file, ForceArray => 0)
-        or die "Cannot load config: $config_file: $ERRNO";
+        or die "Cannot load config: $config_file: $ERRNO\n";
+
     return;
 }
 
@@ -80,7 +81,7 @@ sub get_data {
 
     my @result = ();
     while (my $res = $client->next_page($uri)) {
-        die $res->result unless $res->is_success;
+        die "$res->result\n" unless $res->is_success;
         my $res_hash = $res->as_hash;
         my $data = $res_hash->{_embedded}{'ngcp:'.$link};
         if ('ARRAY' eq ref $data) {
@@ -117,7 +118,8 @@ sub get_email_template {
     }
 
     unless ($selected_template) {
-        die sprintf "No template 'customer_fraud_%s_default_email' OR 'customer_fraud_%s_email' is defined.", $lock_type, $lock_type;
+        die sprintf "No template 'customer_fraud_%s_default_email' OR 'customer_fraud_%s_email' is defined.\n",
+                    $lock_type, $lock_type;
     }
 
     return $selected_template;
@@ -151,9 +153,9 @@ sub send_email {
         $template->{$field} = $out if $out;
     }
 
-    die "'To' header is empty in the email" unless $event->{interval_notify};
-    die "'From' header is empty in the email" unless $template->{from_email};
-    die "'Subject' header is empty in the email" unless $template->{subject};
+    die "'To' header is empty in the email\n" unless $event->{interval_notify};
+    die "'From' header is empty in the email\n" unless $template->{from_email};
+    die "'Subject' header is empty in the email\n" unless $template->{subject};
 
     my $transport = Email::Sender::Transport::Sendmail->new;
     my $email = Email::Simple->create(
@@ -166,7 +168,7 @@ sub send_email {
     );
 
     Email::Sender::Simple->send($email, { transport => $transport })
-        or die sprintf "Cannot send fraud daily lock notification to %s: $ERRNO",
+        or die sprintf "Cannot send fraud daily lock notification to %s: $ERRNO\n",
                        $email->header('To');
 
     update_notify_status($event);
