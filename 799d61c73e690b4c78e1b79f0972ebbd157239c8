@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4c9ef4eb_a5aac1db",
+        "filename": "bin/ngcp-create-customer",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1000001
+      },
+      "writtenOn": "2019-10-29T16:06:31Z",
+      "side": 1,
+      "message": "verbosE",
+      "range": {
+        "startLine": 48,
+        "startChar": 59,
+        "endLine": 48,
+        "endChar": 65
+      },
+      "revId": "799d61c73e690b4c78e1b79f0972ebbd157239c8",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
