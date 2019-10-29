@@ -57,7 +57,9 @@ sub main {
 
     my $uri = '/api/domains/';
     my %data = map { $_ => $opts->{$_} } qw(reseller_id domain);
-    map { $data{"_".$_."_reload"} = $opts->{$_} } qw(skip_xmpp skip_sip);
+    foreach my $elem (qw(skip_xmpp skip_sip)) {
+        $data{"_" . $elem . "_reload"} = $opts->{$elem};
+    }
     my $res = $client->request("POST", $uri, \%data);
     print $res->result."\n";
 
