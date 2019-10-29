@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "526bc696_9d5ff0d8",
+        "filename": "bin/ngcp-credit-warning",
+        "patchSetId": 1
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2019-10-29T16:14:25Z",
+      "side": 1,
+      "message": "should use $field here",
+      "range": {
+        "startLine": 80,
+        "startChar": 33,
+        "endLine": 80,
+        "endChar": 36
+      },
+      "revId": "d0f9676fdd61eea526aaeb795533eb141bdecf91",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    }
+  ]
+}
