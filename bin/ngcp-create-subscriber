@@ -15,17 +15,17 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "customer_id=i",
-    "username|u=s",
-    "password|p=s",
-    "domain|d=s",
-    "admin|s=i",
-    "cc|c=i",
-    "ac|a=i",
-    "sn|n=i",
-    "webpassword|w=s",
-    "verbose",
+    'help|h' => sub { usage() },
+    'customer_id=i',
+    'username|u=s',
+    'password|p=s',
+    'domain|d=s',
+    'admin|s=i',
+    'cc|c=i',
+    'ac|a=i',
+    'sn|n=i',
+    'webpassword|w=s',
+    'verbose',
 ) or usage();
 
 sub check_params {
@@ -69,7 +69,7 @@ sub main {
     } else {
         $data{domain_id} = $tmp->{id};
     }
-    my $res = $client->request("POST", $uri, \%data);
+    my $res = $client->request('POST', $uri, \%data);
     print $res->result."\n";
 
     return !$res->is_success;
