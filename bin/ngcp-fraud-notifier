@@ -145,10 +145,11 @@ sub send_email {
     }
 
     my $tt = Template->new();
-    map { my $out;
-          $tt->process(\$template->{$_}, $vars, \$out);
-          $out and $template->{$_} = $out;
-        } keys %{$template};
+    foreach my $field (keys %{$template}) {
+        my $out;
+        $tt->process(\$template->{$field}, $vars, \$out);
+        $out and $template->{$field} = $out;
+    }
 
     die "'To' header is empty in the email" unless $event->{interval_notify};
     die "'From' header is empty in the email" unless $template->{from_email};

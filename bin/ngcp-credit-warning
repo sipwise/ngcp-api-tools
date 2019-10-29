@@ -75,10 +75,11 @@ EOF
     }
 
     my $tt = Template->new();
-    map { my $out;
-          $tt->process(\$template->{$_}, $vars, \$out);
-          $out and $template->{$_} = $out;
-        } keys %{$template};
+    foreach my $field (keys %{$template}) {
+        my $out;
+        $tt->process(\$template->{$field}, $vars, \$out);
+        $out and $template->{$field} = $out;
+    }
 
     my $transport = Email::Sender::Transport::Sendmail->new;
     my $email = Email::Simple->create(
