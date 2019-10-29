@@ -52,22 +52,22 @@ sub main {
 
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
 
+    # domain_id
+    my $dom = $client->request('GET', '/api/domains/?domain=' . $opts->{domain});
+    if ($dom->as_hash->{total_count} != 1) {
+        die "Domain $opts->{domain} not found\n";
+    }
+
     my $uri = '/api/subscribers/';
     my %data = map { $_ => $opts->{$_} }
                     qw(customer_id username password webpassword);
     $data{primary_number} = { map { $_ => $opts->{$_} } qw(cc ac sn) };
     $data{administrative} = $opts->{admin};
-    # domain_id
-    my $dom = $client->request("GET", "/api/domains/?domain=".$opts->{domain});
-    if ($dom->as_hash->{total_count} == 1) {
-        my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
-        if (ref $tmp eq 'ARRAY') {
-            $data{domain_id} = @{$tmp}[0]->{id};
-        } else {
-            $data{domain_id} = $tmp->{id};
-        }
+    my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
+    if (ref $tmp eq 'ARRAY') {
+        $data{domain_id} = @{$tmp}[0]->{id};
     } else {
-        die "Domain $opts->{domain} not found\n";
+        $data{domain_id} = $tmp->{id};
     }
     my $res = $client->request("POST", $uri, \%data);
     print $res->result."\n";
