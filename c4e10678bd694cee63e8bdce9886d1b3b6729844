@@ -16,6 +16,24 @@
       "revId": "c4e10678bd694cee63e8bdce9886d1b3b6729844",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "59a1fef8_15630720",
+        "filename": "bin/ngcp-api-ping",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-29T17:06:40Z",
+      "side": 1,
+      "message": "This would mean we can never pass any non-boolean exit code back from main, it also seems rather redundant.",
+      "parentUuid": "b8f4fd3a_f0ddd6ca",
+      "revId": "c4e10678bd694cee63e8bdce9886d1b3b6729844",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
