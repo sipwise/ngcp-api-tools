@@ -16,6 +16,24 @@
       "revId": "466b20fb9a9d5bdc730804a2907db8dd92ef4404",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f9ada605_e223aa0a",
+        "filename": "bin/ngcp-create-subscriber",
+        "patchSetId": 1
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000008
+      },
+      "writtenOn": "2019-10-29T16:16:54Z",
+      "side": 1,
+      "message": "good idea ^",
+      "parentUuid": "ab2f7bd9_92a41124",
+      "revId": "466b20fb9a9d5bdc730804a2907db8dd92ef4404",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
