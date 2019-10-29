@@ -101,7 +101,8 @@ EOF
 
 sub get_data {
     my ($uri, $link, $process_code) = @_;
-    $process_code = sub { my $data = shift; return 0; } unless 'CODE' eq ref $process_code;
+
+    $process_code = sub { return 0 } if 'CODE' ne ref $process_code;
 
     my $client = NGCP::API::Client->new(
         verbose => $opts->{verbose},
