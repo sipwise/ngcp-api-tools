@@ -16,6 +16,24 @@
       "revId": "0958ad7baebd6afbd4754f3ebdfd9456bd9fb168",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a449d092_240ca087",
+        "filename": "bin/ngcp-credit-warning",
+        "patchSetId": 1
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-10-29T17:27:20Z",
+      "side": 1,
+      "message": "Both of these should be equivalent. I jut checked in any case, and they do show the exact same behavior, with and w/o strict and warnings:\n\n  #use strict;\n  #use warnings;\n\n  my $x \u003d \u0027test\u0027;\n  eval {\n    \u0026$x();\n  } or warn $@;\n  eval {\n    $x-\u003e();\n  } or warn $@;\n\n  $x \u003d \\\u0026test;\n  eval {\n    \u0026$x();\n  } or warn $@;\n  eval {\n    $x-\u003e();\n  } or warn $@;\n  \n  sub test {\n      print \"Hello World!\\n\";\n  }",
+      "parentUuid": "a27e3909_de0a718e",
+      "revId": "0958ad7baebd6afbd4754f3ebdfd9456bd9fb168",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
