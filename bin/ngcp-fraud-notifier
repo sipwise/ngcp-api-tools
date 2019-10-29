@@ -90,7 +90,7 @@ sub get_data {
             push(@result,$data);
         }
         if (defined $code and 'CODE' eq ref $code) {
-            &$code(\@result);
+            $code->(\@result);
             @result = ();
         }
     }

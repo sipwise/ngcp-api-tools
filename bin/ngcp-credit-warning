@@ -114,11 +114,11 @@ sub get_data {
         my $res_hash = $res->as_hash;
         my $data = $res_hash->{_embedded}{'ngcp:'.$link};
         if ('ARRAY' eq ref $data) {
-            unless (&$process_code($data)) {
+            unless ($process_code->($data)) {
                 push(@result,@$data);
             }
         } elsif ($data) {
-            unless (&$process_code([$data])) {
+            unless ($process_code->([ $data ])) {
                 push(@result,$data);
             }
         }
