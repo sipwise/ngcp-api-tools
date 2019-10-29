@@ -18,9 +18,9 @@ use File::Pid;
 Readonly my @required => qw();
 Readonly my $config_file => '/etc/ngcp-panel/provisioning.conf';
 
-my $PROGRAM_BASE = "ngcp-fraud-notifier";
+my $PROGRAM_BASE = 'ngcp-fraud-notifier';
 my $retcode = 0;
-my $piddir  = "/run/ngcp-fraud-notifier";
+my $piddir  = '/run/ngcp-fraud-notifier';
 my $pidfile = "$piddir/ngcp-fraud-notifier.pid";
 my $pf      =  File::Pid->new({ file => $pidfile });
 
@@ -38,8 +38,8 @@ my $opts = {
 my $config;
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "verbose",
+    'help|h' => sub { usage() },
+    'verbose',
 ) or usage();
 
 sub DESTROY {
@@ -190,7 +190,7 @@ sub update_notify_status {
                  { op => 'replace',
                    path => '/notified_at',
                    value => $now } ];
-    my $res = $client->request("PATCH", $uri, $data);
+    my $res = $client->request('PATCH', $uri, $data);
 
     return;
 }

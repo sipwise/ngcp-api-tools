@@ -17,12 +17,12 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "domain=s",
-    "reseller_id=i",
-    "skip_xmpp",
-    "skip_sip",
-    "verbose",
+    'help|h' => sub { usage() },
+    'domain=s',
+    'reseller_id=i',
+    'skip_xmpp',
+    'skip_sip',
+    'verbose',
 ) or usage();
 
 sub check_params {
@@ -58,9 +58,9 @@ sub main {
     my $uri = '/api/domains/';
     my %data = map { $_ => $opts->{$_} } qw(reseller_id domain);
     foreach my $elem (qw(skip_xmpp skip_sip)) {
-        $data{"_" . $elem . "_reload"} = $opts->{$elem};
+        $data{'_' . $elem . '_reload'} = $opts->{$elem};
     }
-    my $res = $client->request("POST", $uri, \%data);
+    my $res = $client->request('POST', $uri, \%data);
     print $res->result."\n";
 
     return !$res->is_success;

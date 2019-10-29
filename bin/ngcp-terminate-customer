@@ -14,9 +14,9 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "customer_id=i",
-    "verbose",
+    'help|h' => sub { usage() },
+    'customer_id=i',
+    'verbose',
 ) or usage();
 
 sub check_params {
@@ -47,7 +47,7 @@ sub main {
     my $data = [ { op => 'replace',
                    path => '/status',
                    value => 'terminated' } ];
-    my $res = $client->request("PATCH", $uri, $data);
+    my $res = $client->request('PATCH', $uri, $data);
     print $res->result."\n";
 
     return !$res->is_success;

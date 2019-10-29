@@ -16,11 +16,11 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "billing_profile_id=i",
-    "contact_id=i",
-    "type=s",
-    "verbose",
+    'help|h' => sub { usage() },
+    'billing_profile_id=i',
+    'contact_id=i',
+    'type=s',
+    'verbose',
 ) or usage();
 
 sub check_params {
@@ -50,7 +50,7 @@ sub main {
     my $uri = '/api/customers/';
     my %data = map { $_ => $opts->{$_} }
                     qw(billing_profile_id contact_id type status);
-    my $res = $client->request("POST", $uri, \%data);
+    my $res = $client->request('POST', $uri, \%data);
     print $res->result."\n";
 
     return !$res->is_success;

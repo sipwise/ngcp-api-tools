@@ -14,9 +14,9 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "id=i",
-    "verbose",
+    'help|h' => sub { usage() },
+    'id=i',
+    'verbose',
 ) or usage();
 
 sub check_params {
@@ -45,7 +45,7 @@ sub main {
 
     my $uri = '/api/soundsets/';
     $uri .= $opts->{id} ? $opts->{id} : '';
-    my $res = $client->request("GET", $uri);
+    my $res = $client->request('GET', $uri);
     $res->is_success ? print $res->content."\n"
                      : print $res->result."\n";
 

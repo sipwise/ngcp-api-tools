@@ -14,8 +14,8 @@ my $opts = {
 };
 
 GetOptions( $opts,
-    "help|h" => sub { usage() },
-    "verbose",
+    'help|h' => sub { usage() },
+    'verbose',
 ) or usage();
 
 sub check_params {
@@ -42,7 +42,7 @@ sub main {
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
 
     my $uri = '/api/domains/';
-    my $res = $client->request("GET", $uri);
+    my $res = $client->request('GET', $uri);
 
     if (defined $res->as_hash->{total_count}) {
         print "API is up\n";

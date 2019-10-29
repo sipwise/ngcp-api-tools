@@ -237,7 +237,7 @@ sub result {
         $content = $self->content;
     }
 
-    return sprintf "%s %s", $self->status_line, $content;
+    return sprintf '%s %s', $self->status_line, $content;
 }
 
 1;
@@ -305,7 +305,7 @@ The version is compatible with NGCP platforms version >= mr4.3.x
             value => 5,
         },
     ];
-    my $res = $client->request("PATCH", $uri, $data);
+    my $res = $client->request('PATCH', $uri, $data);
 
     # DELETE (remove)
 
