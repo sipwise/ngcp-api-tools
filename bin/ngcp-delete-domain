@@ -48,10 +48,11 @@ sub main {
 
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
 
-    my $uri = '/api/domains/';
-    my %data = map { "_".$_."_reload" => $opts->{$_} } qw(skip_xmpp skip_sip);
     # domain_id
     my $dom = $client->request("GET", "/api/domains/?domain=".$opts->{domain});
+
+    my $uri = '/api/domains/';
+    my %data = map { "_".$_."_reload" => $opts->{$_} } qw(skip_xmpp skip_sip);
     my $dom_id;
     if ($dom->as_hash->{total_count} == 1) {
         my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
