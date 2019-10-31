@@ -156,6 +156,8 @@ sub next_page {
 
     undef $self->{_collection_url};
 
+    return $res unless $res->is_success;
+
     my $data = $res->as_hash();
     if ($data && ref($data) eq 'HASH') {
         my $new_url = URI->new($data->{_links}->{next}->{href});
