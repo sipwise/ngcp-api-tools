@@ -26,7 +26,6 @@ sub _load_config_defaults {
         port          => $cfg->{_}->{NGCP_API_PORT} // 80,
         iface         => $cfg->{_}->{NGCP_API_IFACE} // 'lo',
         sslverify     => $cfg->{_}->{NGCP_API_SSLVERIFY} // 'yes',
-        sslverify_lb  => $cfg->{_}->{NGCP_API_SSLVERIFY_LOOPBACK} // 'no',
         read_timeout  => $cfg->{_}->{NGCP_API_READ_TIMEOUT} // 180,
         page_rows     => $cfg->{_}->{NGCP_API_PAGE_ROWS} // 10,
         auth_user     => $cfg->{_}->{AUTH_SYSTEM_LOGIN},
@@ -47,9 +46,7 @@ sub _create_ua {
     my $self = shift;
 
     my $ua = LWP::UserAgent->new();
-    if ($self->{_opts}{sslverify} eq 'no' ||
-        ($self->{_opts}{sslverify_lb} eq 'no' &&
-         $self->{_opts}{iface} =~ /^(lo|dummy)/)) {
+    if ($self->{_opts}{sslverify} eq 'no') {
         $ua->ssl_opts(
             verify_hostname => 0,
             SSL_verify_mode => IO::Socket::SSL::SSL_VERIFY_NONE,
@@ -348,13 +345,6 @@ Defaults to I<lo>.
 
 Sets whether the TLS certificates should be verified.
 Defaults to I<yes>.
-
-=item B<sslverify_lb>
-
-Sets whether the TLS certificates should be verified for the loopback
-interface.
-This setting will override the B<sslverify> if the B<iface> is set to I<lo>.
-Defaults to I<no>.
 
 =item B<read_timeout>
 
