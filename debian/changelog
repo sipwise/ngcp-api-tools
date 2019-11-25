@@ -1,3 +1,50 @@
+ngcp-api-tools (8.1.1.0+0~mr8.1.1.0) unstable; urgency=medium
+
+  [ Guillem Jover ]
+  * [7138971] TT#68300 Use parent instead of base
+  * [aebb98b] TT#68300 Switch to modern JSON::XS and encode/decode_json()
+  * [55afc26] TT#68300 Add missing perl module dependencies
+  * [e9afef4] TT#68300 Move new method after the private methods
+  * [1a131b0] TT#68300 Do not pass unused $uri argument to _create_ua() method
+  * [155873d] TT#68300 Cache user agent and base URL in the object
+  * [97c0fb6] TT#68300 Load the configuration file from the constructor
+  * [f555007] TT#68300 Make the options object-specific
+  * [9ede59c] TT#68300 Use croak() instead of die() in module code
+  * [1fe4584] TT#68300 Use // operator instead of || when checking for definedness
+  * [f50b79e] TT#68300 Set default values for most options
+  * [901996f] TT#68300 Do not use authentication if is not configured
+  * [5a3346a] TT#68300 Allow overriding default options in the constructor
+  * [83d3657] TT#68300 Do not consider a missing configuration file fatal
+  * [b6f3438] TT#68300 Stop using English
+  * [83f596c] TT#68300 Simplify the result method implementation
+  * [23bb117] TT#68300 Fix remaining coding style issues
+  * [c90a64a] TT#68300 Improve the module POD
+  * [22afdd6] TT#68300 Fix LICENSE and COPYRIGHT information
+  * [1e4dd59] TT#68300 NGCP::API::Client: Use URI->path_query instead of URI->path()
+  * [9524c1c] TT#68300 Fix tool error messages
+  * [d5e5759] TT#68300 NGCP::API::Client: Get the page rows from the _opts hash
+  * [bc3f797] TT#68300 NGCP::API::Client: Track the current iterator in next_page()
+  * [4e3658c] TT#68300 NGCP::API::Client: Fix verbose mode setting
+  * [1507059] TT#68300 Fix programs --help output
+  * [f7019c9] TT#68300 Fix programs --help output, do not print missing help parameter
+  * [a3a155c] TT#68300 Remove unused "not found" handling in program usage()
+  * [c4e1067] TT#68300 Fix main() function return and program exit
+  * [a418347] TT#68300 Use NGCP::API::Client constructor arguments instead of setters
+  * [dc864b2] TT#68300 Use foreach instead of map on void context
+  * [4d5054d] TT#68300 Do not use boolean operators for flow control
+  * [9f495ab] TT#68300 Move data generation for queries close to their requests
+  * [9fd9a52] TT#68300 Do not fetch unused function arguments
+  * [328102e] TT#68300 Add an explicit newline to die calls
+  * [f02963b] TT#68300 Do not interpolate strings unnecessarily
+  * [3175e83] TT#68300 Use ->() instead of deprecated & sigil
+  * [82af7f6] TT#68300 Do not pass time to localtime as that's already the default
+  * [f69d3e8] TT#68300 Fix coding style, indentation and spacing
+  * [c9a496b] TT#68300 Return from next_page() if the request failed
+
+  [ Sipwise Jenkins Builder ]
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 25 Nov 2019 14:55:45 +0100
+
 ngcp-api-tools (8.1.0.0+0~mr8.1.0.0) unstable; urgency=medium
 
   [ Rene Krenn ]
