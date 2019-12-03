@@ -75,15 +75,10 @@ sub send_email {
     };
 
     foreach my $data (@{$contracts}) {
-        if (exists $data->{threshold}) {
-            $vars->{contracts} .= sprintf <<EOF_RATIO, @{$data}{qw(id cash_balance threshold)};
-contract_id: %s cash_balance: %s (threshold: %s)
-EOF_RATIO
-        } else {
-            $vars->{contracts} .= sprintf <<EOF, @{$data}{qw(id cash_balance)};
-contract_id: %s cash_balance: %s
-EOF
-        }
+        $vars->{contracts} .= sprintf ('contract_id: %s cash_balance: %s', @{$data}{qw(id cash_balance)});
+        $vars->{contracts} .= ' external_id: '. $data->{external_id} if $data->{external_id};
+        $vars->{contracts} .= ' threshold: '. $data->{threshold} if $data->{threshold};
+        $vars->{contracts} .= "\n";
     }
 
     my $tt = Template->new();
@@ -173,7 +168,7 @@ sub main {
                     my $threshold = $cwarning->{threshold} * $ratio;
                     next if $balance->{cash_balance} >= $threshold;
                     my $data = {
-                        map { $_ => $balance->{$_} } qw(id cash_balance)
+                        map { $_ => $balance->{$_} } qw(id cash_balance external_id)
                     };
                     $data->{threshold} = $threshold if $ratio < 1.0;
                     push @contracts, $data;
