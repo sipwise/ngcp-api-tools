@@ -34,6 +34,24 @@
       "revId": "d8887f3fc0af162fd02b1a2f64d2c746eca1a3f0",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "c0b6ea69_9bf948b5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000016
+      },
+      "writtenOn": "2019-12-19T20:41:47Z",
+      "side": 1,
+      "message": "Actually, I\u0027ll cover the more detailed one here and a brief note on the commit:\n\nThe // operator checks whether the left-hand value is defined, and uses the right-hand one if not. In contrast the || operator is doing boolean evaluation, and if the left-hand evaluates to false then we\u0027ll end up using the right-hand one, for example \u0027\u0027 or 0,\nwhich we might want to allow, and it\u0027s otherwise not possible.",
+      "parentUuid": "1f4180f0_cd56c83b",
+      "revId": "d8887f3fc0af162fd02b1a2f64d2c746eca1a3f0",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": true
     }
   ]
 }
