@@ -22,6 +22,52 @@
       "revId": "1fe458450716fb698a2e55c2d9569fe204cf7a61",
       "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2142d32a_95706695",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 5
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-12-20T11:22:19Z",
+      "side": 1,
+      "message": "does not make sense here, given that \"0\" is not accepted here and if NGCP_API_SSLVERIFY comes as \"0\" (which must not happen anyways due to enum constraints in the schema validation) - it must be set to \"yes\" (hence || instead of //)",
+      "range": {
+        "startLine": 26,
+        "startChar": 57,
+        "endLine": 26,
+        "endChar": 59
+      },
+      "revId": "1fe458450716fb698a2e55c2d9569fe204cf7a61",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9f142b26_0f65fdca",
+        "filename": "lib/NGCP/API/Client.pm",
+        "patchSetId": 5
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1000004
+      },
+      "writtenOn": "2019-12-20T11:22:19Z",
+      "side": 1,
+      "message": "makes sense here for sure as NGCP_API_READ_TIMEOUT can be set to 0",
+      "range": {
+        "startLine": 28,
+        "startChar": 60,
+        "endLine": 28,
+        "endChar": 62
+      },
+      "revId": "1fe458450716fb698a2e55c2d9569fe204cf7a61",
+      "serverId": "85315e57-5f03-49c3-83f8-201ae2313a75",
+      "unresolved": false
     }
   ]
 }
