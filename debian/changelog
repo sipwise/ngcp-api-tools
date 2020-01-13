@@ -1,3 +1,10 @@
+ngcp-api-tools (8.0.3.0+0~mr8.0.3.0) unstable; urgency=medium
+
+  [ Flaviu Mates ]
+  * [56ca626] TT#69407 - Add customer external_id to credit warning email
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 13 Jan 2020 15:18:44 +0100
+
 ngcp-api-tools (8.0.2.0+0~mr8.0.2.0) unstable; urgency=medium
 
   * New release.
