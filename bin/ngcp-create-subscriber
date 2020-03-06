@@ -27,8 +27,11 @@ GetOptions($opts,
     'cc|c=s',
     'ac|a=s',
     'sn|n=s',
+    'aliases=s@',
+    'display_name=s',
     'webpassword|w=s',
     'pbx_pilot',
+    'pbx_extension=s',
     'verbose',
 ) or usage();
 
@@ -70,6 +73,7 @@ sub main {
     }
 
     my $uri = '/api/subscribers/';
+
     my %data = map {
         $_ => $opts->{$_}
     } qw(customer_id username password webpassword);
@@ -82,6 +86,19 @@ sub main {
     } else {
         $data{domain_id} = $tmp->{id};
     }
+
+    if ($opts->{aliases}) {
+        $data{alias_numbers} = [
+            map {
+                    {
+                        map {
+                            split /\=/, $_
+                        } split /\s+/, $_
+                    }
+            } @{$opts->{aliases}}
+        ];
+    }
+
     my $res = $client->request('POST', $uri, \%data);
     print $res->result . "\n";
 
@@ -157,10 +174,28 @@ A local number part of the subscriber's number.
 Set the administrative flag for the new subscriber.
 Defaults to 0 (no).
 
+=item B<--display> I<display-name>
+
+A display name part of the subscriber's number.
+
+=item B<--aliases>
+
+A list of alias numbers
+
+    Format: --aliases "cc=43 ac=1 sn=123" --aliases "cc=43 ac=1 sn=456"
+    Optional:
+        is_devid=1
+        devid_alias=Alice
+
+
 =item B<--pbx_pilot>
 
 Set the "pbx pilot" flag for the new subscriber.
 Defaults to 0 (no).
+
+=item B<--pbx_extension>
+
+PBX extension number (only usable for PBX subscribers)
 
 =item B<--verbose>
 
