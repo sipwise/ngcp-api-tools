@@ -9,11 +9,12 @@ use Pod::Usage;
 use NGCP::API::Client;
 use Readonly;
 
-Readonly my @required => qw(customer_id username domain password cc ac sn);
+Readonly my @required => qw(customer_id username domain password cc|c ac|a sn|n);
 
 my $opts = {
     admin   => 0,
     verbose => 0,
+    pbx_pilot => 0,
 };
 
 GetOptions($opts,
@@ -23,10 +24,11 @@ GetOptions($opts,
     'password|p=s',
     'domain|d=s',
     'admin|s=i',
-    'cc|c=i',
-    'ac|a=i',
-    'sn|n=i',
+    'cc|c=s',
+    'ac|a=s',
+    'sn|n=s',
     'webpassword|w=s',
+    'pbx_pilot',
     'verbose',
 ) or usage();
 
@@ -34,7 +36,8 @@ sub check_params {
     my @missing;
 
     foreach my $param (@required) {
-        push @missing, $param unless $opts->{$param};
+        push @missing, $param unless
+            grep { defined $opts->{$_} } split /\|/, $param;
     }
     usage(join(' ', @missing)) if scalar @missing;
 
@@ -55,6 +58,7 @@ sub usage {
 }
 
 sub main {
+
     check_params();
 
     my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
@@ -71,6 +75,7 @@ sub main {
     } qw(customer_id username password webpassword);
     $data{primary_number} = { map { $_ => $opts->{$_} } qw(cc ac sn) };
     $data{administrative} = $opts->{admin};
+    $data{is_pbx_pilot} = $opts->{pbx_pilot};
     my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
     if (ref $tmp eq 'ARRAY') {
         $data{domain_id} = @{$tmp}[0]->{id};
@@ -150,6 +155,11 @@ A local number part of the subscriber's number.
 =item B<-s>, B<--admin>
 
 Set the administrative flag for the new subscriber.
+Defaults to 0 (no).
+
+=item B<--pbx_pilot>
+
+Set the "pbx pilot" flag for the new subscriber.
 Defaults to 0 (no).
 
 =item B<--verbose>
