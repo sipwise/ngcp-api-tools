@@ -1,3 +1,11 @@
+ngcp-api-tools (8.3.1.0+0~mr8.3.1.0) unstable; urgency=medium
+
+  [ Kirill Solomko ]
+  * [d7449d0] TT#76671 ngcp-create-subscriber add pbx_pilot support
+  * [3c25b4b] TT#76671 ngcp-create-subscriber pbx extension, display name, aliases
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 16 Mar 2020 11:14:34 +0100
+
 ngcp-api-tools (8.3.0.0+0~mr8.3.0.0) unstable; urgency=medium
 
   [ Flaviu Mates ]
