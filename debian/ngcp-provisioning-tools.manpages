@@ -1,0 +1,8 @@
+usr/share/man/man1/ngcp-api-ping.1p
+usr/share/man/man1/ngcp-create-customer.1p
+usr/share/man/man1/ngcp-create-domain.1p
+usr/share/man/man1/ngcp-create-subscriber.1p
+usr/share/man/man1/ngcp-delete-domain.1p
+usr/share/man/man1/ngcp-get-customer.1p
+usr/share/man/man1/ngcp-terminate-customer.1p
+usr/share/man/man1/ngcp-terminate-subscriber.1p
