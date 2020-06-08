@@ -1,0 +1,246 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use English;
+use Getopt::Long;
+use Pod::Usage;
+use NGCP::API::Client;
+use Readonly;
+
+Readonly my @required => qw(op);
+
+my $opts = {
+    verbose => 0,
+};
+
+GetOptions($opts,
+    'help|h' => sub { usage() },
+    'op=s',
+    'login=s',
+    'password=s',
+    'email=s',
+    'reseller_id=i',
+    'is_system=i',
+    'is_master=i',
+    'is_superuser=i',
+    'is_ccare=i',
+    'read_only=i',
+    'show_paswords=i',
+    'call_data=i',
+    'billing_data=i',
+    'lawful_intercept=i',
+    'verbose',
+) or usage();
+
+sub check_params {
+    my @missing;
+    my @invalid;
+
+    foreach my $param (@required) {
+        push @missing, $param unless
+            grep { defined $opts->{$_} } split /\|/, $param;
+    }
+
+    if ($opts->{op} and $opts->{op} !~ /^(list|add|update|delete)$/) {
+        push @invalid, "'op' must be one of list|add|update|delete";
+    }
+    if ($opts->{op} and $opts->{op} =~ /^(add|update|delete)$/) {
+        unless ($opts->{login}) {
+            push @missing, "'login' must provided";
+        }
+    }
+
+    die "Missing parameters: ".join(' ',@missing),"\n" if @missing;
+    die "Invalid parameters: ".join(' ',@invalid),"\n" if @invalid;
+
+    return;
+}
+
+sub usage {
+
+    pod2usage(
+        -exitval => 0,
+        -verbose => 99,
+        -sections => 'SYNOPSIS|REQUIRED ARGUMENTS|OPTIONS',
+    );
+
+    return;
+}
+
+sub main {
+
+    usage() unless $opts->{op};
+    check_params();
+
+    my $client = NGCP::API::Client->new(verbose => $opts->{verbose});
+
+    my $op = $opts->{op};
+    my $id;
+    my $login = $opts->{login} // '';
+    my $res;
+    my $login_query = $login ? "?login=$login" : "";
+
+    $res = $client->request('GET', '/api/admins/' .$login_query);
+    unless ($res->is_success) {
+        die "Error while retrieving admins data\n";
+    }
+
+    if ($op eq 'update' or $op eq 'delete') {
+        my $id_ref = $res->as_hash->{_embedded}{'ngcp:admins'};
+        unless ($id_ref) {
+            die "Login '$login' does not exist\n";
+        }
+        $id = $id_ref->[0]{id};
+    }
+
+    if ($op eq 'list') {
+        print $res->decoded_content,"\n";
+        return !$res->is_success;
+    } elsif ($op eq 'add') {
+        my %data = map {
+            (defined $opts->{$_} ? ($_ => $opts->{$_}) : ())
+        } qw(login password email reseller_id is_system is_master is_ccare
+             read_only show_passwords call_data billing_data lawful_intercept);
+        $res = $client->request('POST', '/api/admins/', \%data);
+    } elsif ($op eq 'update' ) {
+        my @data = map {
+            (defined $opts->{$_} ? ({op => 'replace', path => "/$_", "value", $opts->{$_} }) : ())
+        } qw(login password email reseller_id is_system is_master is_ccare
+             read_only show_passwords call_data billing_data lawful_intercept);
+        $res = $client->request('PATCH',  '/api/admins/'.$id, \@data);
+    } elsif ($op eq 'delete' ) {
+        $res = $client->request('DELETE', '/api/admins/'.$id);
+    }
+
+    print $res->result . "\n";
+
+    return !$res->is_success;
+}
+
+exit main();
+
+__END__
+
+=head1 NAME
+
+ngcp-api-admins - manage NGCP API admin users
+
+=head1 SYNOPSIS
+
+B<ngcp-api-admins> [I<options>...] I<required-arguments>...
+
+=head1 DESCRIPTION
+
+B<This program> list/add/update/delete NGCP API administrators
+
+=head1 REQUIRED ARGUMENTS
+
+=over 8
+
+=item B<--op>
+
+Operation: "list", "add", "update", "delete"
+
+=back
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--login>, B<login>
+
+Administrator login name
+
+=item B<--password> I<password>
+
+Password field
+
+=item B<--password> I<password>
+
+Email field
+
+=item B<--reseller_id>
+
+Reseller id the administartor belongs to (used in "add" and "update").
+
+=item B<--is_system> I<0|1>
+
+A flag that defines wether the user is the system root and can manage everything.
+*Only administrators with this flag are able to manage "lawful intercept" administrators.
+
+=item B<--is_superuser> I<0|1>
+
+A flag that defines wether the administrator can manage all resellers on the platform.
+
+=item B<--is_master> I<0|1>
+
+A flag that defines wether the administrator can manage other administrators within the same reseller.
+
+=item B<--is_ccare> I<0|1>
+
+A flag that defines wether the administrator is limited only to manage Customers and Subscribers.
+(coped with <is_superuser> defines wether the scope is limited to only Reseller the administrator belongs to or across all Resellers)
+
+=item B<--read_only> I<0|1>
+
+Engages "Read Only" functionality for the administrator.
+
+=item B<--show_passwords> I<0|1>
+
+Show clear text passwords to the administrator.
+
+=item B<--call_data> I<0|1>
+
+The administrator is able to access call traces ("voisniff" must be also enabled).
+
+=item B<--billing_data> I<0|1>
+
+Enables the administrator to apply "Balance top up" and "Vouchers".
+
+=item B<--verbose> I<0|1>
+
+Show additional debug information. Default false.
+
+=item B<--help>
+
+Print a brief help message.
+
+=back
+
+=head1 EXIT STATUS
+
+Exit code 0 means everything is ok otherwise 1.
+
+=head1 SEE ALSO
+
+NGCP::API::Client
+
+=head1 BUGS AND LIMITATIONS
+
+Please report problems you notice to the Sipwise
+Development Team <support@sipwise.com>.
+
+=head1 AUTHOR
+
+Sipwise Development Test <support@sipwise.com>
+
+=head1 LICENSE
+
+Copyright (C) 2020 Sipwise GmbH, Austria
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
