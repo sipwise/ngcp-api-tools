@@ -1,3 +1,4 @@
+bin/ngcp-api-admins             usr/bin/
 bin/ngcp-api-ping               usr/bin/
 bin/ngcp-create-customer        usr/bin/
 bin/ngcp-create-domain          usr/bin/
