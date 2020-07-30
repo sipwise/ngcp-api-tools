@@ -26,20 +26,10 @@ Conflicts:
  ngcp-ossbss,
  ngcp-www-admin (<= 2),
 Replaces:
- ngcp-api-tools,
  ngcp-ossbss,
 Description: NGCP REST API client module
  This package contains the NGCP::API::Client module needed by all interface
  modules on NGCP management hosts.
-
-Package: ngcp-api-tools
-Section: oldlibs
-Architecture: all
-Depends:
- libngcp-api-client-perl,
-Description: transitional dummy package
- This package has been renamed to libngcp-api-client-perl. It can be safely
- removed once it is not depended on by other packages.
 
 Package: ngcp-billing-tools
 Architecture: all
@@ -53,8 +43,6 @@ Depends:
  libreadonly-perl,
  libtemplate-perl,
  libxml-simple-perl,
-Provides:
- ngcp-api-tools,
 Conflicts:
  ngcp-ossbss,
  ngcp-ossbss-billing (<< 3.19),
@@ -74,8 +62,6 @@ Depends:
  ${perl:Depends},
  libngcp-api-client-perl,
  libreadonly-perl,
-Provides:
- ngcp-api-tools,
 Conflicts:
  ngcp-ossbss,
  ngcp-ossbss-clients-perl (<< 3.19),
