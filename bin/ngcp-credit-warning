@@ -118,7 +118,7 @@ sub get_data {
 
     my @result = ();
     while (my $res = $client->next_page($uri)) {
-        die "$res->result\n" unless $res->is_success;
+        return [] unless check_api_error($res);
         my $res_hash = $res->as_hash;
         my $data = $res_hash->{_embedded}{'ngcp:' . $link};
         if ('ARRAY' eq ref $data) {
@@ -132,6 +132,19 @@ sub get_data {
         }
     }
     return \@result;
+}
+
+sub check_api_error {
+    my $res = shift;
+    if ($res->is_success) {
+        return 1;
+    } else {
+        die($res->result . "\n") if (
+            $res->is_client_error
+            or ($res->is_server_error and not scalar grep { $_ == $res->code; } qw(502 503 504))
+        );
+        return 0;
+    }
 }
 
 sub get_email_template {
