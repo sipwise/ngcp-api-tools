@@ -1,3 +1,10 @@
+ngcp-api-tools (9.5.2.0+0~mr9.5.2.0) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [4221674] TT#121056 prevent cron messages while restapi is down
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 06 Jul 2021 14:36:22 +0200
+
 ngcp-api-tools (9.5.1.0+0~mr9.5.1.0) unstable; urgency=medium
 
   * New release.
