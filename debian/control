@@ -3,23 +3,23 @@ Section: admin
 Priority: optional
 Maintainer: Sipwise Development Team <support@sipwise.com>
 Build-Depends:
- debhelper-compat (= 12),
+ debhelper-compat (= 13),
  libmodule-build-perl,
-Standards-Version: 3.9.8
+Standards-Version: 4.5.1
 Homepage: https://www.sipwise.com/
 
 Package: libngcp-api-client-perl
 Section: perl
 Architecture: all
 Depends:
- ${misc:Depends},
- ${perl:Depends},
  libconfig-tiny-perl,
  libio-socket-ssl-perl,
  libjson-xs-perl,
  libreadonly-perl,
  liburi-perl,
  libwww-perl,
+ ${misc:Depends},
+ ${perl:Depends},
 Recommends:
  ngcp-panel,
 Description: NGCP REST API client module
@@ -29,8 +29,6 @@ Description: NGCP REST API client module
 Package: ngcp-billing-tools
 Architecture: all
 Depends:
- ${misc:Depends},
- ${perl:Depends},
  libemail-sender-perl,
  libemail-simple-perl,
  libfile-pid-perl,
@@ -38,6 +36,8 @@ Depends:
  libreadonly-perl,
  libtemplate-perl,
  libxml-simple-perl,
+ ${misc:Depends},
+ ${perl:Depends},
 Description: NGCP billing related tools
  This package contains billing related tools that use the NGCP API,
  needed by all interface modules on NGCP management hosts.
@@ -45,10 +45,10 @@ Description: NGCP billing related tools
 Package: ngcp-provisioning-tools
 Architecture: all
 Depends:
- ${misc:Depends},
- ${perl:Depends},
  libngcp-api-client-perl,
  libreadonly-perl,
+ ${misc:Depends},
+ ${perl:Depends},
 Description: NGCP provisioning related tools
  This package contains provisioning tools that use the NGCP API,
  needed by all interface modules on NGCP management hosts.
