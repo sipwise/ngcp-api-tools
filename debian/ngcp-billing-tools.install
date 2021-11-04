@@ -1,2 +1,2 @@
-bin/ngcp-credit-warning  usr/sbin/
-bin/ngcp-fraud-notifier usr/sbin/
+usr/bin/ngcp-credit-warning usr/sbin/
+usr/bin/ngcp-fraud-notifier usr/sbin/
