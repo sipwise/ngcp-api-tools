@@ -2,6 +2,7 @@ usr/bin/ngcp-api-admins
 usr/bin/ngcp-api-ping
 usr/bin/ngcp-create-customer
 usr/bin/ngcp-create-domain
+usr/bin/ngcp-create-soundset
 usr/bin/ngcp-create-subscriber
 usr/bin/ngcp-delete-domain
 usr/bin/ngcp-get-customer
