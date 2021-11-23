@@ -1,3 +1,15 @@
+ngcp-api-tools (10.2.1.0+0~mr10.2.1.0) unstable; urgency=medium
+
+  [ Rene Krenn ]
+  * [7513086] TT#121056 prevent cron messages while restapi is down
+
+  [ Guillem Jover ]
+  * [1dcbcd0] TT#124273 Use pathname under debian/tmp instead of source root
+  * [187a49e] TT#124273 Install missing tool and man pages
+  * [c584ffb] TT#124273 Update packaging for bullseye
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Tue, 23 Nov 2021 14:18:08 +0100
+
 ngcp-api-tools (10.2.0.0+0~mr10.2.0.0) unstable; urgency=medium
 
   * New release.
