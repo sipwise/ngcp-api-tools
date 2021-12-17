@@ -15,9 +15,24 @@ my $opts = {
     verbose => 0,
 };
 
+# XXX: Remove after mr10.5.
+sub old_option {
+    my ($name, $value) = @_;
+    my $newname = $name =~ tr/_/-/r;
+    $opts->{$name} = $value;
+    warn "$0: option --$name is deprecated; use --$newname instead\n";
+}
+
+sub parse_option {
+    my ($name, $value) = @_;
+    $name =~ tr/-/_/;
+    $opts->{$name} = $value;
+}
+
 GetOptions($opts,
     'help|h' => sub { usage() },
-    'customer_id=i',
+    'customer_id=i' => \&old_option,
+    'customer-id=i' => \&parse_option,
     'verbose',
 ) or usage();
 
@@ -79,7 +94,7 @@ B<This program> retreives a customer from the NGCP platform.
 
 =over 8
 
-=item B<--customer_id> I<cid>
+=item B<--customer-id> I<cid>
 
 Customer id.
 

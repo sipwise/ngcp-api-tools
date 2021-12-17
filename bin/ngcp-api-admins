@@ -15,22 +15,46 @@ my $opts = {
     verbose => 0,
 };
 
+# XXX: Remove after mr10.5.
+sub old_option {
+    my ($name, $value) = @_;
+    my $newname = $name =~ tr/_/-/r;
+    $opts->{$name} = $value;
+    warn "$0: option --$name is deprecated; use --$newname instead\n";
+}
+
+sub parse_option {
+    my ($name, $value) = @_;
+    $name =~ tr/-/_/;
+    $opts->{$name} = $value;
+}
+
 GetOptions($opts,
     'help|h' => sub { usage() },
     'op=s',
     'login=s',
     'password=s',
     'email=s',
-    'reseller_id=i',
-    'is_system=i',
-    'is_master=i',
-    'is_superuser=i',
-    'is_ccare=i',
-    'read_only=i',
-    'show_paswords=i',
-    'call_data=i',
-    'billing_data=i',
-    'lawful_intercept=i',
+    'reseller_id=i' => \&old_option,
+    'reseller-id=i' => \&parse_option,
+    'is_system=i' => \&old_option,
+    'is-system=i' => \&parse_option,
+    'is_master=i' => \&old_option,
+    'is-master=i' => \&parse_option,
+    'is_superuser=i' => \&old_option,
+    'is-superuser=i' => \&parse_option,
+    'is_ccare=i' => \&old_option,
+    'is-ccare=i' => \&parse_option,
+    'read_only=i' => \&old_option,
+    'read-only=i' => \&parse_option,
+    'show_paswords=i' => \&old_option,
+    'show-paswords=i' => \&parse_option,
+    'call_data=i' => \&old_option,
+    'call-data=i' => \&parse_option,
+    'billing_data=i' => \&old_option,
+    'billing-data=i' => \&parse_option,
+    'lawful_intercept=i' => \&old_option,
+    'lawful-intercept=i' => \&parse_option,
     'verbose',
 ) or usage();
 
@@ -149,7 +173,7 @@ Operation: "list", "add", "update", "delete"
 
 =over 8
 
-=item B<--login>, B<login>
+=item B<--login> B<login>
 
 Administrator login name
 
@@ -157,45 +181,45 @@ Administrator login name
 
 Password field
 
-=item B<--password> I<password>
+=item B<--email> I<email>
 
 Email field
 
-=item B<--reseller_id>
+=item B<--reseller-id>
 
 Reseller id the administartor belongs to (used in "add" and "update").
 
-=item B<--is_system> I<0|1>
+=item B<--is-system> I<0|1>
 
 A flag that defines wether the user is the system root and can manage everything.
 *Only administrators with this flag are able to manage "lawful intercept" administrators.
 
-=item B<--is_superuser> I<0|1>
+=item B<--is-superuser> I<0|1>
 
 A flag that defines wether the administrator can manage all resellers on the platform.
 
-=item B<--is_master> I<0|1>
+=item B<--is-master> I<0|1>
 
 A flag that defines wether the administrator can manage other administrators within the same reseller.
 
-=item B<--is_ccare> I<0|1>
+=item B<--is-ccare> I<0|1>
 
 A flag that defines wether the administrator is limited only to manage Customers and Subscribers.
 (coped with <is_superuser> defines wether the scope is limited to only Reseller the administrator belongs to or across all Resellers)
 
-=item B<--read_only> I<0|1>
+=item B<--read-only> I<0|1>
 
 Engages "Read Only" functionality for the administrator.
 
-=item B<--show_passwords> I<0|1>
+=item B<--show-passwords> I<0|1>
 
 Show clear text passwords to the administrator.
 
-=item B<--call_data> I<0|1>
+=item B<--call-data> I<0|1>
 
 The administrator is able to access call traces ("voisniff" must be also enabled).
 
-=item B<--billing_data> I<0|1>
+=item B<--billing-data> I<0|1>
 
 Enables the administrator to apply "Balance top up" and "Vouchers".
 

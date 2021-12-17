@@ -17,9 +17,24 @@ my $opts = {
     pbx_pilot => 0,
 };
 
+# XXX: Remove after mr10.5.
+sub old_option {
+    my ($name, $value) = @_;
+    my $newname = $name =~ tr/_/-/r;
+    $opts->{$name} = $value;
+    warn "$0: option --$name is deprecated; use --$newname instead\n";
+}
+
+sub parse_option {
+    my ($name, $value) = @_;
+    $name =~ tr/-/_/;
+    $opts->{$name} = $value;
+}
+
 GetOptions($opts,
     'help|h' => sub { usage() },
-    'customer_id=i',
+    'customer_id=i' => \&old_option,
+    'customer-id=i' => \&parse_option,
     'username|u=s',
     'password|p=s',
     'domain|d=s',
@@ -28,10 +43,13 @@ GetOptions($opts,
     'ac|a=s',
     'sn|n=s',
     'aliases=s@',
-    'display_name=s',
+    'display_name=s' => \&old_option,
+    'display-name=s' => \&parse_option,
     'webpassword|w=s',
-    'pbx_pilot',
-    'pbx_extension=s',
+    'pbx_pilot' => \&old_option,
+    'pbx-pilot' => \&parse_option,
+    'pbx_extension=s' => \&old_option,
+    'pbx-extension=s' => \&parse_option,
     'verbose',
 ) or usage();
 
@@ -127,7 +145,7 @@ B<This program> creates a subscriber on the NGCP platform.
 
 =over 8
 
-=item B<--customer_id> I<cid>
+=item B<--customer-id> I<cid>
 
 An existing customer id to assign this subscriber to.
 
@@ -176,7 +194,7 @@ A local number part of the subscriber's number.
 Set the administrative flag for the new subscriber.
 Defaults to 0 (no).
 
-=item B<--display> I<display-name>
+=item B<--display-name> I<display-name>
 
 A display name part of the subscriber's number.
 
@@ -190,12 +208,12 @@ A list of alias numbers
         devid_alias=Alice
 
 
-=item B<--pbx_pilot>
+=item B<--pbx-pilot>
 
 Set the "pbx pilot" flag for the new subscriber.
 Defaults to 0 (no).
 
-=item B<--pbx_extension>
+=item B<--pbx-extension>
 
 PBX extension number (only usable for PBX subscribers)
 
