@@ -6,6 +6,6 @@ usr/share/man/man1/ngcp-create-soundset.1p
 usr/share/man/man1/ngcp-create-subscriber.1p
 usr/share/man/man1/ngcp-delete-domain.1p
 usr/share/man/man1/ngcp-get-customer.1p
-usr/share/man/man1/ngcp-sound-set.1p
+usr/share/man/man1/ngcp-get-soundset.1p
 usr/share/man/man1/ngcp-terminate-customer.1p
 usr/share/man/man1/ngcp-terminate-subscriber.1p

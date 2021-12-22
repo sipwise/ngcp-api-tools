@@ -6,6 +6,6 @@ usr/bin/ngcp-create-soundset
 usr/bin/ngcp-create-subscriber
 usr/bin/ngcp-delete-domain
 usr/bin/ngcp-get-customer
-usr/bin/ngcp-sound-set
+usr/bin/ngcp-get-soundset
 usr/bin/ngcp-terminate-customer
 usr/bin/ngcp-terminate-subscriber

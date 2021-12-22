@@ -65,11 +65,11 @@ __END__
 
 =head1 NAME
 
-ngcp-sound-set - retreives an NGCP Sound Set
+ngcp-get-soundset - retreives an NGCP Sound Set
 
 =head1 SYNOPSIS
 
-B<ngcp-sound-set> [I<options>...] I<required-arguments>...
+B<ngcp-get-soundset> [I<options>...] I<required-arguments>...
 
 =head1 DESCRIPTION
 

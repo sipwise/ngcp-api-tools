@@ -1,3 +1,4 @@
 /usr/bin/ngcp-get-customer          /usr/bin/ngcp-get-voip-account
+/usr/bin/ngcp-get-soundset          /usr/bin/ngcp-sound-set
 /usr/bin/ngcp-terminate-customer    /usr/bin/ngcp-delete-voip-account
 /usr/bin/ngcp-terminate-subscriber  /usr/bin/ngcp-delete-subscriber
