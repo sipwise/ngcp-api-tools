@@ -185,7 +185,7 @@ Password field
 
 Email field
 
-=item B<--reseller-id>
+=item B<--reseller-id> I<id>
 
 Reseller id the administartor belongs to (used in "add" and "update").
 
@@ -235,7 +235,17 @@ Print a brief help message.
 
 =head1 EXIT STATUS
 
-Exit code 0 means everything is ok otherwise 1.
+=over
+
+=item B<0>
+
+Command completed successfully.
+
+=item B<1>
+
+Command failed with errors.
+
+=back
 
 =head1 SEE ALSO
 

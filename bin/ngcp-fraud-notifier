@@ -277,7 +277,7 @@ __END__
 
 =head1 NAME
 
-ngcp-fraud-notifier - sends fraud notifications for customers that exceed the threshold
+ngcp-fraud-notifier - send fraud notifications for customers exceeding thresholds
 
 =head1 SYNOPSIS
 
@@ -304,7 +304,17 @@ Print a brief help message.
 
 =head1 EXIT STATUS
 
-Exit code 0 means everything is ok otherwise 1.
+=over
+
+=item B<0>
+
+Command completed successfully.
+
+=item B<1>
+
+Command failed with errors.
+
+=back
 
 =head1 SEE ALSO
 

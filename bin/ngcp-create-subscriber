@@ -189,7 +189,7 @@ A local number part of the subscriber's number.
 
 =over 8
 
-=item B<-s>, B<--admin>
+=item B<-s>, B<--admin> I<0|1>
 
 Set the administrative flag for the new subscriber.
 Defaults to 0 (no).
@@ -198,24 +198,24 @@ Defaults to 0 (no).
 
 A display name part of the subscriber's number.
 
-=item B<--aliases>
+=item B<--aliases> I<aliases>
 
-A list of alias numbers
+A space separated list of alias numbers. The option can be specified multiple
+times.
 
-    Format: --aliases "cc=43 ac=1 sn=123" --aliases "cc=43 ac=1 sn=456"
-    Optional:
-        is_devid=1
-        devid_alias=Alice
-
+  Format: --aliases "cc=43 ac=1 sn=123" --aliases "cc=43 ac=1 sn=456"
+  Optional:
+    is_devid=1
+    devid_alias=Alice
 
 =item B<--pbx-pilot>
 
-Set the "pbx pilot" flag for the new subscriber.
+Set the "pbx pilot" flag to 1 for the new subscriber.
 Defaults to 0 (no).
 
-=item B<--pbx-extension>
+=item B<--pbx-extension> I<number>
 
-PBX extension number (only usable for PBX subscribers)
+PBX extension number (only usable for PBX subscribers).
 
 =item B<--verbose>
 
@@ -229,7 +229,17 @@ Print a brief help message.
 
 =head1 EXIT STATUS
 
-Exit code 0 means everything is ok otherwise 1.
+=over
+
+=item B<0>
+
+Command completed successfully.
+
+=item B<1>
+
+Command failed with errors.
+
+=back
 
 =head1 SEE ALSO
 
