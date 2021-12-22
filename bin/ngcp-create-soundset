@@ -9,7 +9,7 @@ use Pod::Usage;
 use NGCP::API::Client;
 use Readonly;
 
-Readonly my @required => qw(reseller-id name);
+Readonly my @required => qw(reseller_id name);
 
 my $opts = {
     type    => 'sipaccount',
@@ -17,15 +17,21 @@ my $opts = {
     verbose => 0,
 };
 
+sub parse_option {
+    my ($name, $value) = @_;
+    $name =~ tr/-/_/;
+    $opts->{$name} = $value;
+}
+
 GetOptions($opts,
     'help|h' => sub { usage() },
-    'reseller-id=i',
+    'reseller-id=i' => \&parse_option,
     'name=s',
     'description=s',
-    'copy-from-default',
-    'contract-default',
-    'language=s',
-    'loop-play',
+    'copy-from-default' => \&parse_option,
+    'contract-default' => \&parse_option,
+    'language=s' => \&parse_option,
+    'loop-play' => \$opts->{loopplay}, # Use the name as on the remote API.
     'verbose',
 ) or usage();
 
@@ -60,12 +66,10 @@ sub main {
 
     my $uri = '/api/soundsets/';
     my %data = map {
-        my $name = s/-/_/gr;
-        $name =~ s/loop_play/loopplay/;
-        $name => $opts->{$_};
+        $_ => $opts->{$_};
     } grep {
         length $opts->{$_}
-    } qw(reseller-id name description copy-from-default contract-default loop-play language status);
+    } qw(reseller_id name description copy_from_default contract_default loopplay language status);
 
     my $res = $client->request('POST', $uri, \%data);
     print $res->result . "\n";
