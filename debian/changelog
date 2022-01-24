@@ -1,3 +1,16 @@
+ngcp-api-tools (10.4.0.0+0~mr10.4.0.0) unstable; urgency=medium
+
+  [ Alessio Garzi ]
+  * [0d9f089] TT#148702 new script ngcp-create-soundset
+
+  [ Guillem Jover ]
+  * [d037f08] TT#156156 Switch to «-» as the word separator in CLI options
+  * [8904bd7] TT#156156 Rename ngcp-sound-set to ngcp-get-soundset for consistency
+  * [4ecc7a1] TT#156156 ngcp-create-soundset: Unify CLI option handling
+  * [10c6282] TT#156156 Fix and unify man pages
+
+ -- Sipwise Jenkins Builder <jenkins@sipwise.com>  Mon, 24 Jan 2022 16:55:57 +0100
+
 ngcp-api-tools (10.3.0.0+0~mr10.3.0.0) unstable; urgency=medium
 
   [ Rene Krenn ]
