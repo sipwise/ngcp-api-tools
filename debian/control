@@ -2,10 +2,11 @@ Source: ngcp-api-tools
 Section: admin
 Priority: optional
 Maintainer: Sipwise Development Team <support@sipwise.com>
+Rules-Requires-Root: no
 Build-Depends:
  debhelper-compat (= 13),
  libmodule-build-perl,
-Standards-Version: 4.5.1
+Standards-Version: 4.6.2
 Homepage: https://www.sipwise.com/
 
 Package: libngcp-api-client-perl
