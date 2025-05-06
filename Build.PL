@@ -1,3 +1,6 @@
+use strict;
+use warnings;
+
 use Module::Build qw();
 my $builder = Module::Build->new(
     module_name       => 'NGCP-API-Client',
