@@ -13,10 +13,15 @@ Readonly my @required => qw(domain);
 
 my $opts = {
     domain => $ARGV[0],
-    skip_xmpp => 0,
     skip_sip => 0,
     verbose => 0,
 };
+
+sub obsolete_option {
+    my ($name, $value) = @_;
+
+    warn "$0: option --$name is obsolete\n";
+}
 
 sub parse_option {
     my ($name, $value) = @_;
@@ -27,7 +32,7 @@ sub parse_option {
 GetOptions($opts,
     'help|h' => sub { usage() },
     'domain=s',
-    'skip-xmpp' => \&parse_option,
+    'skip-xmpp' => \&obsolete_option,
     'skip-sip' => \&parse_option,
     'verbose',
 ) or usage();
@@ -70,7 +75,7 @@ sub main {
     my $uri = '/api/domains/';
     my %data = map {
         '_' . $_ . '_reload' => $opts->{$_}
-    } qw(skip_xmpp skip_sip);
+    } qw(skip_sip);
     my $dom_id;
     my $tmp = $dom->as_hash->{_embedded}->{'ngcp:domains'};
     if (ref $tmp eq 'ARRAY') {
@@ -119,11 +124,6 @@ The domain name to delete.
 =item B<--skip-sip>
 
 Skip reloading SIP services. If true, changes will not be effective immedeately
-until the respective service is restarted or properly notified. Default false.
-
-=item B<--skip-xmpp>
-
-Skip reloading XMPP services. If true, changes will not be effective immedeately
 until the respective service is restarted or properly notified. Default false.
 
 =item B<--verbose>
