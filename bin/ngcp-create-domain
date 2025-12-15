@@ -18,14 +18,6 @@ my $opts = {
     verbose => 0,
 };
 
-# XXX: Remove after mr10.5.
-sub old_option {
-    my ($name, $value) = @_;
-    my $newname = $name =~ tr/_/-/r;
-    $opts->{$name} = $value;
-    warn "$0: option --$name is deprecated; use --$newname instead\n";
-}
-
 sub parse_option {
     my ($name, $value) = @_;
     $name =~ tr/-/_/;
@@ -35,11 +27,8 @@ sub parse_option {
 GetOptions($opts,
     'help|h' => sub { usage() },
     'domain=s',
-    'reseller_id=i' => \&old_option,
     'reseller-id=i' => \&parse_option,
-    'skip_xmpp' => \&old_option,
     'skip-xmpp' => \&parse_option,
-    'skip_sip' => \&old_option,
     'skip-sip' => \&parse_option,
     'verbose',
 ) or usage();
