@@ -8,6 +8,7 @@ my $builder = Module::Build->new(
     dist_author       => 'Kirill Solomko <ksolomko@sipwise.com>',
     dist_version_from => 'lib/NGCP/API/Client.pm',
     requires          => {
+        'perl'              => '5.040',
         'Config::Tiny'      => 0,
         'IO::Socket::SSL'   => 0,
         'JSON::XS'          => 0,

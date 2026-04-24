@@ -1,8 +1,6 @@
 package NGCP::API::Client;
 
-use strict;
-use warnings;
-use feature qw(state);
+use v5.40;
 
 use Carp;
 use Config::Tiny;
@@ -202,8 +200,8 @@ sub set_verbose {
 
 package NGCP::API::Client::Result;
 
-use warnings;
-use strict;
+use v5.40;
+
 use parent qw(HTTP::Response);
 
 use JSON::XS;
