@@ -247,10 +247,11 @@ sub main {
                         $event->{contract_id}),
                         'subscribers');
                     next unless scalar @$subscribers;
-                    eval {
+                    try {
                         send_email($event, $subscribers);
-                    };
-                    print $EVAL_ERROR if $EVAL_ERROR;
+                    } catch ($e) {
+                        print $e;
+                    }
                 }
             }
         }
@@ -263,10 +264,10 @@ sub cleanup {
     rmdir $piddir if $piddir;
 }
 
-eval { main() };
-
-if ($EVAL_ERROR) {
-    print STDERR $EVAL_ERROR;
+try {
+    main();
+} catch ($e) {
+    print STDERR $e;
     $retcode = 1;
 }
 

@@ -189,10 +189,11 @@ sub main {
             }
         );
         if (@contracts) {
-            eval {
+            try {
                 send_email($cwarning, \@contracts);
-            };
-            print $EVAL_ERROR if $EVAL_ERROR;
+            } catch ($e) {
+                print $e;
+            }
         }
     }
 
